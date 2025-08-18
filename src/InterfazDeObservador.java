@@ -4,10 +4,48 @@ import javax.swing.*;
 public class InterfazDeObservador extends JPanel {
     private static final long serialVersionUID = 1L;
 
-    // Campos de texto (puedes usarlos para setear datos)
-    private JTextField txtIdOAA;
-    private JTextField txtCoords;
+    //VARIABLES QUE EL OAA COMUNICA AL CDF
 
+    private String idOAA;
+    private coordenadas coordOAA;
+    private coordenadas coordBlanco;
+    private String natBlanco; //NATURALEZA DEL BLANCO con un codigo de a lo sumo 5 caracteres
+    private String tipoAz; //TIPO DE AZ PARA EL DiSPARO con un codigo de a lo sumo 2 caracteres
+    
+    //METODOS DE ACCESO A LAS VARIABLES QUE EL OAA ENVIA AL CDF
+
+    public void setID(String id){
+        idOAA = id;
+    }
+    public String getID(){
+        return idOAA;
+    }
+    public void setCoordOAA(coordenadas c){
+        coordOAA = c;
+    }
+    public coordenadas getCoordOAA(){
+        return coordOAA;
+    }
+    public void setCoordBlanco(coordenadas c){
+        coordBlanco = c;
+    }
+    public coordenadas getCoordBlanco(){
+        return coordBlanco;
+    }
+    public void setNatBlanco(String s){
+        natBlanco = s;
+    }
+    public String getNatBlanco(){
+        return natBlanco;
+    }
+    public void setTipoAz(String s){
+        tipoAz = s;
+    }
+    public String getTipoAz(){
+        return tipoAz;
+    }
+
+    //CONSTRUCTOR DE LA INTERFAZ DEL OAA    
 
     public InterfazDeObservador(InterfazUsuario padre) {
         setLayout(null);
@@ -41,4 +79,5 @@ public class InterfazDeObservador extends JPanel {
         campo.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         return campo;
     }
+    
 }
