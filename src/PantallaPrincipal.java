@@ -8,11 +8,11 @@ class PantallaPrincipal extends JPanel {
     // Constructor de la pantalla principal, recibe la ventana padre
     public PantallaPrincipal(InterfazUsuario padre) {
         setLayout(null); // Se usa layout absoluto para posicionar componentes manualmente
-        setBackground(new Color(40, 55, 40)); // Fondo verde militar
+        setBackground(Color.BLACK);
         setPreferredSize(new Dimension(1000, 600)); // Tamaño preferido del panel
 
         // Label principal con título
-        JLabel titulo = new JLabel("INFANTERÍA DE MARINA BASE NAVAL PUERTO BELGRANO", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("BATALLON DE ARTILLERIA DE CAMPAÑA N°1", SwingConstants.CENTER);
         titulo.setBounds(150, 200, 700, 60); // Posición y tamaño
         titulo.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente y tamaño
         titulo.setForeground(new Color(200, 200, 120)); // Color del texto
@@ -55,8 +55,8 @@ class PantallaPrincipal extends JPanel {
         add(btn4);
 
         // Label de marca de agua "BIAC"
-        JLabel marcaAgua = new JLabel("BIAC");
-        marcaAgua.setBounds(20, 20, 100, 30); // Posición y tamaño
+        JLabel marcaAgua = new JLabel("COIN/BRIM");
+        marcaAgua.setBounds(20, 20, 150, 30); // Posición y tamaño
         marcaAgua.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente y tamaño
         marcaAgua.setForeground(new Color(100, 120, 100)); // Color del texto
         add(marcaAgua); // Agrega la marca al panel
@@ -69,7 +69,7 @@ class PantallaPrincipal extends JPanel {
         boton.setFont(new Font("Arial", Font.BOLD, 14)); // Fuente del texto
         boton.setBackground(new Color(50, 60, 40)); // Fondo del botón
         boton.setForeground(new Color(190, 190, 120)); // Color del texto
-        boton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3)); // Borde negro
+        boton.setBorder(BorderFactory.createLineBorder(new Color(144, 238, 144), 3)); // Borde negro
         boton.setFocusPainted(false); // Quita el borde de enfoque al hacer click
         return boton;
     }

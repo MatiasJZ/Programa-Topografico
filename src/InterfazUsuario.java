@@ -14,7 +14,7 @@ public class InterfazUsuario extends JFrame{
     private final InterfazDeGTop pantallaGTop;
 
     public InterfazUsuario() {
-        setTitle("INFANTERÍA DE MARINA BNPB");
+        setTitle("SISTEMA DIGITAL DE TIRO DE ARTILLERIA DE CAMPAÑA");
         setSize(1000, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
