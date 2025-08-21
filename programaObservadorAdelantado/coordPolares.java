@@ -1,5 +1,4 @@
 public class coordPolares extends coordenadas{
-
      //polares 
 private double direccion;
 private double distancia;
