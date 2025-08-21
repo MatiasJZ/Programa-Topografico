@@ -5,6 +5,7 @@ public class InterfazDeObservador extends JPanel {
     private static final long serialVersionUID = 1L;
 
     // ===== Variables internas =====
+    
     private String idOAA;
     private coordenadas coordOAA;
     private coordenadas coordBlanco;
@@ -12,6 +13,7 @@ public class InterfazDeObservador extends JPanel {
     private String tipoAz;
 
     // ===== Métodos de acceso =====
+
     public void setID(String id){ idOAA = id; }
     public String getID(){ return idOAA; }
     public void setCoordOAA(coordenadas c){ coordOAA = c; }
@@ -24,6 +26,7 @@ public class InterfazDeObservador extends JPanel {
     public String getTipoAz(){ return tipoAz; }
 
     // ===== GUI =====
+    
     private CardLayout cardLayout;
     private JPanel cards;
 
@@ -35,14 +38,13 @@ public class InterfazDeObservador extends JPanel {
 
     // NATURALEZA
     private JComboBox<String> cbMagnitud, cbTipoBlanco, cbActividad, cbProteccion;
-    private JTextField txtFrente, txtProfundidad;
 
     private int panelActual = 0;
 
     // Botones del menú superior
     private JButton[] botonesMenu;
 
-    public InterfazDeObservador(InterfazUsuario padre) {
+    public InterfazDeObservador() {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
@@ -66,7 +68,6 @@ public class InterfazDeObservador extends JPanel {
                 switch (idx) {
                     case 0 -> cardLayout.show(cards, "LOCALIZACION");
                     case 1 -> cardLayout.show(cards, "NATURALEZA");
-                    // Puedes agregar los otros paneles si existen
                 }
                 actualizarBotonesMenu();
             });
@@ -329,4 +330,3 @@ public class InterfazDeObservador extends JPanel {
         });
     }
 }
-
