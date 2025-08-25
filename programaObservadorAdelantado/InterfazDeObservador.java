@@ -4,14 +4,18 @@ import javax.swing.*;
 public class InterfazDeObservador extends JPanel {
     private static final long serialVersionUID = 1L;
 
-    // ===== Variables internas =====
+    //  Variables internas 
     private String idOAA;
     private coordenadas coordOAA;
     private coordenadas coordBlanco;
     private String natBlanco;
     private String tipoAz;
+    private String misionFuego;
 
-    // ===== Métodos de acceso =====
+    // IDs válidos 
+    private static final String[] IDS_VALIDOS = {"juarez", "lopez", "lamas"};
+
+    //  Métodos de acceso 
     public void setID(String id){ idOAA = id; }
     public String getID(){ return idOAA; }
     public void setCoordOAA(coordenadas c){ coordOAA = c; }
@@ -22,41 +26,40 @@ public class InterfazDeObservador extends JPanel {
     public String getNatBlanco(){ return natBlanco; }
     public void setTipoAz(String s){ tipoAz = s; }
     public String getTipoAz(){ return tipoAz; }
+    public void setMisionFuego(String s){ misionFuego = s; }
+    public String getMisionFuego(){ return misionFuego; }
 
-    // ===== GUI =====
+    //  GUI 
     private CardLayout cardLayout;
     private JPanel cards;
 
     private JRadioButton modoRect, modoPolar;
 
-    // Paneles de coordenadas
     private JPanel panelBlancoRect, panelBlancoPolar, panelOaaRect, panelOaaPolar;
 
-    // Campos texto
     private JTextField txtBlancoX, txtBlancoY, txtBlancoCota;
     private JTextField txtBlancoDir, txtBlancoDist, txtBlancoAng;
     private JTextField txtOaaX, txtOaaY, txtOaaCota;
     private JTextField txtOaaDir, txtOaaDist, txtOaaAng;
 
-    // NATURALEZA
     private JComboBox<String> cbMagnitud, cbTipoBlanco, cbActividad, cbProteccion;
 
     private int panelActual = 0;
 
-    // Botones del menú superior
     private JButton[] botonesMenu;
-
-    // Botones de navegación
     private JButton btnAtras, btnSiguiente;
 
     public InterfazDeObservador() {
+        // Pide la ID antes de cargar la interfaz
+        pedirID();
+
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
-        // ===== Menú superior =====
-        JPanel menuSuperior = new JPanel(new GridLayout(1,4));
+        //  Menú superior 
+        JPanel menuSuperior = new JPanel(new GridLayout(1,3));
         menuSuperior.setBackground(Color.DARK_GRAY);
-        String[] secciones = {"LOCALIZACIÓN","NATURALEZA","TIRO A EFECTUAR","CONTROL"};
+        String[] secciones = {"LOCALIZACION","INSTRUCCION DE TIRO","CONTROL"};
 
         botonesMenu = new JButton[secciones.length];
         for (int i = 0; i < secciones.length; i++) {
@@ -72,7 +75,8 @@ public class InterfazDeObservador extends JPanel {
                 panelActual = idx;
                 switch (idx) {
                     case 0 -> cardLayout.show(cards, "LOCALIZACION");
-                    case 1 -> cardLayout.show(cards, "NATURALEZA");
+                    case 1 -> cardLayout.show(cards, "INSTRUCCION");
+                    case 2 -> cardLayout.show(cards, "CONTROL");
                 }
                 actualizarBotonesMenu();
                 actualizarBotonesNavegacion();
@@ -82,7 +86,7 @@ public class InterfazDeObservador extends JPanel {
         }
         add(menuSuperior, BorderLayout.NORTH);
 
-        // ===== Cards =====
+        //  Cards 
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
@@ -91,21 +95,61 @@ public class InterfazDeObservador extends JPanel {
         panelIzq.setBackground(Color.BLACK);
         panelIzq.setLayout(new BoxLayout(panelIzq, BoxLayout.Y_AXIS));
 
-        // Método de coordenadas
-        JPanel panelMetodo = new JPanel(new FlowLayout());
+        // MISION DE FUEGO
+        JPanel panelMision = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelMision.setBackground(Color.BLACK);
+        panelMision.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(Color.GRAY), "MISION DE FUEGO"
+        ));
+        ((javax.swing.border.TitledBorder)panelMision.getBorder()).setTitleColor(Color.WHITE);
+
+        JRadioButton rbReglaje = new JRadioButton("Reglaje");
+        JRadioButton rbEficacia = new JRadioButton("Eficacia");
+
+        ButtonGroup grupoMision = new ButtonGroup();
+        grupoMision.add(rbReglaje);
+        grupoMision.add(rbEficacia);
+
+        // estilos y tamaño igual que coordenadas
+        rbReglaje.setFont(new Font("Arial", Font.BOLD, 20));
+        rbEficacia.setFont(new Font("Arial", Font.BOLD, 20));
+        rbReglaje.setForeground(Color.WHITE);
+        rbEficacia.setForeground(Color.WHITE);
+        rbReglaje.setBackground(Color.BLACK);
+        rbEficacia.setBackground(Color.BLACK);
+
+        rbReglaje.addActionListener(e -> setMisionFuego("Reglaje"));
+        rbEficacia.addActionListener(e -> setMisionFuego("Eficacia"));
+
+        panelMision.add(rbReglaje);
+        panelMision.add(rbEficacia);
+        panelIzq.add(panelMision);
+
+        // Panel Coordenadas con borde separado
+        JPanel panelCoord = new JPanel();
+        panelCoord.setBackground(Color.BLACK);
+        panelCoord.setLayout(new BoxLayout(panelCoord, BoxLayout.Y_AXIS));
+        panelCoord.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(Color.GRAY), "COORDENADAS"
+        ));
+        ((javax.swing.border.TitledBorder)panelCoord.getBorder()).setTitleColor(Color.WHITE);
+
+        JPanel panelMetodo = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelMetodo.setBackground(Color.BLACK);
         modoRect = new JRadioButton("Rectangulares");
         modoPolar = new JRadioButton("Polares");
-        modoRect.setFont(new Font("Arial", Font.BOLD, 16));
-        modoPolar.setFont(new Font("Arial", Font.BOLD, 16));
-        modoRect.setForeground(Color.BLACK);
-        modoPolar.setForeground(Color.BLACK);
+        modoRect.setFont(new Font("Arial", Font.BOLD, 20));
+        modoPolar.setFont(new Font("Arial", Font.BOLD, 20));
+        modoRect.setForeground(Color.WHITE);
+        modoPolar.setForeground(Color.WHITE);
+        modoRect.setBackground(Color.BLACK);
+        modoPolar.setBackground(Color.BLACK);
         ButtonGroup grupoMetodo = new ButtonGroup();
         grupoMetodo.add(modoRect);
         grupoMetodo.add(modoPolar);
         panelMetodo.add(modoRect);
         panelMetodo.add(modoPolar);
-        panelIzq.add(panelMetodo);
+        panelCoord.add(panelMetodo);
 
         // Blanco Rect
         panelBlancoRect = new JPanel(new GridLayout(1,3,10,10));
@@ -150,8 +194,7 @@ public class InterfazDeObservador extends JPanel {
         panelOaaPolar = new JPanel(new GridLayout(1,3,10,10));
         panelOaaPolar.setBackground(Color.BLACK);
         panelOaaPolar.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.GRAY), "POSICION DEL OBSERVADOR"
-        ));
+            BorderFactory.createLineBorder(Color.GRAY), "POSICION DEL OBSERVADOR"));
         ((javax.swing.border.TitledBorder)panelOaaPolar.getBorder()).setTitleColor(Color.WHITE);
 
         txtOaaDir = new JTextField(); estilizarCampo(txtOaaDir, "Dir");
@@ -159,25 +202,27 @@ public class InterfazDeObservador extends JPanel {
         txtOaaAng = new JTextField(); estilizarCampo(txtOaaAng, "Ang");
         panelOaaPolar.add(txtOaaDir); panelOaaPolar.add(txtOaaDist); panelOaaPolar.add(txtOaaAng);
 
-        // Al inicio solo muestro Rect
-        panelIzq.add(panelBlancoRect);
-        panelIzq.add(panelOaaRect);
+        // Por defecto Rectangulares
+        panelCoord.add(panelBlancoRect);
+        panelCoord.add(panelOaaRect);
 
         // Listener radio buttons
         modoRect.addActionListener(e -> {
-            panelIzq.remove(panelBlancoPolar);
-            panelIzq.remove(panelOaaPolar);
-            panelIzq.add(panelBlancoRect, 1);
-            panelIzq.add(panelOaaRect, 2);
-            panelIzq.revalidate(); panelIzq.repaint();
+            panelCoord.remove(panelBlancoPolar);
+            panelCoord.remove(panelOaaPolar);
+            panelCoord.add(panelBlancoRect, 1);
+            panelCoord.add(panelOaaRect, 2);
+            panelCoord.revalidate(); panelCoord.repaint();
         });
         modoPolar.addActionListener(e -> {
-            panelIzq.remove(panelBlancoRect);
-            panelIzq.remove(panelOaaRect);
-            panelIzq.add(panelBlancoPolar, 1);
-            panelIzq.add(panelOaaPolar, 2);
-            panelIzq.revalidate(); panelIzq.repaint();
+            panelCoord.remove(panelBlancoRect);
+            panelCoord.remove(panelOaaRect);
+            panelCoord.add(panelBlancoPolar, 1);
+            panelCoord.add(panelOaaPolar, 2);
+            panelCoord.revalidate(); panelCoord.repaint();
         });
+
+        panelIzq.add(panelCoord);
 
         // Panel mapa derecha
         JPanel panelMapa = new JPanel();
@@ -194,10 +239,10 @@ public class InterfazDeObservador extends JPanel {
         panelLocalizacion.add(split, BorderLayout.CENTER);
         cards.add(panelLocalizacion, "LOCALIZACION");
 
-        // ----- Panel NATURALEZA -----
-        JPanel panelNaturaleza = new JPanel();
-        panelNaturaleza.setBackground(Color.BLACK);
-        panelNaturaleza.setLayout(new BoxLayout(panelNaturaleza, BoxLayout.Y_AXIS));
+        // ----- Panel INSTRUCCION DE TIRO -----
+        JPanel panelInstruccion = new JPanel();
+        panelInstruccion.setBackground(Color.BLACK);
+        panelInstruccion.setLayout(new BoxLayout(panelInstruccion, BoxLayout.Y_AXIS));
 
         cbMagnitud = new JComboBox<>(new String[]{"SECCION","COMPAÑIA","BATALLON"});
         cbTipoBlanco = new JComboBox<>(new String[]{"PERSONAL","VEHICULO","PIEZA"});
@@ -209,12 +254,20 @@ public class InterfazDeObservador extends JPanel {
         estilizarCombo(cbActividad);
         estilizarCombo(cbProteccion);
 
-        panelNaturaleza.add(crearFilaCombo(cbMagnitud));
-        panelNaturaleza.add(crearFilaCombo(cbTipoBlanco));
-        panelNaturaleza.add(crearFilaCombo(cbActividad));
-        panelNaturaleza.add(crearFilaCombo(cbProteccion));
+        panelInstruccion.add(crearFilaCombo(cbMagnitud));
+        panelInstruccion.add(crearFilaCombo(cbTipoBlanco));
+        panelInstruccion.add(crearFilaCombo(cbActividad));
+        panelInstruccion.add(crearFilaCombo(cbProteccion));
 
-        cards.add(panelNaturaleza, "NATURALEZA");
+        cards.add(panelInstruccion, "INSTRUCCION");
+
+        // ----- Panel CONTROL -----
+        JPanel panelControl = new JPanel();
+        panelControl.setBackground(Color.BLACK);
+        JLabel lblCtrl = new JLabel("CONTROL (en construcción)");
+        lblCtrl.setForeground(Color.WHITE);
+        panelControl.add(lblCtrl);
+        cards.add(panelControl, "CONTROL");
 
         add(cards, BorderLayout.CENTER);
 
@@ -226,12 +279,10 @@ public class InterfazDeObservador extends JPanel {
 
         btnSiguiente = new JButton("SIGUIENTE"); btnSiguiente.setForeground(Color.WHITE);
         btnSiguiente.setBackground(Color.green);
-        
         btnSiguiente.addActionListener(e -> avanzarPanel());
 
         panelBotones.add(btnAtras);
         panelBotones.add(btnSiguiente);
-
         add(panelBotones, BorderLayout.SOUTH);
 
         cardLayout.show(cards, "LOCALIZACION");
@@ -239,14 +290,44 @@ public class InterfazDeObservador extends JPanel {
         actualizarBotonesNavegacion();
     }
 
-    // ===== Helpers =====
+    //  Login de ID 
+    private void pedirID() {
+        while (true) {
+            String idIngresado = JOptionPane.showInputDialog(
+                null,
+                "Ingrese su ID de observador:",
+                "Autenticación requerida",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (idIngresado == null) {
+                System.exit(0); // Si cancela, cerrar programa
+            }
+
+            for (String valido : IDS_VALIDOS) {
+                if (idIngresado.equals(valido)) {
+                    setID(idIngresado);
+                    JOptionPane.showMessageDialog(null,
+                        "Acceso concedido. Bienvenido " + idIngresado,
+                        "Correcto",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                    return;
+                }
+            }
+
+            JOptionPane.showMessageDialog(null,
+                "ID incorrecto. Intente de nuevo.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    //  Helpers
     private void actualizarBotonesMenu() {
         for (int i = 0; i < botonesMenu.length; i++) {
-            if (i == panelActual) {
-                botonesMenu[i].setBackground(Color.BLUE);
-            } else {
-                botonesMenu[i].setBackground(Color.GRAY);
-            }
+            botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
     }
 
@@ -257,9 +338,10 @@ public class InterfazDeObservador extends JPanel {
     private void avanzarPanel() {
         if(panelActual == 0){
             panelActual++;
-            cardLayout.show(cards, "NATURALEZA");
+            cardLayout.show(cards, "INSTRUCCION");
         } else if(panelActual == 1){
             panelActual++;
+            cardLayout.show(cards, "CONTROL");
         }
         actualizarBotonesMenu();
         actualizarBotonesNavegacion();
@@ -269,14 +351,14 @@ public class InterfazDeObservador extends JPanel {
         if(panelActual > 0){
             panelActual--;
             if(panelActual == 0) cardLayout.show(cards, "LOCALIZACION");
-            if(panelActual == 1) cardLayout.show(cards, "NATURALEZA");
+            if(panelActual == 1) cardLayout.show(cards, "INSTRUCCION");
         }
         actualizarBotonesMenu();
         actualizarBotonesNavegacion();
     }
 
     private void addPlaceholder(JTextField field, String placeholder) {
-        field.setForeground(Color.BLACK); // ahora negro en vez de gris
+        field.setForeground(Color.BLACK);
         field.setText(placeholder);
         field.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent e) {
@@ -287,7 +369,7 @@ public class InterfazDeObservador extends JPanel {
             }
             public void focusLost(java.awt.event.FocusEvent e) {
                 if(field.getText().isEmpty()) {
-                    field.setForeground(Color.BLACK); // vuelve negro si está vacío
+                    field.setForeground(Color.BLACK);
                     field.setText(placeholder);
                 }
             }
@@ -296,7 +378,7 @@ public class InterfazDeObservador extends JPanel {
 
     private void estilizarCampo(JTextField field, String placeholder) {
         addPlaceholder(field, placeholder);
-        field.setFont(new Font("Arial", Font.PLAIN, 12));
+        field.setFont(new Font("Arial", Font.PLAIN, 18));
         field.setPreferredSize(new Dimension(80, 25));
         field.setMaximumSize(new Dimension(100, 25));
         field.setBackground(Color.DARK_GRAY);
