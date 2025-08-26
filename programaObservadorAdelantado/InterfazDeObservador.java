@@ -1,8 +1,5 @@
 import java.awt.*;
 import javax.swing.*;
-import programaObservadorAdelantado.cardoardsInterfaz.Mensajeria;
-import programaObservadorAdelantado.cardoardsInterfaz.PedidoDeFuego;    
-import programaObservadorAdelantado.cardoardsInterfaz.SituacionTactica;
 
 public class InterfazDeObservador extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -103,16 +100,5 @@ public class InterfazDeObservador extends JPanel {
         for (int i = 0; i < botonesMenu.length; i++) {
             botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
-    }
-
-    // MAIN para probar
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Observador Adelantado");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600);
-            frame.setContentPane(new InterfazDeObservador());
-            frame.setVisible(true);
-        });
     }
 }

@@ -4,10 +4,10 @@ private double direccion;
 private double distancia;
 private double angVertical;
 
-public coordPolares(){
-    direccion = 0;
-    distancia = 0;
-    angVertical = 0;
+public coordPolares(double direccion, double distancia, double angVertical){
+    this.direccion = direccion;
+    this.distancia = distancia;
+    this.angVertical = angVertical;
 }
 
 public double getDireccion(){
@@ -22,17 +22,6 @@ public double getAnguloVertical(){
     return angVertical;
  }
 
-public void setDireccion(double i){
- direccion = i;
-}
-
-public void setDistancia(double i){
- distancia = i;
-}
-
-public void setAnguloVertical(double i){
- angVertical = i;
-}
 
 @Override
 public double distanciaA(coordenadas otro) {

@@ -4,10 +4,11 @@ private double coordX;
 private double coordY;
 private double cotaXY;
 
-public coordRectangulares(){
-    coordX = 0;
-    coordY = 0;
-    cotaXY = 0;
+public coordRectangulares(double x, double y, double cota){
+    this.coordX = x;
+    this.coordY = y;
+    this.cotaXY = cota;
+    
 }
 public double getX(){
     return coordX;
@@ -19,18 +20,6 @@ public double getY(){
 public double getCota(){
     return cotaXY;
  }
-
-public void setX(double i){
- coordX = i;
-}
-
-public void setY(double i){
- coordY = i;
-}
-
-public void setCota(double i){
- cotaXY = i;
-}
 
 @Override
 public double distanciaA(coordenadas otra) {
