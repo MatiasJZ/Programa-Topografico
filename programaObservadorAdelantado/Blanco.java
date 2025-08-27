@@ -1,4 +1,4 @@
-public class Blanco {
+public class Blanco extends tipoDeBlanco{
 
     private String nombre;
     private coordenadas coordenadas;
