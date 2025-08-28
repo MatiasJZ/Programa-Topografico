@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.io.File;
+
 import javax.swing.*;
 
 public class InterfazDeObservador extends JPanel {
@@ -56,7 +58,8 @@ public class InterfazDeObservador extends JPanel {
         cards = new JPanel(cardLayout);
 
         // Paneles con clases cardboard
-        cards.add(new SituacionTactica(), "SITUACION");
+        File mbtilesFile = new File("");
+        cards.add(new SituacionTactica(mbtilesFile), "SITUACION");
         cards.add(new PedidoDeFuego(), "PEDIDO");
         cards.add(new Mensajeria(), "MENSAJERIA");
 // 

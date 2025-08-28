@@ -29,20 +29,18 @@ public double distanciaA(coordenadas otra) {
 
     double x2, y2, z2;
 
-    switch (otra) {
-        case coordRectangulares o -> {
-            // Si la otra también es rectangular
-            x2 = o.getX();
-            y2 = o.getY();
-            z2 = o.getCota();
-        }
-        case coordPolares o -> {
-            // Si la otra es polar, la pasamos a rectangulares
-            x2 = o.getDistancia() * Math.cos(Math.toRadians(o.getAnguloVertical())) * Math.cos(Math.toRadians(o.getDireccion()));
-            y2 = o.getDistancia() * Math.cos(Math.toRadians(o.getAnguloVertical())) * Math.sin(Math.toRadians(o.getDireccion()));
-            z2 = o.getDistancia() * Math.sin(Math.toRadians(o.getAnguloVertical()));
-        }
-        default -> throw new IllegalArgumentException("Tipo de coordenada no soportado");
+    if (otra instanceof coordRectangulares) {
+        coordRectangulares o = (coordRectangulares) otra;
+        x2 = o.getX();
+        y2 = o.getY();
+        z2 = o.getCota();
+    } else if (otra instanceof coordPolares) {
+        coordPolares o = (coordPolares) otra;
+        x2 = o.getDistancia() * Math.cos(Math.toRadians(o.getAnguloVertical())) * Math.cos(Math.toRadians(o.getDireccion()));
+        y2 = o.getDistancia() * Math.cos(Math.toRadians(o.getAnguloVertical())) * Math.sin(Math.toRadians(o.getDireccion()));
+        z2 = o.getDistancia() * Math.sin(Math.toRadians(o.getAnguloVertical()));
+    } else {
+        throw new IllegalArgumentException("Tipo de coordenada no soportado");
     }
 
     // Distancia 3D
@@ -50,7 +48,7 @@ public double distanciaA(coordenadas otra) {
     double dy = y1 - y2;
     double dz = z1 - z2;
 
-    return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 }
