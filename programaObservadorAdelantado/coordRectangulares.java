@@ -4,7 +4,7 @@ private double coordX;
 private double coordY;
 private double cotaXY;
 
-public coordRectangulares(double x, double y, double cota){
+public coordRectangulares(double x, double y, double cota) {
     this.coordX = x;
     this.coordY = y;
     this.cotaXY = cota;

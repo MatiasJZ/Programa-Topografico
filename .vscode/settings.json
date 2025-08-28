@@ -1,6 +1,16 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\54293\\Desktop\\jmapviewer-2.24.jar"
+    "java.project.referencedLibraries": {
+        "include": [
+            "c:\\Users\\54293\\Desktop\\JMapViewer-2.9\\JMapViewer.jar",
+            "c:\\Users\\54293\\Desktop\\JMapViewer-2.9\\JMapViewer_src.jar"
+        ],
+        "exclude": [
+            "programaObservadorAdelantado/lib/jmapviewer-2.24.jar"
+        ]
+    },
+    "java.project.sourcePaths": [
+        "programaCDFBateria",
+        "programaJefeDePieza",
+        "programaObservadorAdelantado"
     ]
 }

@@ -1,9 +1,9 @@
 import java.awt.*;
 import java.util.ArrayList;
 import javax.swing.*;
-/*import org.openstreetmap.gui.jmapviewer.JMapViewer;
+import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
-import org.openstreetmap.gui.jmapviewer.MapMarkerDot;*/
+import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 
 public class SituacionTactica extends JPanel {
 
