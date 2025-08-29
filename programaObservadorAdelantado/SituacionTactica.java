@@ -7,6 +7,7 @@ import javax.swing.*;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
+import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
 
 public class SituacionTactica extends JPanel {
 
@@ -15,27 +16,28 @@ public class SituacionTactica extends JPanel {
     protected ArrayList<Blanco> listaDeBlancos;
     private JMapViewer mapa;
 
-    /**
-     * Constructor principal
-     * @param mbtilesFile Archivo MBTiles local
-     */
     public SituacionTactica(File mbtilesFile) {
         setSize(900, 600);
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
-        //  LISTA DE BLANCOS
+        // LISTA DE BLANCOS
         listaDeBlancos = new ArrayList<>();
         modeloLista = new DefaultListModel<>();
         listaUI = new JList<>(modeloLista);
-
-        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
-
-        listaUI.setFont(new Font("Arial", Font.BOLD, 25));
+        listaUI.setFont(new Font("Arial", Font.BOLD, 20));
         listaUI.setBackground(Color.BLACK);
-        listaUI.setCellRenderer(renderer);
         listaUI.setForeground(Color.GREEN);
+        listaUI.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1)); // marco delimitador
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollLista = new JScrollPane(listaUI);
         scrollLista.setPreferredSize(new Dimension(250, 0));
@@ -46,22 +48,39 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.setBackground(Color.BLACK);
         panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 
-        JPanel panelBotones = new JPanel();
+        JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5)); // 2 filas x 2 columnas
         panelBotones.setBackground(Color.BLACK);
         JButton btnAgregar = new JButton("AGREGAR");
+        JButton btnEditar = new JButton("EDITAR");
         JButton btnEliminar = new JButton("ELIMINAR");
-        btnAgregar.setBackground(Color.green);
-        btnAgregar.setForeground(Color.WHITE);
-        btnEliminar.setBackground(Color.orange);
-        btnEliminar.setForeground(Color.WHITE);
+        JButton btnActualizar = new JButton("ACTUALIZAR");
+        btnAgregar.setBackground(Color.green); btnAgregar.setForeground(Color.WHITE);
+        btnEditar.setBackground(Color.blue); btnEditar.setForeground(Color.WHITE);
+        btnEliminar.setBackground(Color.orange); btnEliminar.setForeground(Color.WHITE);
+        btnActualizar.setBackground(Color.red); btnActualizar.setForeground(Color.WHITE);
+
         panelBotones.add(btnAgregar);
+        panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
+        panelBotones.add(btnActualizar);
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // Panel de mapa
+        /*JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem("Opción 1"));
+        menu.add(new JMenuItem("Opción 2"));*/
+        
         mapa = new JMapViewer();
         mapa.setZoomControlsVisible(true);
+        mapa.setAutoscrolls(true);
+        //mapa.setComponentPopupMenu(menu); opcion de menu al clickear con derecho en el mapa desabilitada por ahora
         mapa.setBackground(Color.DARK_GRAY);
+        // Coordenadas de Buenos Aires
+        Coordinate argentina = new Coordinate(-34.6, -58.4);
+        int zoomInicial = 5;
+        // Centrar mapa
+        mapa.setDisplayPosition(argentina, zoomInicial);
+
 
         try {
             MBTilesTileSource tileSource = new MBTilesTileSource(mbtilesFile);
@@ -76,14 +95,50 @@ public class SituacionTactica extends JPanel {
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
 
-        // Botones
-        btnAgregar.addActionListener(e -> mostrarDialogoAgregar());
+        // ======= BOTONES =======
+        btnAgregar.addActionListener(e -> mostrarDialogoAgregar(null, null));
+        btnEditar.addActionListener(e -> {
+            int index = listaUI.getSelectedIndex();
+            if (index >= 0) {
+                mostrarDialogoAgregar(listaDeBlancos.get(index), null);
+            } else {
+                JOptionPane.showMessageDialog(this, "Seleccione un blanco para editar.");
+            }
+        });
         btnEliminar.addActionListener(e -> {
             int index = listaUI.getSelectedIndex();
             if (index >= 0) {
                 listaDeBlancos.remove(index);
                 modeloLista.remove(index);
                 actualizarBlancosEnMapa();
+            }
+        });
+        btnActualizar.addActionListener(e -> {
+            ;
+        });
+
+        // Editar blanco al hacer doble click en la lista
+        listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int index = listaUI.locationToIndex(evt.getPoint());
+                    if (index >= 0) {
+                        mostrarDialogoAgregar(listaDeBlancos.get(index), null);
+                    }
+                }
+            }
+        });
+
+        // Agregar blanco al clickear en el mapa
+        mapa.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+                    Point punto = e.getPoint();
+                    ICoordinate icoord = mapa.getPosition(punto);
+                    Coordinate coord = new Coordinate(icoord.getLat(), icoord.getLon());
+                    mostrarDialogoAgregar(null, coord);
+                }
             }
         });
     }
@@ -93,34 +148,32 @@ public class SituacionTactica extends JPanel {
         mapa.removeAllMapMarkers();
         for (Blanco b : listaDeBlancos) {
             Coordinate coord = convertirACoordenadaLatLon(b.getCoordenadas());
-            mapa.addMapMarker(new MapMarkerDot(b.getNombre(), coord));
+            MapMarkerDot marcador = new MapMarkerDot(b.getNombre(), coord);
+            marcador.setBackColor(Color.red); // cambiar color del marcador, se podran poner imagenes tambien
+            mapa.addMapMarker(marcador);
         }
     }
 
     // ================== CONVERTIR COORDENADAS A LAT/LON ==================
     private Coordinate convertirACoordenadaLatLon(coordenadas c) {
         double lat = 0, lon = 0;
-
         if (c instanceof coordRectangulares) {
             coordRectangulares r = (coordRectangulares) c;
-            lat = r.getY(); // asumir Y = latitud
-            lon = r.getX(); // asumir X = longitud
+            lat = r.getY(); lon = r.getX();
         } else if (c instanceof coordPolares) {
             coordPolares p = (coordPolares) c;
-            // convertir polar -> rectangular -> lat/lon aproximada
             double x = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) * Math.cos(Math.toRadians(p.getDireccion()));
             double y = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) * Math.sin(Math.toRadians(p.getDireccion()));
-            lat = y;
-            lon = x;
+            lat = y; lon = x;
         }
         return new Coordinate(lat, lon);
     }
 
-    // ================== DIÁLOGO PARA AGREGAR ==================
-    private void mostrarDialogoAgregar() {
+    // ================== DIÁLOGO PARA AGREGAR/EDITAR ==================
+    private void mostrarDialogoAgregar(Blanco blancoEditar, Coordinate coordInicial) {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "Nuevo Blanco", true);
-        dialog.setSize(450, 350);
+        JDialog dialog = new JDialog(parentFrame, (blancoEditar == null ? "Nuevo Blanco" : "Editar Blanco"), true);
+        dialog.setSize(480, 380);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new GridBagLayout());
         dialog.setBackground(Color.BLACK);
@@ -128,9 +181,9 @@ public class SituacionTactica extends JPanel {
         gbc.insets = new Insets(5,5,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextField txtNombre = new JTextField();
-        JTextField txtNaturaleza = new JTextField();
-        JTextField txtFecha = new JTextField(java.time.LocalDate.now().toString());
+        JTextField txtNombre = new JTextField(blancoEditar != null ? blancoEditar.getNombre() : (coordInicial != null ? "Blanco en mapa" : ""));
+        JTextField txtNaturaleza = new JTextField(blancoEditar != null ? blancoEditar.getNaturaleza() : "");
+        JTextField txtFecha = new JTextField(blancoEditar != null ? blancoEditar.getFechaDeActualizacion() : java.time.LocalDate.now().toString());
 
         gbc.gridx=0; gbc.gridy=0; dialog.add(new JLabel("Nombre:"), gbc);
         gbc.gridx=1; dialog.add(txtNombre, gbc);
@@ -143,43 +196,44 @@ public class SituacionTactica extends JPanel {
         JRadioButton rbPol = new JRadioButton("Polares");
         ButtonGroup group = new ButtonGroup();
         group.add(rbRect); group.add(rbPol);
-        rbRect.setSelected(true);
+        if (blancoEditar != null && blancoEditar.getCoordenadas() instanceof coordPolares) rbPol.setSelected(true);
+        else rbRect.setSelected(true);
+
         gbc.gridx=0; gbc.gridy=3; dialog.add(new JLabel("Tipo de coordenadas:"), gbc);
         JPanel radios = new JPanel(new FlowLayout(FlowLayout.LEFT));
         radios.add(rbRect); radios.add(rbPol);
         gbc.gridx=1; dialog.add(radios, gbc);
 
-        JTextField campo1 = new JTextField("X");
-        JTextField campo2 = new JTextField("Y");
-        JTextField campo3 = new JTextField("Cota");
+        JTextField campo1 = new JTextField();
+        JTextField campo2 = new JTextField();
+        JTextField campo3 = new JTextField();
 
-        java.util.function.BiConsumer<JTextField, String> setPlaceholder = (tf, ph) -> {
-            tf.setText(ph);
-            tf.setForeground(Color.GRAY);
-            tf.addFocusListener(new java.awt.event.FocusAdapter() {
-                @Override
-                public void focusGained(java.awt.event.FocusEvent e) {
-                    if (tf.getText().equals(ph)) { tf.setText(""); tf.setForeground(Color.BLACK); }
-                }
-                @Override
-                public void focusLost(java.awt.event.FocusEvent e) {
-                    if (tf.getText().isEmpty()) { tf.setText(ph); tf.setForeground(Color.GRAY); }
-                }
-            });
-        };
-        setPlaceholder.accept(campo1,"X");
-        setPlaceholder.accept(campo2,"Y");
-        setPlaceholder.accept(campo3,"Cota");
+        if (blancoEditar != null) {
+            coordenadas c = blancoEditar.getCoordenadas();
+            if (c instanceof coordRectangulares) {
+                coordRectangulares r = (coordRectangulares) c;
+                campo1.setText(String.valueOf(r.getX()));
+                campo2.setText(String.valueOf(r.getY()));
+                campo3.setText(String.valueOf(r.getCota()));
+            } else if (c instanceof coordPolares) {
+                coordPolares p = (coordPolares) c;
+                campo1.setText(String.valueOf(p.getDireccion()));
+                campo2.setText(String.valueOf(p.getDistancia()));
+                campo3.setText(String.valueOf(p.getAnguloVertical()));
+            }
+        } else if (coordInicial != null) {
+            campo1.setText(String.valueOf(coordInicial.getLon()));
+            campo2.setText(String.valueOf(coordInicial.getLat()));
+            campo3.setText(String.valueOf(0));
+            rbRect.setSelected(true);
+        }
 
-        gbc.gridx=0; gbc.gridy=4; dialog.add(new JLabel("Coord 1:"), gbc);
+        gbc.gridx=0; gbc.gridy=4; dialog.add(new JLabel("X:"), gbc);
         gbc.gridx=1; dialog.add(campo1, gbc);
-        gbc.gridx=0; gbc.gridy=5; dialog.add(new JLabel("Coord 2:"), gbc);
+        gbc.gridx=0; gbc.gridy=5; dialog.add(new JLabel("Y:"), gbc);
         gbc.gridx=1; dialog.add(campo2, gbc);
-        gbc.gridx=0; gbc.gridy=6; dialog.add(new JLabel("Coord 3:"), gbc);
+        gbc.gridx=0; gbc.gridy=6; dialog.add(new JLabel("COTA:"), gbc);
         gbc.gridx=1; dialog.add(campo3, gbc);
-
-        rbRect.addActionListener(ev -> { setPlaceholder.accept(campo1,"X"); setPlaceholder.accept(campo2,"Y"); setPlaceholder.accept(campo3,"Cota"); });
-        rbPol.addActionListener(ev -> { setPlaceholder.accept(campo1,"Dirección"); setPlaceholder.accept(campo2,"Distancia"); setPlaceholder.accept(campo3,"Ángulo vertical"); });
 
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -192,7 +246,7 @@ public class SituacionTactica extends JPanel {
                 String naturaleza = txtNaturaleza.getText().trim();
                 String fecha = txtFecha.getText().trim();
                 if(nombre.isEmpty()||naturaleza.isEmpty()||fecha.isEmpty()){
-                    JOptionPane.showMessageDialog(dialog,"Complete todos los campos generales","Error",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dialog,"Complete todos los campos","Error",JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 double v1 = Double.parseDouble(campo1.getText().trim());
@@ -200,9 +254,20 @@ public class SituacionTactica extends JPanel {
                 double v3 = Double.parseDouble(campo3.getText().trim());
 
                 coordenadas coords = rbRect.isSelected()? new coordRectangulares(v1,v2,v3) : new coordPolares(v1,v2,v3);
-                Blanco nuevo = new Blanco(nombre,coords,naturaleza,fecha);
-                listaDeBlancos.add(nuevo);
-                modeloLista.addElement(nuevo.getNombre());
+
+                if (blancoEditar == null) {
+                    Blanco nuevo = new Blanco(nombre,coords,naturaleza,fecha);
+                    listaDeBlancos.add(nuevo);
+                    modeloLista.addElement(nuevo.getNombre());
+                } else {
+                    blancoEditar.setNombre(nombre);
+                    blancoEditar.setNaturaleza(naturaleza);
+                    blancoEditar.setFecha(fecha);
+                    blancoEditar.setCoordenadas(coords);
+                    int idx = listaDeBlancos.indexOf(blancoEditar);
+                    if (idx >= 0) modeloLista.set(idx, nombre);
+                }
+
                 actualizarBlancosEnMapa();
                 dialog.dispose();
             } catch (NumberFormatException ex) {

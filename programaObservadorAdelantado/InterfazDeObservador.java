@@ -9,7 +9,7 @@ public class InterfazDeObservador extends JPanel {
     private String idOAA;
 
     // IDs válidos 
-    private static final String[] IDS_VALIDOS = {"juarez", "lopez", "lamas"};
+    private static final String[] IDS_VALIDOS = {"Mjuarez"};
 
     // GUI
     private CardLayout cardLayout;

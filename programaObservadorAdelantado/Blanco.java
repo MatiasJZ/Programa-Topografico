@@ -32,4 +32,20 @@ public class Blanco extends tipoDeBlanco{
                 ", fechaDeActualizacion='" + fechaDeActualizacion + '\'' +
                 '}';
     }
+	public void setCoordenadas(coordenadas coords) {
+		coordenadas = coords;
+		
+	}
+	public void setFecha(String fecha) {
+		fechaDeActualizacion = fecha;
+		
+	}
+	public void setNombre(String nombre2) {
+		nombre = nombre2;
+		
+	}
+	public void setNaturaleza(String naturaleza2) {
+		naturaleza = naturaleza2;
+	}
+
 }
