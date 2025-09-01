@@ -17,20 +17,14 @@ import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 // Panel principal para manejar la situación táctica en un mapa
 public class SituacionTactica extends JPanel {
 
-    // Modelo de lista y componente JList para mostrar los blancos
     private DefaultListModel<Blanco> modeloLista;
     private JList<Blanco> listaUI;
-    // Lista de objetos Blanco
     protected ArrayList<Blanco> listaDeBlancos;
-    // Componente de mapa de OpenStreetMap
     private JMapViewer mapa;
-    // ComboBox para elegir fuente de mapa
     private JComboBox<String> comboFuentes;
 
-    // Blanco de referencia para calcular coordenadas polares relativas
     private Blanco blancoReferencia = null;
 
-    // Constructor principal, recibe opcionalmente un archivo MBTiles para el mapa
     public SituacionTactica(File mbtilesFile) {
         setSize(900, 600);
         setLayout(new BorderLayout());
@@ -43,7 +37,6 @@ public class SituacionTactica extends JPanel {
         listaUI.setFont(new Font("Arial", Font.BOLD, 20));
         listaUI.setBackground(Color.BLACK);
 
-        // Personalización del renderer de la lista para colorear aliados/enemigos
         listaUI.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -53,7 +46,6 @@ public class SituacionTactica extends JPanel {
                 label.setHorizontalAlignment(SwingConstants.CENTER);
                 if (value instanceof Blanco) {
                     Blanco b = (Blanco) value;
-                    // Color azul para aliados, rojo para enemigos
                     label.setForeground(b.isAliado() ? new Color(100, 150, 255) : new Color(255, 100, 100));
                 }
                 return label;
@@ -69,7 +61,7 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.setBackground(Color.BLACK);
         panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 
-        // ===== BOTONES DE CONTROL =====
+        // ===== BOTONES =====
         JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         panelBotones.setBackground(Color.BLACK);
         JButton btnAgregar = new JButton("AGREGAR");
@@ -77,7 +69,6 @@ public class SituacionTactica extends JPanel {
         JButton btnEliminar = new JButton("ELIMINAR");
         JButton btnActualizar = new JButton("ACTUALIZAR");
 
-        // Colores de botones para diferenciar acciones
         btnAgregar.setBackground(Color.green); btnAgregar.setForeground(Color.WHITE);
         btnEditar.setBackground(Color.blue); btnEditar.setForeground(Color.WHITE);
         btnEliminar.setBackground(Color.orange); btnEliminar.setForeground(Color.WHITE);
@@ -93,7 +84,6 @@ public class SituacionTactica extends JPanel {
         mapa.setAutoscrolls(true);
         mapa.setBackground(Color.DARK_GRAY);
 
-        // Selector de fuente de mapa
         comboFuentes = new JComboBox<>(new String[]{"Satélite","Político"});
         comboFuentes.setSelectedIndex(0);
         JPanel panelArriba = new JPanel();
@@ -101,13 +91,11 @@ public class SituacionTactica extends JPanel {
         panelArriba.add(comboFuentes);
         panelIzquierdo.add(panelArriba, BorderLayout.NORTH);
 
-        // Posición inicial centrada en Argentina
         Coordinate argentina = new Coordinate(-34.6, -58.4);
         int zoomInicial = 5;
         mapa.setTileSource(new SatelliteSource());
         mapa.setDisplayPosition(argentina, zoomInicial);
 
-        // Si se pasa un archivo MBTiles, se utiliza como fuente del mapa
         if (mbtilesFile != null) {
             try {
                 MBTilesTileSource tileSource = new MBTilesTileSource(mbtilesFile);
@@ -118,13 +106,12 @@ public class SituacionTactica extends JPanel {
             }
         }
 
-        // SplitPane para separar lista de blancos y mapa
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, mapa);
         splitPane.setDividerLocation(250);
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
 
-        // ===== ACCIONES DE LOS BOTONES =====
+        // ===== ACCIONES =====
         btnAgregar.addActionListener(e -> mostrarDialogoAgregar(null,null));
         btnEditar.addActionListener(e -> {
             int idx = listaUI.getSelectedIndex();
@@ -141,7 +128,6 @@ public class SituacionTactica extends JPanel {
         });
         btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
 
-        // Doble click en la lista abre diálogo de edición
         listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt){
                 if(evt.getClickCount()==2){
@@ -151,7 +137,6 @@ public class SituacionTactica extends JPanel {
             }
         });
 
-        // Click en el mapa para agregar nuevo blanco
         mapa.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e){
@@ -164,7 +149,6 @@ public class SituacionTactica extends JPanel {
             }
         });
 
-        // Cambiar fuente de mapa sin perder la posición actual
         comboFuentes.addActionListener(ev -> {
             Coordinate centro = (Coordinate) mapa.getPosition(mapa.getWidth()/2, mapa.getHeight()/2);
             int zoom = mapa.getZoom();
@@ -174,7 +158,6 @@ public class SituacionTactica extends JPanel {
         });
     }
 
-    // Actualiza todos los marcadores en el mapa según la lista de blancos
     private void actualizarBlancosEnMapa(){
         mapa.removeAllMapMarkers();
         for(Blanco b: listaDeBlancos){
@@ -186,7 +169,6 @@ public class SituacionTactica extends JPanel {
         listaUI.repaint();
     }
 
-    // Convierte coordenadas internas a lat/lon para el mapa
     private Coordinate convertirACoordenadaLatLon(coordenadas c){
         double lat=0, lon=0;
         if(c instanceof coordRectangulares){
@@ -194,7 +176,6 @@ public class SituacionTactica extends JPanel {
             lat = r.getY(); lon = r.getX();
         } else if(c instanceof coordPolares){
             coordPolares p = (coordPolares)c;
-            // Dirección medida desde el norte absoluto
             double x = p.getDistancia()*Math.cos(Math.toRadians(p.getAnguloVertical()))*Math.sin(Math.toRadians(p.getDireccion()));
             double y = p.getDistancia()*Math.cos(Math.toRadians(p.getAnguloVertical()))*Math.cos(Math.toRadians(p.getDireccion()));
             lon = x; lat = y;
@@ -202,53 +183,82 @@ public class SituacionTactica extends JPanel {
         return new Coordinate(lat, lon);
     }
 
-    // Diálogo para agregar o editar un blanco
     private void mostrarDialogoAgregar(Blanco blancoEditar, Coordinate coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame,(blancoEditar==null?"Nuevo Blanco":"Editar Blanco"),true);
-        dialog.setSize(520,460);
+        JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
+        dialog.setSize(620,360);
         dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new GridBagLayout());
-        dialog.setBackground(Color.BLACK);
+
+        // Panel principal con fondo gris oscuro
+        JPanel panelDialog = new JPanel(new GridBagLayout());
+        panelDialog.setBackground(new Color(50, 50, 50));
+        dialog.setContentPane(panelDialog);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5,5,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Campos de texto y placeholders
+        // Campos de texto
         JTextField txtNombre = new JTextField();
         JTextField txtNaturaleza = new JTextField();
         addPlaceholder(txtNombre, blancoEditar!=null?blancoEditar.getNombre():"Nombre del Blanco");
         addPlaceholder(txtNaturaleza, blancoEditar!=null?blancoEditar.getNaturaleza():"Naturaleza");
 
+        txtNombre.setBackground(new Color(70,70,70));
+        txtNombre.setForeground(Color.WHITE);
+        txtNaturaleza.setBackground(new Color(70,70,70));
+        txtNaturaleza.setForeground(Color.WHITE);
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         JTextField txtFecha = new JTextField(blancoEditar!=null?blancoEditar.getFechaDeActualizacion():dtf.format(LocalDateTime.now()));
+        txtFecha.setBackground(new Color(70,70,70));
+        txtFecha.setForeground(Color.WHITE);
 
-        gbc.gridx=0; gbc.gridy=0; dialog.add(new JLabel("Nombre:"), gbc);
-        gbc.gridx=1; dialog.add(txtNombre, gbc);
-        gbc.gridx=0; gbc.gridy=1; dialog.add(new JLabel("Naturaleza:"), gbc);
-        gbc.gridx=1; dialog.add(txtNaturaleza, gbc);
-        gbc.gridx=0; gbc.gridy=2; dialog.add(new JLabel("Fecha:"), gbc);
-        gbc.gridx=1; dialog.add(txtFecha, gbc);
+        // Labels con color blanco
+        JLabel lblNombre = new JLabel("Nombre:");
+        JLabel lblNaturaleza = new JLabel("Naturaleza:");
+        JLabel lblFecha = new JLabel("Fecha:");
+        lblNombre.setForeground(Color.WHITE);
+        lblNaturaleza.setForeground(Color.WHITE);
+        lblFecha.setForeground(Color.WHITE);
 
-        // Radio buttons para elegir tipo de coordenadas
-        JRadioButton rbRect = new JRadioButton("Rectangulares");
-        JRadioButton rbPol = new JRadioButton("Polares");
+        gbc.gridx=0; gbc.gridy=0; panelDialog.add(lblNombre, gbc);
+        gbc.gridx=1; panelDialog.add(txtNombre, gbc);
+        gbc.gridx=0; gbc.gridy=1; panelDialog.add(lblNaturaleza, gbc);
+        gbc.gridx=1; panelDialog.add(txtNaturaleza, gbc);
+        gbc.gridx=0; gbc.gridy=2; panelDialog.add(lblFecha, gbc);
+        gbc.gridx=1; panelDialog.add(txtFecha, gbc);
+
+        // Radio buttons
+        JRadioButton rbRect = new JRadioButton("Rectangulares (Lat/Lon)");
+        JRadioButton rbPol = new JRadioButton("Marcar punto desde esta posición (polares)");
         ButtonGroup group = new ButtonGroup();
         group.add(rbRect); group.add(rbPol);
         if(blancoEditar!=null && blancoEditar.getCoordenadas() instanceof coordPolares) rbPol.setSelected(true);
         else rbRect.setSelected(true);
 
-        gbc.gridx=0; gbc.gridy=3; dialog.add(new JLabel("Tipo de coordenadas:"), gbc);
-        JPanel radios = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        radios.add(rbRect); radios.add(rbPol);
-        gbc.gridx=1; dialog.add(radios, gbc);
+        rbRect.setBackground(new Color(50,50,50));
+        rbRect.setForeground(Color.WHITE);
+        rbPol.setBackground(new Color(50,50,50));
+        rbPol.setForeground(Color.WHITE);
 
-        // Campos para coordenadas (x, y, cota / dirección, distancia, ángulo vertical)
+        JLabel lblTipoCoord = new JLabel("Tipo de coordenadas:");
+        lblTipoCoord.setForeground(Color.WHITE);
+        gbc.gridx=0; gbc.gridy=3; panelDialog.add(lblTipoCoord, gbc);
+        JPanel radios = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        radios.setBackground(new Color(50,50,50));
+        radios.add(rbRect); radios.add(rbPol);
+        gbc.gridx=1; panelDialog.add(radios, gbc);
+
+        // Campos coordenadas
         JTextField campo1 = new JTextField();
         JTextField campo2 = new JTextField();
         JTextField campo3 = new JTextField();
+        campo1.setBackground(new Color(70,70,70)); campo1.setForeground(Color.WHITE);
+        campo2.setBackground(new Color(70,70,70)); campo2.setForeground(Color.WHITE);
+        campo3.setBackground(new Color(70,70,70)); campo3.setForeground(Color.WHITE);
 
-        // Si se edita un blanco existente, rellenar los campos
+        // Rellenar según blanco existente
         if(blancoEditar!=null){
             coordenadas c = blancoEditar.getCoordenadas();
             if(c instanceof coordRectangulares){
@@ -256,6 +266,11 @@ public class SituacionTactica extends JPanel {
                 campo1.setText(String.valueOf(r.getX()));
                 campo2.setText(String.valueOf(r.getY()));
                 campo3.setText(String.valueOf(r.getCota()));
+            } else if(c instanceof coordPolares){
+                coordPolares p = (coordPolares)c;
+                campo1.setText(String.valueOf(p.getDireccion()));
+                campo2.setText(String.valueOf(p.getDistancia()));
+                campo3.setText(String.valueOf(p.getAnguloVertical()));
             }
         } else if(coordInicial!=null && rbRect.isSelected()){
             campo1.setText(String.valueOf(coordInicial.getLon()));
@@ -263,14 +278,17 @@ public class SituacionTactica extends JPanel {
             campo3.setText("0");
         }
 
-        gbc.gridx=0; gbc.gridy=4; dialog.add(new JLabel("X / Dirección:"), gbc);
-        gbc.gridx=1; dialog.add(campo1, gbc);
-        gbc.gridx=0; gbc.gridy=5; dialog.add(new JLabel("Y / Distancia:"), gbc);
-        gbc.gridx=1; dialog.add(campo2, gbc);
-        gbc.gridx=0; gbc.gridy=6; dialog.add(new JLabel("COTA / Ángulo Vertical:"), gbc);
-        gbc.gridx=1; dialog.add(campo3, gbc);
+        JLabel lblCampo1 = new JLabel("X / Dirección (° / Lat)"); lblCampo1.setForeground(Color.WHITE);
+        JLabel lblCampo2 = new JLabel("Y / Distancia (° / Lon)"); lblCampo2.setForeground(Color.WHITE);
+        JLabel lblCampo3 = new JLabel("COTA / Ángulo Vertical (°)"); lblCampo3.setForeground(Color.WHITE);
 
-        // Cambia comportamiento al elegir coordenadas polares o rectangulares
+        gbc.gridx=0; gbc.gridy=4; panelDialog.add(lblCampo1, gbc);
+        gbc.gridx=1; panelDialog.add(campo1, gbc);
+        gbc.gridx=0; gbc.gridy=5; panelDialog.add(lblCampo2, gbc);
+        gbc.gridx=1; panelDialog.add(campo2, gbc);
+        gbc.gridx=0; gbc.gridy=6; panelDialog.add(lblCampo3, gbc);
+        gbc.gridx=1; panelDialog.add(campo3, gbc);
+
         rbPol.addActionListener(ev -> {
             campo1.setText(""); campo2.setText(""); campo3.setText("");
             if(blancoEditar!=null) blancoReferencia = blancoEditar;
@@ -284,27 +302,33 @@ public class SituacionTactica extends JPanel {
             blancoReferencia = null;
         });
 
-        // Checkbox para indicar si es aliado
         JCheckBox chkAliado = new JCheckBox("Aliado");
+        chkAliado.setBackground(new Color(50,50,50));
+        chkAliado.setForeground(Color.WHITE);
         if(blancoEditar!=null) chkAliado.setSelected(blancoEditar.isAliado());
         else chkAliado.setSelected(true);
 
-        gbc.gridx=0; gbc.gridy=7; dialog.add(new JLabel("Tipo:"), gbc);
-        gbc.gridx=1; dialog.add(chkAliado, gbc);
+        JLabel lblTipo = new JLabel("Tipo:"); lblTipo.setForeground(Color.WHITE);
+        gbc.gridx=0; gbc.gridy=7; panelDialog.add(lblTipo, gbc);
+        gbc.gridx=1; panelDialog.add(chkAliado, gbc);
 
-        // Botones aceptar y cancelar
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
-        gbc.gridx=0; gbc.gridy=8; dialog.add(btnAceptar, gbc);
-        gbc.gridx=1; gbc.gridy=8; dialog.add(btnCancelar, gbc);
 
-        // Acción de aceptar: valida campos, crea o actualiza blanco y actualiza mapa
+        JPanel panelBotonesDialog = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelBotonesDialog.setBackground(new Color(50,50,50));
+        panelBotonesDialog.add(btnAceptar);
+        panelBotonesDialog.add(btnCancelar);
+
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 2;
+        panelDialog.add(panelBotonesDialog, gbc);
+
+        // Acción aceptar
         btnAceptar.addActionListener(ev -> {
             try{
                 String nombre = txtNombre.getText().trim();
                 String naturaleza = txtNaturaleza.getText().trim();
                 String fecha = dtf.format(LocalDateTime.now());
-
                 if(nombre.isEmpty()||naturaleza.isEmpty()){
                     JOptionPane.showMessageDialog(dialog,"Complete todos los campos","Error",JOptionPane.ERROR_MESSAGE);
                     return;
@@ -324,9 +348,7 @@ public class SituacionTactica extends JPanel {
                     double dir = Double.parseDouble(campo1.getText().trim());
                     double dist = Double.parseDouble(campo2.getText().trim());
                     double ang = Double.parseDouble(campo3.getText().trim());
-                    
-                    // Coordenadas polares: se calculan relativas al blanco de referencia
-                    // con dirección medida desde el norte absoluto, y se asignan como enemigos
+
                     Coordinate refCoord = convertirACoordenadaLatLon(blancoReferencia.getCoordenadas());
                     double x = refCoord.getLon() + dist*Math.cos(Math.toRadians(ang))*Math.sin(Math.toRadians(dir));
                     double y = refCoord.getLat() + dist*Math.cos(Math.toRadians(ang))*Math.cos(Math.toRadians(dir));
@@ -334,7 +356,6 @@ public class SituacionTactica extends JPanel {
                     chkAliado.setSelected(false);
                 }
 
-                // Crear nuevo blanco o actualizar existente
                 if(blancoEditar==null || rbPol.isSelected()){
                     Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
                     listaDeBlancos.add(nuevo);
@@ -356,24 +377,30 @@ public class SituacionTactica extends JPanel {
         });
 
         btnCancelar.addActionListener(ev -> dialog.dispose());
+
         dialog.setVisible(true);
     }
 
-    // Añade un placeholder a un JTextField con cambio de color al enfocar
+
     private void addPlaceholder(JTextField field, String placeholder){
-        field.setForeground(Color.GRAY);
+        Color placeholderColor = new Color(180,180,180); // gris claro para placeholder
+        Color textColor = Color.WHITE; // texto normal en blanco
+        field.setForeground(placeholderColor);
         field.setText(placeholder);
+        field.setBackground(new Color(70,70,70)); // fondo gris oscuro consistente
         field.addFocusListener(new FocusAdapter(){
             @Override
             public void focusGained(FocusEvent e){
                 if(field.getText().equals(placeholder)){
-                    field.setText(""); field.setForeground(Color.BLACK);
+                    field.setText("");
+                    field.setForeground(textColor);
                 }
             }
             @Override
             public void focusLost(FocusEvent e){
                 if(field.getText().isEmpty()){
-                    field.setForeground(Color.GRAY); field.setText(placeholder);
+                    field.setForeground(placeholderColor);
+                    field.setText(placeholder);
                 }
             }
         });
