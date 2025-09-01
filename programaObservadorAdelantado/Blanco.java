@@ -1,51 +1,26 @@
-public class Blanco extends tipoDeBlanco{
-
+public class Blanco extends tipoDeBlanco {
     private String nombre;
     private coordenadas coordenadas;
     private String naturaleza;
-    private String fechaDeActualizacion;
+    private String fecha;
 
-    public Blanco(String nombre, coordenadas coordenadas, String naturaleza, String fechaDeActualizacion) {
+    public Blanco(String nombre, coordenadas c, String naturaleza, String fecha, boolean aliado) {
+        super(aliado);
         this.nombre = nombre;
-        this.coordenadas = coordenadas;
+        this.coordenadas = c;
         this.naturaleza = naturaleza;
-        this.fechaDeActualizacion = fechaDeActualizacion;
+        this.fecha = fecha;
     }
-    public String getNombre() {
-        return nombre;
-    }
-    public coordenadas getCoordenadas() {
-        return coordenadas;
-    }
-    public String getNaturaleza() {
-        return naturaleza;
-    }
-    public String getFechaDeActualizacion() {
-        return fechaDeActualizacion;
-    }
-    @Override
-    public String toString() {
-        return "Blanco{" +
-                "nombre='" + nombre + '\'' +
-                ", coordenadas=" + coordenadas +
-                ", naturaleza='" + naturaleza + '\'' +
-                ", fechaDeActualizacion='" + fechaDeActualizacion + '\'' +
-                '}';
-    }
-	public void setCoordenadas(coordenadas coords) {
-		coordenadas = coords;
-		
-	}
-	public void setFecha(String fecha) {
-		fechaDeActualizacion = fecha;
-		
-	}
-	public void setNombre(String nombre2) {
-		nombre = nombre2;
-		
-	}
-	public void setNaturaleza(String naturaleza2) {
-		naturaleza = naturaleza2;
-	}
 
+    public String getNombre() { return nombre; }
+    public void setNombre(String n) { nombre = n; }
+    public coordenadas getCoordenadas() { return coordenadas; }
+    public void setCoordenadas(coordenadas c) { coordenadas = c; }
+    public String getNaturaleza() { return naturaleza; }
+    public void setNaturaleza(String n) { naturaleza = n; }
+    public String getFechaDeActualizacion() { return fecha; }
+    public void setFecha(String f) { fecha = f; }
+
+    @Override
+    public String toString() { return nombre; }
 }
