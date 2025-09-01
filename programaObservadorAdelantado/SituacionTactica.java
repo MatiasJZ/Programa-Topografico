@@ -8,6 +8,7 @@ import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
+import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 public class SituacionTactica extends JPanel {
 
@@ -15,13 +16,14 @@ public class SituacionTactica extends JPanel {
     private JList<String> listaUI;
     protected ArrayList<Blanco> listaDeBlancos;
     private JMapViewer mapa;
+    private JComboBox<String> comboFuentes;
 
     public SituacionTactica(File mbtilesFile) {
         setSize(900, 600);
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
-        // LISTA DE BLANCOS
+        // ===== LISTA DE BLANCOS =====
         listaDeBlancos = new ArrayList<>();
         modeloLista = new DefaultListModel<>();
         listaUI = new JList<>(modeloLista);
@@ -33,22 +35,22 @@ public class SituacionTactica extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1)); // marco delimitador
+                label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
                 label.setHorizontalAlignment(SwingConstants.CENTER);
                 return label;
             }
         });
-
         JScrollPane scrollLista = new JScrollPane(listaUI);
         scrollLista.setPreferredSize(new Dimension(250, 0));
         scrollLista.getViewport().setBackground(Color.BLACK);
 
-        // Panel lateral (lista + botones)
+        // ===== PANEL IZQUIERDO =====
         JPanel panelIzquierdo = new JPanel(new BorderLayout());
         panelIzquierdo.setBackground(Color.BLACK);
         panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 
-        JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5)); // 2 filas x 2 columnas
+        // ===== PANEL BOTONES =====
+        JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         panelBotones.setBackground(Color.BLACK);
         JButton btnAgregar = new JButton("AGREGAR");
         JButton btnEditar = new JButton("EDITAR");
@@ -58,36 +60,43 @@ public class SituacionTactica extends JPanel {
         btnEditar.setBackground(Color.blue); btnEditar.setForeground(Color.WHITE);
         btnEliminar.setBackground(Color.orange); btnEliminar.setForeground(Color.WHITE);
         btnActualizar.setBackground(Color.red); btnActualizar.setForeground(Color.WHITE);
-
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
         panelBotones.add(btnActualizar);
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
-        // Panel de mapa
-        /*JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem("Opción 1"));
-        menu.add(new JMenuItem("Opción 2"));*/
-        
+        // ===== PANEL MAPA =====
         mapa = new JMapViewer();
         mapa.setZoomControlsVisible(true);
         mapa.setAutoscrolls(true);
-        //mapa.setComponentPopupMenu(menu); opcion de menu al clickear con derecho en el mapa desabilitada por ahora
         mapa.setBackground(Color.DARK_GRAY);
+
+        // JComboBox para fuentes (Satélite y Político)
+        comboFuentes = new JComboBox<>(new String[]{"Satélite", "Político"});
+        comboFuentes.setSelectedIndex(0);
+        JPanel panelArriba = new JPanel();
+        panelArriba.setBackground(Color.BLACK);
+        panelArriba.add(comboFuentes);
+        panelIzquierdo.add(panelArriba, BorderLayout.NORTH);
+
         // Coordenadas de Buenos Aires
         Coordinate argentina = new Coordinate(-34.6, -58.4);
         int zoomInicial = 5;
-        // Centrar mapa
+
+        // Inicializar mapa con Satélite
+        mapa.setTileSource(new SatelliteSource());
         mapa.setDisplayPosition(argentina, zoomInicial);
 
-
-        try {
-            MBTilesTileSource tileSource = new MBTilesTileSource(mbtilesFile);
-            mapa.setTileSource(tileSource);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error cargando MBTiles: " + ex.getMessage());
+        // Cargar MBTiles si existe
+        if (mbtilesFile != null) {
+            try {
+                MBTilesTileSource tileSource = new MBTilesTileSource(mbtilesFile);
+                mapa.setTileSource(tileSource);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error cargando MBTiles: " + ex.getMessage());
+            }
         }
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, mapa);
@@ -95,15 +104,12 @@ public class SituacionTactica extends JPanel {
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
 
-        // ======= BOTONES =======
+        // ===== ACCIONES DE BOTONES =====
         btnAgregar.addActionListener(e -> mostrarDialogoAgregar(null, null));
         btnEditar.addActionListener(e -> {
             int index = listaUI.getSelectedIndex();
-            if (index >= 0) {
-                mostrarDialogoAgregar(listaDeBlancos.get(index), null);
-            } else {
-                JOptionPane.showMessageDialog(this, "Seleccione un blanco para editar.");
-            }
+            if (index >= 0) mostrarDialogoAgregar(listaDeBlancos.get(index), null);
+            else JOptionPane.showMessageDialog(this, "Seleccione un blanco para editar.");
         });
         btnEliminar.addActionListener(e -> {
             int index = listaUI.getSelectedIndex();
@@ -113,23 +119,19 @@ public class SituacionTactica extends JPanel {
                 actualizarBlancosEnMapa();
             }
         });
-        btnActualizar.addActionListener(e -> {
-            ;
-        });
+        btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
 
-        // Editar blanco al hacer doble click en la lista
+        // Doble clic en lista = editar
         listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
                     int index = listaUI.locationToIndex(evt.getPoint());
-                    if (index >= 0) {
-                        mostrarDialogoAgregar(listaDeBlancos.get(index), null);
-                    }
+                    if (index >= 0) mostrarDialogoAgregar(listaDeBlancos.get(index), null);
                 }
             }
         });
 
-        // Agregar blanco al clickear en el mapa
+        // Click en mapa = agregar blanco
         mapa.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -141,6 +143,23 @@ public class SituacionTactica extends JPanel {
                 }
             }
         });
+
+        // Cambio de fuente de mapa
+        comboFuentes.addActionListener(e -> {
+            // Guardar centro y zoom
+            Coordinate centro = (Coordinate) mapa.getPosition(mapa.getWidth()/2, mapa.getHeight()/2);
+            int zoom = mapa.getZoom();
+
+            String seleccion = (String) comboFuentes.getSelectedItem();
+            if ("Satélite".equals(seleccion)) {
+                mapa.setTileSource(new SatelliteSource());
+            } else if ("Político".equals(seleccion)) {
+                mapa.setTileSource(new OsmTileSource.Mapnik());
+            }
+
+            // Restaurar centro y zoom
+            mapa.setDisplayPosition(centro, zoom);
+        });
     }
 
     // ================== ACTUALIZAR BLANCOS EN EL MAPA ==================
@@ -149,12 +168,12 @@ public class SituacionTactica extends JPanel {
         for (Blanco b : listaDeBlancos) {
             Coordinate coord = convertirACoordenadaLatLon(b.getCoordenadas());
             MapMarkerDot marcador = new MapMarkerDot(b.getNombre(), coord);
-            marcador.setBackColor(Color.red); // cambiar color del marcador, se podran poner imagenes tambien
+            marcador.setBackColor(Color.red); 
             mapa.addMapMarker(marcador);
         }
     }
 
-    // ================== CONVERTIR COORDENADAS A LAT/LON ==================
+    // ================== CONVERTIR COORDENADAS ==================
     private Coordinate convertirACoordenadaLatLon(coordenadas c) {
         double lat = 0, lon = 0;
         if (c instanceof coordRectangulares) {
@@ -162,14 +181,16 @@ public class SituacionTactica extends JPanel {
             lat = r.getY(); lon = r.getX();
         } else if (c instanceof coordPolares) {
             coordPolares p = (coordPolares) c;
-            double x = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) * Math.cos(Math.toRadians(p.getDireccion()));
-            double y = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) * Math.sin(Math.toRadians(p.getDireccion()));
+            double x = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) *
+                       Math.cos(Math.toRadians(p.getDireccion()));
+            double y = p.getDistancia() * Math.cos(Math.toRadians(p.getAnguloVertical())) *
+                       Math.sin(Math.toRadians(p.getDireccion()));
             lat = y; lon = x;
         }
         return new Coordinate(lat, lon);
     }
 
-    // ================== DIÁLOGO PARA AGREGAR/EDITAR ==================
+    // ================== DIÁLOGO AGREGAR/EDITAR BLANCO ==================
     private void mostrarDialogoAgregar(Blanco blancoEditar, Coordinate coordInicial) {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar == null ? "Nuevo Blanco" : "Editar Blanco"), true);
@@ -237,8 +258,10 @@ public class SituacionTactica extends JPanel {
 
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
-        gbc.gridx=0; gbc.gridy=7; dialog.add(btnAceptar, gbc);
-        gbc.gridx=1; dialog.add(btnCancelar, gbc);
+        gbc.gridx = 0; gbc.gridy = 7;
+        dialog.add(btnAceptar, gbc);
+        gbc.gridx = 1;
+        dialog.add(btnCancelar, gbc);
 
         btnAceptar.addActionListener(ev -> {
             try {
@@ -267,7 +290,6 @@ public class SituacionTactica extends JPanel {
                     int idx = listaDeBlancos.indexOf(blancoEditar);
                     if (idx >= 0) modeloLista.set(idx, nombre);
                 }
-
                 actualizarBlancosEnMapa();
                 dialog.dispose();
             } catch (NumberFormatException ex) {
