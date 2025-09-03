@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -14,7 +16,6 @@ import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
-// Panel principal para manejar la situación táctica en un mapa
 public class SituacionTactica extends JPanel {
 
     private DefaultListModel<Blanco> modeloLista;
@@ -62,20 +63,35 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 
         // ===== BOTONES =====
-        JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel panelBotones = new JPanel(new GridBagLayout());
         panelBotones.setBackground(Color.BLACK);
+
         JButton btnAgregar = new JButton("AGREGAR");
-        JButton btnEditar = new JButton("EDITAR");
         JButton btnEliminar = new JButton("ELIMINAR");
         JButton btnActualizar = new JButton("ACTUALIZAR");
 
         btnAgregar.setBackground(Color.green); btnAgregar.setForeground(Color.WHITE);
-        btnEditar.setBackground(Color.blue); btnEditar.setForeground(Color.WHITE);
         btnEliminar.setBackground(Color.orange); btnEliminar.setForeground(Color.WHITE);
         btnActualizar.setBackground(Color.red); btnActualizar.setForeground(Color.WHITE);
 
-        panelBotones.add(btnAgregar); panelBotones.add(btnEditar);
-        panelBotones.add(btnEliminar); panelBotones.add(btnActualizar);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5,5,5,5);
+
+        // Primera fila: btnAgregar y btnEliminar
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelBotones.add(btnAgregar, gbc);
+
+        gbc.gridx = 1;
+        panelBotones.add(btnEliminar, gbc);
+
+        // Segunda fila: btnActualizar centrado
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panelBotones.add(btnActualizar, gbc);
+
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // ===== MAPA =====
@@ -113,11 +129,7 @@ public class SituacionTactica extends JPanel {
 
         // ===== ACCIONES =====
         btnAgregar.addActionListener(e -> mostrarDialogoAgregar(null,null));
-        btnEditar.addActionListener(e -> {
-            int idx = listaUI.getSelectedIndex();
-            if(idx>=0) mostrarDialogoAgregar(listaDeBlancos.get(idx), null);
-            else JOptionPane.showMessageDialog(this,"Seleccione un blanco para editar.");
-        });
+        
         btnEliminar.addActionListener(e -> {
             int idx = listaUI.getSelectedIndex();
             if(idx>=0){
@@ -128,6 +140,46 @@ public class SituacionTactica extends JPanel {
         });
         btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
 
+        // ===== POPUP MENU PARA LISTA =====
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem itemEditar = new JMenuItem("EDITAR/MARCAR");
+        JMenuItem itemMedir = new JMenuItem("MEDIR");
+        popupMenu.add(itemEditar);
+        popupMenu.add(itemMedir);
+
+        listaUI.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+            @Override
+            public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+
+            private void mostrarPopup(MouseEvent e) {
+                int idx = listaUI.locationToIndex(e.getPoint());
+                if(idx>=0){
+                    listaUI.setSelectedIndex(idx);
+                    popupMenu.show(listaUI, e.getX(), e.getY());
+                }
+            }
+        });
+
+        // Acción EDITAR/MARCAR
+        itemEditar.addActionListener(e -> {
+            int idx = listaUI.getSelectedIndex();
+            if(idx >= 0) mostrarDialogoAgregar(listaDeBlancos.get(idx), null);
+        });
+
+        // Acción MEDIR
+        itemMedir.addActionListener(e -> {
+            int idx = listaUI.getSelectedIndex();
+            if(idx >= 0) {
+                Blanco seleccionado = listaUI.getSelectedValue();
+                mostrarDialogoMedir(seleccionado);
+            } else {
+                JOptionPane.showMessageDialog(this, "Seleccione un blanco primero.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Doble click sobre lista para editar
         listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt){
                 if(evt.getClickCount()==2){
@@ -137,6 +189,7 @@ public class SituacionTactica extends JPanel {
             }
         });
 
+        // Click izquierdo en el mapa para agregar
         mapa.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e){
@@ -156,6 +209,55 @@ public class SituacionTactica extends JPanel {
             else mapa.setTileSource(new OsmTileSource.Mapnik());
             mapa.setDisplayPosition(centro, zoom);
         });
+    }
+
+    private void mostrarDialogoMedir(Blanco blanco) {
+        if (blanco == null || listaDeBlancos.size() < 2) {
+            JOptionPane.showMessageDialog(this, "No hay suficientes blancos para medir.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "Medir distancia", true);
+        dialog.setSize(300, 150);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new GridBagLayout());
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5,5,5,5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JComboBox<Blanco> comboSegundaMedida = new JComboBox<>();
+        for (Blanco b : listaDeBlancos) {
+            if (!b.equals(blanco)) comboSegundaMedida.addItem(b);
+        }
+
+        JLabel lblSeleccion = new JLabel("Segundo blanco:");
+        lblSeleccion.setForeground(Color.WHITE);
+
+        gbc.gridx = 0; gbc.gridy = 0; dialog.add(lblSeleccion, gbc);
+        gbc.gridx = 1; dialog.add(comboSegundaMedida, gbc);
+
+        JButton btnCalcular = new JButton("Calcular");
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
+        dialog.add(btnCalcular, gbc);
+
+        btnCalcular.addActionListener(ev -> {
+            Blanco segundoBlanco = (Blanco) comboSegundaMedida.getSelectedItem();
+            if(segundoBlanco != null) {
+                double distancia = blanco.getCoordenadas().distanciaA(segundoBlanco.getCoordenadas());
+                // Redondeamos a 2 decimales
+                String distanciaStr = String.format("%.2f metros", distancia);
+                JOptionPane.showMessageDialog(dialog,
+                    "Distancia entre \"" + blanco.getNombre() + "\" y \"" + segundoBlanco.getNombre() + "\": " + distanciaStr,
+                    "Resultado", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            }
+        });
+
+
+        dialog.getContentPane().setBackground(new Color(50,50,50));
+        dialog.setVisible(true);
     }
 
     private void actualizarBlancosEnMapa(){
@@ -182,7 +284,6 @@ public class SituacionTactica extends JPanel {
         }
         return new Coordinate(lat, lon);
     }
-
     private void mostrarDialogoAgregar(Blanco blancoEditar, Coordinate coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
@@ -231,23 +332,28 @@ public class SituacionTactica extends JPanel {
 
         // Radio buttons
         JRadioButton rbRect = new JRadioButton("Rectangulares (Lat/Lon)");
-        JRadioButton rbPol = new JRadioButton("Marcar punto desde esta posición (polares)");
+        rbRect.setSelected(true);
+        JRadioButton rbPol = null;
         ButtonGroup group = new ButtonGroup();
-        group.add(rbRect); group.add(rbPol);
-        if(blancoEditar!=null && blancoEditar.getCoordenadas() instanceof coordPolares) rbPol.setSelected(true);
-        else rbRect.setSelected(true);
+        group.add(rbRect);
 
         rbRect.setBackground(new Color(50,50,50));
         rbRect.setForeground(Color.WHITE);
-        rbPol.setBackground(new Color(50,50,50));
-        rbPol.setForeground(Color.WHITE);
 
         JLabel lblTipoCoord = new JLabel("Tipo de coordenadas:");
         lblTipoCoord.setForeground(Color.WHITE);
         gbc.gridx=0; gbc.gridy=3; panelDialog.add(lblTipoCoord, gbc);
         JPanel radios = new JPanel(new FlowLayout(FlowLayout.LEFT));
         radios.setBackground(new Color(50,50,50));
-        radios.add(rbRect); radios.add(rbPol);
+        radios.add(rbRect);
+
+        if(blancoEditar!=null){ // solo al editar aparece la opción de polares
+            rbPol = new JRadioButton("Marcar punto desde esta posición (polares)");
+            rbPol.setBackground(new Color(50,50,50));
+            rbPol.setForeground(Color.WHITE);
+            group.add(rbPol);
+            radios.add(rbPol);
+        }
         gbc.gridx=1; panelDialog.add(radios, gbc);
 
         // Campos coordenadas
@@ -272,7 +378,7 @@ public class SituacionTactica extends JPanel {
                 campo2.setText(String.valueOf(p.getDistancia()));
                 campo3.setText(String.valueOf(p.getAnguloVertical()));
             }
-        } else if(coordInicial!=null && rbRect.isSelected()){
+        } else if(coordInicial!=null){
             campo1.setText(String.valueOf(coordInicial.getLon()));
             campo2.setText(String.valueOf(coordInicial.getLat()));
             campo3.setText("0");
@@ -289,10 +395,12 @@ public class SituacionTactica extends JPanel {
         gbc.gridx=0; gbc.gridy=6; panelDialog.add(lblCampo3, gbc);
         gbc.gridx=1; panelDialog.add(campo3, gbc);
 
-        rbPol.addActionListener(ev -> {
-            campo1.setText(""); campo2.setText(""); campo3.setText("");
-            if(blancoEditar!=null) blancoReferencia = blancoEditar;
-        });
+        if(rbPol!=null){
+            rbPol.addActionListener(ev -> {
+                campo1.setText(""); campo2.setText(""); campo3.setText("");
+                blancoReferencia = blancoEditar;
+            });
+        }
         rbRect.addActionListener(ev -> {
             if(coordInicial!=null){
                 campo1.setText(String.valueOf(coordInicial.getLon()));
@@ -324,6 +432,7 @@ public class SituacionTactica extends JPanel {
         panelDialog.add(panelBotonesDialog, gbc);
 
         // Acción aceptar
+        JRadioButton finalRbPol = rbPol; // copia para usar en lambda
         btnAceptar.addActionListener(ev -> {
             try{
                 String nombre = txtNombre.getText().trim();
@@ -340,7 +449,23 @@ public class SituacionTactica extends JPanel {
                     double y = Double.parseDouble(campo2.getText().trim());
                     double cota = Double.parseDouble(campo3.getText().trim());
                     coords = new coordRectangulares(x,y,cota);
-                } else {
+
+                    if(blancoEditar==null){
+                        // nuevo blanco
+                        Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
+                        listaDeBlancos.add(nuevo);
+                        modeloLista.addElement(nuevo);
+                    } else {
+                        // actualización
+                        blancoEditar.setNombre(nombre);
+                        blancoEditar.setNaturaleza(naturaleza);
+                        blancoEditar.setFecha(fecha);
+                        blancoEditar.setCoordenadas(coords);
+                        blancoEditar.setAliado(chkAliado.isSelected());
+                        listaUI.repaint();
+                    }
+
+                } else if(finalRbPol!=null && finalRbPol.isSelected()){
                     if(blancoReferencia==null){
                         JOptionPane.showMessageDialog(dialog,"Seleccione un blanco de referencia para coordenadas polares","Error",JOptionPane.ERROR_MESSAGE);
                         return;
@@ -353,20 +478,11 @@ public class SituacionTactica extends JPanel {
                     double x = refCoord.getLon() + dist*Math.cos(Math.toRadians(ang))*Math.sin(Math.toRadians(dir));
                     double y = refCoord.getLat() + dist*Math.cos(Math.toRadians(ang))*Math.cos(Math.toRadians(dir));
                     coords = new coordRectangulares(x,y,0);
-                    chkAliado.setSelected(false);
-                }
 
-                if(blancoEditar==null || rbPol.isSelected()){
-                    Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
+                    // siempre un blanco nuevo
+                    Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, false);
                     listaDeBlancos.add(nuevo);
                     modeloLista.addElement(nuevo);
-                } else {
-                    blancoEditar.setNombre(nombre);
-                    blancoEditar.setNaturaleza(naturaleza);
-                    blancoEditar.setFecha(fecha);
-                    blancoEditar.setCoordenadas(coords);
-                    blancoEditar.setAliado(chkAliado.isSelected());
-                    listaUI.repaint();
                 }
 
                 actualizarBlancosEnMapa();
