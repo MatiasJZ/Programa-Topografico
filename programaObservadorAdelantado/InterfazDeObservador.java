@@ -58,7 +58,7 @@ public class InterfazDeObservador extends JPanel {
         cards = new JPanel(cardLayout);
 
         // Paneles con clases cardboard
-        File mbtilesFile = new File("");
+        File mbtilesFile = new File(""); //"C:/Users/54293/Desktop/CalTopoV2.mbtiles"
         cards.add(new SituacionTactica(mbtilesFile), "SITUACION");
         cards.add(new PedidoDeFuego(), "PEDIDO");
         cards.add(new Mensajeria(), "MENSAJERIA");

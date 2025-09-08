@@ -196,8 +196,10 @@ public class SituacionTactica extends JPanel {
                 if(e.getButton()==java.awt.event.MouseEvent.BUTTON1){
                     Point punto = e.getPoint();
                     ICoordinate icoord = mapa.getPosition(punto);
-                    Coordinate coord = new Coordinate(icoord.getLat(), icoord.getLon());
-                    mostrarDialogoAgregar(null, coord);
+                    double lat = icoord.getLat();
+                    double lon = icoord.getLon();
+                    Coordinate c = new Coordinate(lat,lon);
+                    mostrarDialogoAgregar(null, c);
                 }
             }
         });
@@ -263,7 +265,8 @@ public class SituacionTactica extends JPanel {
     private void actualizarBlancosEnMapa(){
         mapa.removeAllMapMarkers();
         for(Blanco b: listaDeBlancos){
-            Coordinate coord = convertirACoordenadaLatLon(b.getCoordenadas());
+            coordRectangulares c = (coordRectangulares) b.getCoordenadas();
+            Coordinate coord = convertirACoordenadaLatLon(c); // <-- conversión aquí
             MapMarkerDot m = new MapMarkerDot(b.getNombre(), coord);
             m.setBackColor(b.isAliado()?Color.BLUE:Color.RED);
             mapa.addMapMarker(m);
@@ -271,6 +274,7 @@ public class SituacionTactica extends JPanel {
         listaUI.repaint();
     }
 
+    
     private Coordinate convertirACoordenadaLatLon(coordenadas c){
         double lat=0, lon=0;
         if(c instanceof coordRectangulares){
@@ -284,12 +288,21 @@ public class SituacionTactica extends JPanel {
         }
         return new Coordinate(lat, lon);
     }
+    
+    public coordRectangulares convertirACoordenadaRectangular(ICoordinate coord) {
+        // transforma lat/lon a metros aproximados en Web Mercator
+        double R = 6378137; // radio de la Tierra en metros
+        double x = Math.toRadians(coord.getLon()) * R;
+        double y = Math.log(Math.tan(Math.PI/4 + Math.toRadians(coord.getLat())/2)) * R;
+        return new coordRectangulares(x, y, 0);
+    }
+    
     private void mostrarDialogoAgregar(Blanco blancoEditar, Coordinate coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
         dialog.setSize(620,360);
         dialog.setLocationRelativeTo(this);
-
+        
         // Panel principal con fondo gris oscuro
         JPanel panelDialog = new JPanel(new GridBagLayout());
         panelDialog.setBackground(new Color(50, 50, 50));
@@ -364,29 +377,21 @@ public class SituacionTactica extends JPanel {
         campo2.setBackground(new Color(70,70,70)); campo2.setForeground(Color.WHITE);
         campo3.setBackground(new Color(70,70,70)); campo3.setForeground(Color.WHITE);
 
-        // Rellenar según blanco existente
+        // Rellenar según blanco existente o coordenada inicial
         if(blancoEditar!=null){
-            coordenadas c = blancoEditar.getCoordenadas();
-            if(c instanceof coordRectangulares){
-                coordRectangulares r = (coordRectangulares)c;
-                campo1.setText(String.valueOf(r.getX()));
-                campo2.setText(String.valueOf(r.getY()));
-                campo3.setText(String.valueOf(r.getCota()));
-            } else if(c instanceof coordPolares){
-                coordPolares p = (coordPolares)c;
-                campo1.setText(String.valueOf(p.getDireccion()));
-                campo2.setText(String.valueOf(p.getDistancia()));
-                campo3.setText(String.valueOf(p.getAnguloVertical()));
-            }
+            Coordinate c = convertirACoordenadaLatLon(blancoEditar.getCoordenadas());
+            campo1.setText(String.valueOf(c.getLon()));
+            campo2.setText(String.valueOf(c.getLat()));
+            campo3.setText("0");
         } else if(coordInicial!=null){
             campo1.setText(String.valueOf(coordInicial.getLon()));
             campo2.setText(String.valueOf(coordInicial.getLat()));
             campo3.setText("0");
         }
 
-        JLabel lblCampo1 = new JLabel("X / Dirección (° / Lat)"); lblCampo1.setForeground(Color.WHITE);
-        JLabel lblCampo2 = new JLabel("Y / Distancia (° / Lon)"); lblCampo2.setForeground(Color.WHITE);
-        JLabel lblCampo3 = new JLabel("COTA / Ángulo Vertical (°)"); lblCampo3.setForeground(Color.WHITE);
+        JLabel lblCampo1 = new JLabel("X / Dirección (°)"); lblCampo1.setForeground(Color.WHITE);
+        JLabel lblCampo2 = new JLabel("Y / Distancia (°)"); lblCampo2.setForeground(Color.WHITE);
+        JLabel lblCampo3 = new JLabel("Cota / Áng Vertical (°)"); lblCampo3.setForeground(Color.WHITE);
 
         gbc.gridx=0; gbc.gridy=4; panelDialog.add(lblCampo1, gbc);
         gbc.gridx=1; panelDialog.add(campo1, gbc);
@@ -407,7 +412,7 @@ public class SituacionTactica extends JPanel {
                 campo2.setText(String.valueOf(coordInicial.getLat()));
                 campo3.setText("0");
             }
-            blancoReferencia = null;
+            blancoReferencia = null;	
         });
 
         JCheckBox chkAliado = new JCheckBox("Aliado");
@@ -445,10 +450,10 @@ public class SituacionTactica extends JPanel {
 
                 coordenadas coords;
                 if(rbRect.isSelected()){
-                    double x = Double.parseDouble(campo1.getText().trim());
-                    double y = Double.parseDouble(campo2.getText().trim());
+                    double lat = Double.parseDouble(campo1.getText().trim());
+                    double lon = Double.parseDouble(campo2.getText().trim());
                     double cota = Double.parseDouble(campo3.getText().trim());
-                    coords = new coordRectangulares(x,y,cota);
+                    coords = new coordRectangulares(lat, lon, cota);
 
                     if(blancoEditar==null){
                         // nuevo blanco
@@ -497,7 +502,7 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
 
-
+    
     private void addPlaceholder(JTextField field, String placeholder){
         Color placeholderColor = new Color(180,180,180); // gris claro para placeholder
         Color textColor = Color.WHITE; // texto normal en blanco
