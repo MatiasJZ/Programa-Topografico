@@ -1,4 +1,4 @@
-public abstract class tipoDeBlanco {
+	public abstract class tipoDeBlanco {
 
     private boolean aliado; // true = aliado, false = enemigo
 
