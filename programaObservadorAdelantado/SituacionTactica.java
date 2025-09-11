@@ -100,11 +100,9 @@ public class SituacionTactica extends JPanel {
         mapa.setZoomControlsVisible(true);
         mapa.setAutoscrolls(true);
         mapa.setBackground(Color.DARK_GRAY);
-        mapa.setTileSource(new LocalXYZSource());
-        mapa.setDisplayPosition(
-            new Coordinate(-38.929982, -61.9075285), // lat, lon del center
-            12                                       // zoom del center
-        );
+        mapa.setDisplayPosition(new Coordinate(-61.93, -38.92),10);
+        mapa.setTileSource(new LocalXYZSource());                          
+        
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, mapa);
         splitPane.setDividerLocation(250);
         splitPane.setContinuousLayout(true);

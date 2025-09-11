@@ -14,7 +14,7 @@ public class LocalXYZSource extends AbstractTMSTileSource {
     public LocalXYZSource() {
         super(new TileSourceInfo(
             "J8MSN",
-            "http://localhost:3650/api/tiles/Map2", // baseUrl del TileJSON
+            "http://localhost:3650/api/tiles/Map2/", // baseUrl del TileJSON
             "© MapTiler Engine FREE 14.1-6989d8c302"
         ));
         this.format = "png"; // del TileJSON
@@ -23,12 +23,12 @@ public class LocalXYZSource extends AbstractTMSTileSource {
     @Override public int getMinZoom() { return 10; }
     @Override public int getMaxZoom() { return 15; }
     @Override public int getTileSize() { return 256; }
-    public String getTileType() { return "jpg"; }
+    public String getTileType() { return format; }
 
     @Override
     public String getTilePath(int zoom, int x, int y) {
         // esquema XYZ
-        return "/" + zoom + "/" + x + "/" + y + "." + format;
+    	return zoom + "/" + x + "/" + y + "." + format;
     }
 
     @Override
@@ -42,11 +42,17 @@ public class LocalXYZSource extends AbstractTMSTileSource {
 		return null;
 	}
 
-	@Override
-	public double getDistance(double arg0, double arg1, double arg2, double arg3) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public double getDistance(double lat1, double lon1, double lat2, double lon2) {
+            final double R = 6378137.0; // Earth radius in meters
+            double dLat = Math.toRadians(lat2 - lat1);
+            double dLon = Math.toRadians(lon2 - lon1);
+            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                            + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                            * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+    }
 
     @Override
     public boolean isInside(Tile t1, Tile t2) { return t1.equals(t2); }
@@ -77,19 +83,12 @@ public class LocalXYZSource extends AbstractTMSTileSource {
         double n = Math.pow(2.0, zoom);
         double lon = x / n * 360.0 - 180.0;
         double lat = Math.toDegrees(Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))));
+        final double[] latLon = new double[]{lat, lon};
         return new ICoordinate() {
-            @Override public double getLat() { return lat; }
-            @Override public double getLon() { return lon; }
-			@Override
-			public void setLat(double arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-			@Override
-			public void setLon(double arg0) {
-				// TODO Auto-generated method stub
-				
-			}
+            @Override public double getLat() { return latLon[0]; }
+            @Override public double getLon() { return latLon[1]; }
+            @Override public void setLat(double newLat) { latLon[0] = newLat; }
+            @Override public void setLon(double newLon) { latLon[1] = newLon; }
         };
     }
 
@@ -98,16 +97,10 @@ public class LocalXYZSource extends AbstractTMSTileSource {
         return new IProjected() {
             public double getX() { return x; }
             public double getY() { return y; }
-			@Override
-			public double getEast() {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-			@Override
-			public double getNorth() {
-				// TODO Auto-generated method stub
-				return 0;
-			}
+            @Override
+            public double getEast() { return x; }
+            @Override
+            public double getNorth() { return y; }
         };
     }
     @Override
