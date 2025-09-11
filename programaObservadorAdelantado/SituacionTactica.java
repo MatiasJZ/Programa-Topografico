@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
 import javax.swing.*;
 
@@ -24,7 +25,7 @@ public class SituacionTactica extends JPanel {
 
     private DefaultListModel<Blanco> modeloLista;
     private JList<Blanco> listaUI;
-    protected ArrayList<Blanco> listaDeBlancos;
+    protected LinkedList<Blanco> listaDeBlancos;
     private JMapViewer mapa;
     private JComboBox<String> comboFuentes;
 
@@ -37,13 +38,13 @@ public class SituacionTactica extends JPanel {
     }
     private static final DecimalFormat DF = new DecimalFormat("0.000000", DFS_AR);
 
-    public SituacionTactica() {
+    public SituacionTactica(LinkedList<Blanco> listaDeBlancos) {
         setSize(900, 600);
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
         // ===== LISTA DE BLANCOS =====
-        listaDeBlancos = new ArrayList<>();
+        this.listaDeBlancos = listaDeBlancos;
         modeloLista = new DefaultListModel<>();
         listaUI = new JList<>(modeloLista);
         listaUI.setFont(new Font("Arial", Font.BOLD, 20));
@@ -100,7 +101,7 @@ public class SituacionTactica extends JPanel {
         mapa.setZoomControlsVisible(true);
         mapa.setAutoscrolls(true);
         mapa.setBackground(Color.DARK_GRAY);
-        mapa.setDisplayPosition(new Coordinate(-61.93, -38.92),10);
+        mapa.setDisplayPosition(new Coordinate(-38.929982, -61.9075285),0);
         mapa.setTileSource(new LocalXYZSource());                          
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, mapa);

@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.io.File;
+import java.util.LinkedList;
 
 import javax.swing.*;
 
@@ -17,7 +18,7 @@ public class InterfazDeObservador extends JPanel {
     private JButton[] botonesMenu;
     private int panelActual = 0;
 
-    public InterfazDeObservador() {
+    public InterfazDeObservador(LinkedList<Blanco> listaDeBlancos) {
         // Pide la ID antes de cargar la interfaz
         pedirID();
 
@@ -58,8 +59,8 @@ public class InterfazDeObservador extends JPanel {
         cards = new JPanel(cardLayout);
 
         // Paneles con clases cardboard
-        cards.add(new SituacionTactica(),"SITUACION");
-        cards.add(new PedidoDeFuego(), "PEDIDO");
+        cards.add(new SituacionTactica(listaDeBlancos),"SITUACION");
+        cards.add(new PedidoDeFuego(listaDeBlancos), "PEDIDO");
         cards.add(new Mensajeria(), "MENSAJERIA");
 
         add(cards, BorderLayout.CENTER);

@@ -1,15 +1,17 @@
+import java.util.LinkedList;
+
 import javax.swing.*;
 
 public class ObservadorAdelantado {
 
     public static void main(String[] args) {
+    	LinkedList<Blanco> listaDeBlancos = new LinkedList<Blanco>();
         JFrame ventana = new JFrame("SARGO (Sistema de Artillería de Reconocimiento y Gestión Operacional) - OBSERVADOR");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setSize(1000, 600);
         ventana.setLocationRelativeTo(null);
 
-        // Crear e insertar la interfaz del observador
-        InterfazDeObservador panelObservador = new InterfazDeObservador();
+        InterfazDeObservador panelObservador = new InterfazDeObservador(listaDeBlancos);
         ventana.setContentPane(panelObservador);
         ventana.setVisible(true);
     }

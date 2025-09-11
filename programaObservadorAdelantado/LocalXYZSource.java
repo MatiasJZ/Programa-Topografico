@@ -9,15 +9,14 @@ import org.openstreetmap.gui.jmapviewer.tilesources.AbstractTMSTileSource;
 import org.openstreetmap.gui.jmapviewer.tilesources.TileSourceInfo;
 
 public class LocalXYZSource extends AbstractTMSTileSource {
-    private final String format;
+    private final String format = "png";
 
     public LocalXYZSource() {
         super(new TileSourceInfo(
-            "J8MSN",
-            "http://localhost:3650/api/tiles/Map2/", // baseUrl del TileJSON
+            "CalTopoBATERIAS",
+            "http://localhost:3650/api/tiles/CalTopoBATERIAS", // baseUrl del TileJSON
             "© MapTiler Engine FREE 14.1-6989d8c302"
         ));
-        this.format = "png"; // del TileJSON
     }
 
     @Override public int getMinZoom() { return 10; }
@@ -25,10 +24,14 @@ public class LocalXYZSource extends AbstractTMSTileSource {
     @Override public int getTileSize() { return 256; }
     public String getTileType() { return format; }
 
+    @Override public String getTileUrl(int zoom, int x, int y) {
+        return baseUrl + getTilePath(zoom, x, y) + "." + getTileType();
+    }
+    
     @Override
     public String getTilePath(int zoom, int x, int y) {
         // esquema XYZ
-    	return zoom + "/" + x + "/" + y + "." + format;
+    	return "/"+zoom + "/" + x + "/" + y;
     }
 
     @Override
