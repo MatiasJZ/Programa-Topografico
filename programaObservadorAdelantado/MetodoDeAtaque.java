@@ -35,39 +35,47 @@ class MetodoAtaquePanel extends JPanel {
         Icon radioIcon = new RadioButtonGrande(28);
 
         // ===== CERCANO =====
-        JPanel panelCercano = crearPanelApartado("CERCANO", fontLabel, white, apartadoBorder);
+        JPanel panelCercano = crearPanelApartado("CERCANO:", fontLabel, white, apartadoBorder);
+        panelCercano.setBackground(new Color(72,82,122));
         rbCercanoSi = crearRadio("Sí", fontControl, white, radioIcon);
+        rbCercanoSi.setBackground(new Color(72,82,122));
         rbCercanoNo = crearRadio("No", fontControl, white, radioIcon);
+        rbCercanoNo.setBackground(new Color(72,82,122));
         ButtonGroup grupoCercano = new ButtonGroup();
         grupoCercano.add(rbCercanoSi); grupoCercano.add(rbCercanoNo);
         panelCercano.add(rbCercanoSi); panelCercano.add(rbCercanoNo);
         gbc.gridx = 0; gbc.gridy = 0; add(panelCercano, gbc);
 
         // ===== GRAN ANGULO =====
-        JPanel panelGranAngulo = crearPanelApartado("GRAN ANGULO", fontLabel, white, apartadoBorder);
+        JPanel panelGranAngulo = crearPanelApartado("GRAN ANGULO:", fontLabel, white, apartadoBorder);
+        panelGranAngulo.setBackground(new Color(72,82,122));
         rbGranAnguloSi = crearRadio("Sí", fontControl, white, radioIcon);
+        rbGranAnguloSi.setBackground(new Color(72,82,122));
         rbGranAnguloNo = crearRadio("No", fontControl, white, radioIcon);
+        rbGranAnguloNo.setBackground(new Color(72,82,122));
         ButtonGroup grupoGranAngulo = new ButtonGroup();
         grupoGranAngulo.add(rbGranAnguloSi); grupoGranAngulo.add(rbGranAnguloNo);
         panelGranAngulo.add(rbGranAnguloSi); panelGranAngulo.add(rbGranAnguloNo);
         gbc.gridy = 1; add(panelGranAngulo, gbc);
 
         // ===== GRANADA =====
-        JPanel panelGranada = crearPanelApartado("GRANADA", fontLabel, white, apartadoBorder);
+        JPanel panelGranada = crearPanelApartado("GRANADA:", fontLabel, white, apartadoBorder);
+        panelGranada.setBackground(new Color(72,82,122));
         comboGranada = crearCombo(new String[]{"HE", "IL", "WP"}, fontControl, comboSize);
         panelGranada.add(comboGranada);
         gbc.gridy = 2; add(panelGranada, gbc);
 
         // ===== ESPOLETA =====
-        JPanel panelEspoleta = crearPanelApartado("ESPOLETA", fontLabel, white, apartadoBorder);
+        JPanel panelEspoleta = crearPanelApartado("ESPOLETA:", fontLabel, white, apartadoBorder);
+        panelEspoleta.setBackground(new Color(72,82,122));
         comboEspoleta = crearCombo(new String[]{"I", "VT", "CM"}, fontControl, comboSize);
         panelEspoleta.add(comboEspoleta);
         gbc.gridy = 3; add(panelEspoleta, gbc);
 
         // ===== VOLUMEN =====
-        JPanel panelVolumen = crearPanelApartado("VOLUMEN", fontLabel, white, apartadoBorder);
-
-        txtVolumen = new JTextField("Número");
+        JPanel panelVolumen = crearPanelApartado("VOLUMEN:", fontLabel, white, apartadoBorder);
+        panelVolumen.setBackground(new Color(72,82,122));
+        txtVolumen = new JTextField("         Número (1-50)");
         txtVolumen.setPreferredSize(comboSize);
         txtVolumen.setFont(fontControl);
         txtVolumen.setForeground(Color.GRAY);
@@ -76,7 +84,7 @@ class MetodoAtaquePanel extends JPanel {
         txtVolumen.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (txtVolumen.getText().equals("Número")) {
+                if (txtVolumen.getText().equals("         Número (1-50)")) {
                     txtVolumen.setText("");
                     txtVolumen.setForeground(Color.BLACK);
                 }
@@ -84,7 +92,7 @@ class MetodoAtaquePanel extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 if (txtVolumen.getText().isEmpty()) {
-                    txtVolumen.setText("Número");
+                    txtVolumen.setText("         Número (1-50)");
                     txtVolumen.setForeground(Color.GRAY);
                 }
             }
@@ -115,7 +123,9 @@ class MetodoAtaquePanel extends JPanel {
         });
 
         rbDisparos = crearRadio("DISPAROS", fontSmall, white, null);
+        rbDisparos.setBackground(new Color(72,82,122));
         rbRafaga = crearRadio("RÁFAGA", fontSmall, white, null);
+        rbRafaga.setBackground(new Color(72,82,122));
         ButtonGroup grupoVolumen = new ButtonGroup();
         grupoVolumen.add(rbDisparos); grupoVolumen.add(rbRafaga);
 
@@ -126,7 +136,8 @@ class MetodoAtaquePanel extends JPanel {
         gbc.gridy = 4; add(panelVolumen, gbc);
 
         // ===== HAZ =====
-        JPanel panelHaz = crearPanelApartado("HAZ", fontLabel, white, apartadoBorder);
+        JPanel panelHaz = crearPanelApartado("HAZ:", fontLabel, white, apartadoBorder);
+        panelHaz.setBackground(new Color(72,82,122));
         comboHaz = crearCombo(new String[]{"PARALELO", "CONVERGENTE","ABIERTO","ESPECIAL","CIRCULAR"}, fontControl, comboSize);
         panelHaz.add(comboHaz);
         gbc.gridy = 5; add(panelHaz, gbc);

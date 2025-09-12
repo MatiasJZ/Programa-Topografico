@@ -7,10 +7,13 @@ class PedidoDeFuego extends JPanel {
 
     private LinkedList<Blanco> listaDeBlancos;
 
-    // Referencias al CardLayout y al panel que lo usa
+    // Referencias al CardLayout y a los paneles
     private CardLayout cardLayout;
     private JPanel pifCardPanel;
     private MetodoAtaquePanel metodoAtaquePanel;
+    private LocalizacionDeBlancoPanel localizacionDeBlancoPanel;
+    private NaturalezaDeBlancoPanel naturalezaDeBlancoPanel;
+    private TiroYControlPanel tiroYControlPanel;
 
     public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos) {
 
@@ -22,7 +25,7 @@ class PedidoDeFuego extends JPanel {
         // ====== PANEL PIF ======
         JPanel pifPanel = new JPanel(new BorderLayout());
         pifPanel.setBackground(Color.BLACK);
-        pifPanel.setBorder(crearBordeTitulo("PIF"));
+        pifPanel.setBorder(crearBordeTitulo(""));
 
         // Panel de botones superiores
         JPanel botonesPanel = new JPanel(new GridLayout(1, 4, 5, 5));
@@ -57,15 +60,22 @@ class PedidoDeFuego extends JPanel {
         vistaInicial.add(new JLabel("Seleccione una opción arriba", JLabel.CENTER));
         ((JLabel) vistaInicial.getComponent(0)).setForeground(Color.WHITE);
 
-        // Panel Metodo de Ataque
+        // Paneles específicos
         metodoAtaquePanel = new MetodoAtaquePanel();
+        localizacionDeBlancoPanel = new LocalizacionDeBlancoPanel();
+        naturalezaDeBlancoPanel = new NaturalezaDeBlancoPanel();
+        tiroYControlPanel = new TiroYControlPanel();
 
-        // Registrar vistas en el CardLayout
+     // Registrar vistas en el CardLayout
         pifCardPanel.add(vistaInicial, "inicio");
+        pifCardPanel.add(localizacionDeBlancoPanel, "localizacion");
+        pifCardPanel.add(naturalezaDeBlancoPanel, "naturaleza");
         pifCardPanel.add(metodoAtaquePanel, "metodo");
+        pifCardPanel.add(tiroYControlPanel, "tiro");
 
-        // Mostrar vista inicial por defecto
-        cardLayout.show(pifCardPanel, "inicio");
+        // Mostrar LOCALIZACION BLANCO por defecto
+        cardLayout.show(pifCardPanel, "localizacion");
+        resaltarBoton(btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro);
 
         pifPanel.add(pifCardPanel, BorderLayout.CENTER);
 
@@ -75,18 +85,17 @@ class PedidoDeFuego extends JPanel {
         historialPanel.setBorder(crearBordeTitulo("HISTORIAL"));
         historialPanel.setPreferredSize(new Dimension(200, 0));
 
-        // ====== AGREGAR AL LAYOUT PRINCIPAL ======
         add(pifPanel, BorderLayout.CENTER);
         add(historialPanel, BorderLayout.EAST);
 
         // ====== ACCIONES DE BOTONES (con resaltado) ======
         btnLocBlanco.addActionListener(e -> {
-            cardLayout.show(pifCardPanel, "inicio");
+            cardLayout.show(pifCardPanel, "localizacion");
             resaltarBoton(btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro);
         });
 
         btnNatBlanco.addActionListener(e -> {
-            cardLayout.show(pifCardPanel, "inicio");
+            cardLayout.show(pifCardPanel, "naturaleza");
             resaltarBoton(btnNatBlanco, btnLocBlanco, btnMetodo, btnTiro);
         });
 
@@ -96,12 +105,11 @@ class PedidoDeFuego extends JPanel {
         });
 
         btnTiro.addActionListener(e -> {
-            cardLayout.show(pifCardPanel, "inicio");
+            cardLayout.show(pifCardPanel, "tiro");
             resaltarBoton(btnTiro, btnLocBlanco, btnNatBlanco, btnMetodo);
         });
     }
 
-    // Método para crear bordes con títulos grandes y blancos
     private TitledBorder crearBordeTitulo(String titulo) {
         Font fuente = new Font("Arial", Font.BOLD, 20);
         TitledBorder borde = BorderFactory.createTitledBorder(titulo);
@@ -110,19 +118,18 @@ class PedidoDeFuego extends JPanel {
         return borde;
     }
 
-    // Método para resaltar el botón seleccionado
     private void resaltarBoton(JButton seleccionado, JButton... otros) {
-    	Color resaltado = new Color(0, 100, 0); // amarillo tenue
-        Color normal = new Color(60, 60, 60);      // gris oscuro
-
+        Color resaltado = new Color(0, 100, 0);
+        Color normal = new Color(60, 60, 60);
         seleccionado.setBackground(resaltado);
         for (JButton b : otros) {
             b.setBackground(normal);
         }
     }
 
-    // ====== MÉTODOS PARA ACCEDER A LOS DATOS DE METODO DE ATAQUE ======
-    public MetodoAtaquePanel getMetodoAtaquePanel() {
-        return metodoAtaquePanel;
-    }
+    // Métodos para acceder a los paneles
+    public MetodoAtaquePanel getMetodoAtaquePanel() { return metodoAtaquePanel; }
+    public LocalizacionDeBlancoPanel getLocalizacionDeBlancoPanel() { return localizacionDeBlancoPanel; }
+    public NaturalezaDeBlancoPanel getNaturalezaDeBlancoPanel() { return naturalezaDeBlancoPanel; }
+    public TiroYControlPanel getTiroYControlPanel() { return tiroYControlPanel; }
 }
