@@ -3,14 +3,11 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
 import javax.swing.*;
@@ -19,7 +16,6 @@ import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
-import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 public class SituacionTactica extends JPanel {
 
@@ -27,7 +23,6 @@ public class SituacionTactica extends JPanel {
     private JList<Blanco> listaUI;
     protected LinkedList<Blanco> listaDeBlancos;
     private JMapViewer mapa;
-    private JComboBox<String> comboFuentes;
 
     // ====== Formato numérico locale-aware (Argentina) ======
     private static final Locale LOCALE_AR = new Locale("es", "AR");
@@ -51,7 +46,12 @@ public class SituacionTactica extends JPanel {
         listaUI.setBackground(Color.BLACK);
 
         listaUI.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -101,7 +101,7 @@ public class SituacionTactica extends JPanel {
         mapa.setZoomControlsVisible(true);
         mapa.setAutoscrolls(true);
         mapa.setBackground(Color.DARK_GRAY);
-        mapa.setDisplayPosition(new Coordinate(-38.929982, -61.9075285),0);
+        mapa.setDisplayPosition(new Coordinate(-38.92, -61.90),0);
         mapa.setTileSource(new LocalXYZSource());                          
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, mapa);

@@ -14,6 +14,7 @@ class PedidoDeFuego extends JPanel {
     private LocalizacionDeBlancoPanel localizacionDeBlancoPanel;
     private NaturalezaDeBlancoPanel naturalezaDeBlancoPanel;
     private TiroYControlPanel tiroYControlPanel;
+    private JPanel correccionesPanel;
 
     public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos) {
 
@@ -66,12 +67,16 @@ class PedidoDeFuego extends JPanel {
         naturalezaDeBlancoPanel = new NaturalezaDeBlancoPanel();
         tiroYControlPanel = new TiroYControlPanel();
 
-     // Registrar vistas en el CardLayout
+        // ====== PANEL CORRECCIONES ======
+        correccionesPanel = new CorreccionesPanel(this);
+
+        // Registrar vistas en el CardLayout
         pifCardPanel.add(vistaInicial, "inicio");
         pifCardPanel.add(localizacionDeBlancoPanel, "localizacion");
         pifCardPanel.add(naturalezaDeBlancoPanel, "naturaleza");
         pifCardPanel.add(metodoAtaquePanel, "metodo");
         pifCardPanel.add(tiroYControlPanel, "tiro");
+        pifCardPanel.add(correccionesPanel, "correcciones");
 
         // Mostrar LOCALIZACION BLANCO por defecto
         cardLayout.show(pifCardPanel, "localizacion");
@@ -108,6 +113,11 @@ class PedidoDeFuego extends JPanel {
             cardLayout.show(pifCardPanel, "tiro");
             resaltarBoton(btnTiro, btnLocBlanco, btnNatBlanco, btnMetodo);
         });
+
+        // ====== CONEXIÓN CON TiroYControlPanel ======
+        tiroYControlPanel.setEnviarListener(() -> {
+            cardLayout.show(pifCardPanel, "correcciones");
+        });
     }
 
     private TitledBorder crearBordeTitulo(String titulo) {
@@ -127,6 +137,10 @@ class PedidoDeFuego extends JPanel {
         }
     }
 
+    public void mostrarInicio() {
+        cardLayout.show(pifCardPanel, "inicio");
+    }
+    
     // Métodos para acceder a los paneles
     public MetodoAtaquePanel getMetodoAtaquePanel() { return metodoAtaquePanel; }
     public LocalizacionDeBlancoPanel getLocalizacionDeBlancoPanel() { return localizacionDeBlancoPanel; }

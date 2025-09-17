@@ -4,7 +4,8 @@ import javax.swing.border.TitledBorder;
 
 public class TiroYControlPanel extends JPanel {
 
-    private JButton btnEnviar, btnCuandoListo, btnAMiOrden;
+    private JButton btnEnviar;
+    private JRadioButton rbCuandoListo, rbAMiOrden;
 
     // === Controles declarados como atributos para poder accederlos ===
     private JComboBox<String> comboPiezas;
@@ -13,6 +14,13 @@ public class TiroYControlPanel extends JPanel {
     private JRadioButton rbFgoSi, rbFgoNo;
     private JRadioButton rbTesSi, rbTesNo;
     private JTextField txtTot;
+
+    // Listener para el botón ENVIAR
+    private EnviarListener enviarListener;
+
+    public void setEnviarListener(EnviarListener listener) {
+        this.enviarListener = listener;
+    }
 
     public TiroYControlPanel() {
         setBackground(Color.BLACK);
@@ -74,29 +82,14 @@ public class TiroYControlPanel extends JPanel {
         JLabel lblTot = new JLabel(" TOT: ");
         lblTot.setForeground(Color.WHITE);
         lblTot.setFont(new Font("Arial", Font.BOLD, 18));
-        
+
         txtTot = new JTextField(" seg");
         txtTot.setForeground(Color.GRAY);
         txtTot.setFont(new Font("Arial", Font.PLAIN, 18));
         txtTot.setPreferredSize(new Dimension(40, 28));
 
-        txtTot.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) {
-                if (txtTot.getText().equals(" seg")) {
-                    txtTot.setText("");
-                    txtTot.setForeground(Color.BLACK);
-                }
-            }
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (txtTot.getText().isEmpty()) {
-                    txtTot.setText(" seg");
-                    txtTot.setForeground(Color.GRAY);
-                }
-            }
-        });
-
-        totPanel.add(lblTot, BorderLayout.WEST);
-        totPanel.add(txtTot, BorderLayout.CENTER);
+        totPanel.add(lblTot);
+        totPanel.add(txtTot);
         panelTYC2.add(totPanel, gbc2);
 
         // ====== PANEL ACCIONES (ABAJO DERECHA) ======
@@ -108,36 +101,43 @@ public class TiroYControlPanel extends JPanel {
         ga.insets = new Insets(8, 8, 8, 8);
         ga.fill = GridBagConstraints.NONE;
 
-        Dimension btnSize = new Dimension(150, 50);
-
-        btnCuandoListo = new JButton("CUANDO LISTO");
-        btnAMiOrden   = new JButton("A MI ORDEN");
-        btnEnviar     = new JButton("ENVIAR");
-
-        for (JButton b : new JButton[]{btnCuandoListo, btnAMiOrden, btnEnviar}) {
-            b.setBackground(new Color(60, 60, 60));
-            b.setForeground(Color.WHITE);
-            b.setFocusPainted(false);
-            b.setPreferredSize(btnSize);
-            b.setFont(new Font("Arial", Font.BOLD, 14));
+        // RadioButtons
+        rbCuandoListo = new JRadioButton("CUANDO LISTO");
+        rbAMiOrden    = new JRadioButton("A MI ORDEN");
+        for (JRadioButton rb : new JRadioButton[]{rbCuandoListo, rbAMiOrden}) {
+            rb.setBackground(Color.BLACK);
+            rb.setForeground(Color.WHITE);
+            rb.setFont(new Font("Arial", Font.BOLD, 14));
         }
+        ButtonGroup grupo = new ButtonGroup();
+        grupo.add(rbCuandoListo);
+        grupo.add(rbAMiOrden);
 
-        btnCuandoListo.setBackground(new Color(179,179,93));
-        btnAMiOrden.setBackground(new Color(179,179,93));
-        btnEnviar.setBackground(new Color(171,50,50));
+        // Botón enviar
+        btnEnviar = new JButton("ENVIAR");
+        btnEnviar.setBackground(new Color(171, 50, 50));
+        btnEnviar.setForeground(Color.WHITE);
+        btnEnviar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnEnviar.setPreferredSize(new Dimension(150, 50));
 
-        ga.gridx = 0; ga.gridy = 0; panelAcciones.add(btnCuandoListo, ga);
-        ga.gridx = 1; ga.gridy = 0; panelAcciones.add(btnAMiOrden, ga);
+        btnEnviar.addActionListener(e -> {
+            if (enviarListener != null) {
+                enviarListener.onEnviar();
+            }
+        });
+
+        ga.gridx = 0; ga.gridy = 0; panelAcciones.add(rbCuandoListo, ga);
+        ga.gridx = 1; panelAcciones.add(rbAMiOrden, ga);
         ga.gridx = 0; ga.gridy = 1; ga.gridwidth = 2; panelAcciones.add(btnEnviar, ga);
 
         // ====== AGREGAR CELDAS ======
-        add(panelTYC1);    // arriba izquierda
-        JPanel filler = new JPanel();
-        filler.setBackground(Color.BLACK);
+        add(panelTYC1);    
+        JPanel filler = new JPanel(); filler.setBackground(Color.BLACK);
         add(filler);
-        add(panelTYC2);    // abajo izquierda	
-        add(panelAcciones);// abajo derecha
+        add(panelTYC2);	
+        add(panelAcciones);
     }
+
 
     // Método para crear JLabel con estilo
     private JLabel crearLabelConfig(String text) {
@@ -251,6 +251,8 @@ public class TiroYControlPanel extends JPanel {
     }
 
     // ==== Métodos de acceso públicos ====
+    public boolean isCuandoListo() { return rbCuandoListo.isSelected(); }
+    public boolean isAMiOrden() { return rbAMiOrden.isSelected(); }
     public String getPiezas() { return (String) comboPiezas.getSelectedItem(); }
     public String getSeccion() { return (String) comboSeccion.getSelectedItem(); }
     public boolean isPiqueSi() { return rbPiqueSi != null && rbPiqueSi.isSelected(); }
