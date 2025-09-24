@@ -1,13 +1,9 @@
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
-import java.util.Locale;
 import javax.swing.*;
 
 import org.geotools.swing.event.MapMouseEvent;
@@ -15,20 +11,11 @@ import org.geotools.swing.tool.CursorTool;
 
 public class SituacionTactica extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	private DefaultListModel<Blanco> modeloLista;
+    private static final long serialVersionUID = 1L;
+    private DefaultListModel<Blanco> modeloLista;
     private JList<Blanco> listaUI;
     protected LinkedList<Blanco> listaDeBlancos;
     private PanelMapaGeoTools panelMapa;
-
-    // ====== Formato numérico locale-aware (Argentina) ======
-    private static final Locale LOCALE_AR = new Locale("es", "AR");
-    private static final DecimalFormatSymbols DFS_AR = DecimalFormatSymbols.getInstance(LOCALE_AR);
-    static {
-        DFS_AR.setDecimalSeparator(',');
-        DFS_AR.setGroupingSeparator('.');
-    }
-    private static final DecimalFormat DF = new DecimalFormat("0.000000", DFS_AR);
 
     public SituacionTactica(LinkedList<Blanco> listaDeBlancos) {
         setSize(900, 600);
@@ -68,23 +55,28 @@ public class SituacionTactica extends JPanel {
         JPanel panelBotones = new JPanel(new GridBagLayout());
         panelBotones.setBackground(Color.BLACK);
 
+        JButton btnAgregar = new JButton("AGREGAR");
         JButton btnEliminar = new JButton("ELIMINAR");
         JButton btnActualizar = new JButton("ACTUALIZAR");
 
+        btnAgregar.setBackground(new Color(0, 120, 255));
+        btnAgregar.setForeground(Color.WHITE);
         btnEliminar.setBackground(Color.orange);
         btnEliminar.setForeground(Color.WHITE);
         btnActualizar.setBackground(Color.red);
         btnActualizar.setForeground(Color.WHITE);
-
+        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5,5,5,5);
-        gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnEliminar, gbc);
-        gbc.gridx = 1; panelBotones.add(btnActualizar, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
+        gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; panelBotones.add(btnActualizar, gbc);	
 
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // MAPA 
-        panelMapa = new PanelMapaGeoTools("C:\\Users\\54293\\Desktop\\mapaV3.tif");
+        panelMapa = new PanelMapaGeoTools("C:/Users/54293/Desktop/mapaV2.tif");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
         splitPane.setDividerLocation(250);
@@ -95,12 +87,17 @@ public class SituacionTactica extends JPanel {
         panelMapa.getMapPane().setCursorTool(new CursorTool() {
             @Override
             public void onMouseClicked(MapMouseEvent ev) {
-                // getWorldPos() devuelve la posición en coordenadas del mapa
                 double lon = ev.getWorldPos().getX();
                 double lat = ev.getWorldPos().getY();
                 coordRectangulares coord = new coordRectangulares(lon, lat, 0);
                 mostrarDialogoAgregar(null, coord);
             }
+        });
+
+     // AGREGAR
+        btnAgregar.addActionListener(e -> {
+            // lanzar dialogo vacío
+            mostrarDialogoAgregar(null, new coordRectangulares(0, 0, 0));
         });
 
         // ELIMINAR
@@ -113,10 +110,36 @@ public class SituacionTactica extends JPanel {
             }
         });
 
-        // ===== ACTUALIZAR =====
+        // ACTUALIZAR
         btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
-    }
 
+     // ===== MENU CONTEXTUAL (click derecho) =====
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem itemEditar = new JMenuItem("Editar/Marcar");
+        JMenuItem itemMedir = new JMenuItem("Medir");
+
+        popupMenu.add(itemEditar);
+        popupMenu.add(itemMedir);
+
+        listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) mostrarPopup(e);
+            }
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) mostrarPopup(e);
+            }
+            private void mostrarPopup(java.awt.event.MouseEvent e) {
+                int idx = listaUI.locationToIndex(e.getPoint());
+                if (idx >= 0) {
+                    listaUI.setSelectedIndex(idx);
+                    popupMenu.show(listaUI, e.getX(), e.getY());
+                }
+            }
+        });
+    }
+    
     private void actualizarBlancosEnMapa() {
         for (Blanco b : listaDeBlancos) {
             panelMapa.agregarBlanco(b);
@@ -127,7 +150,7 @@ public class SituacionTactica extends JPanel {
     private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
-        dialog.setSize(700,400);
+        dialog.setSize(5a00,400);
         dialog.setLocationRelativeTo(this);
 
         JPanel panelDialog = new JPanel(new GridBagLayout());
@@ -168,17 +191,17 @@ public class SituacionTactica extends JPanel {
 
         if(blancoEditar!=null){
             coordRectangulares stored = (coordRectangulares) blancoEditar.getCoordenadas();
-            campoX.setText(DF.format(stored.getX()));
-            campoY.setText(DF.format(stored.getY()));
+            campoX.setText(String.valueOf(stored.getX()));
+            campoY.setText(String.valueOf(stored.getY()));
         } else if(coordInicial!=null){
-            campoX.setText(DF.format(coordInicial.getX()));
-            campoY.setText(DF.format(coordInicial.getY()));
+            campoX.setText(String.valueOf(coordInicial.getX()));
+            campoY.setText(String.valueOf(coordInicial.getY()));
         } else {
-            campoX.setText(DF.format(0)); campoY.setText(DF.format(0));
+            campoX.setText("0"); campoY.setText("0");
         }
 
-        JLabel lblCampoX = new JLabel("X (lon)"); lblCampoX.setForeground(Color.WHITE);
-        JLabel lblCampoY = new JLabel("Y (lat)"); lblCampoY.setForeground(Color.WHITE);
+        JLabel lblCampoX = new JLabel("X"); lblCampoX.setForeground(Color.WHITE);
+        JLabel lblCampoY = new JLabel("Y"); lblCampoY.setForeground(Color.WHITE);
 
         gbc.gridx=0; gbc.gridy=3; panelDialog.add(lblCampoX, gbc);
         gbc.gridx=1; panelDialog.add(campoX, gbc);
@@ -208,12 +231,12 @@ public class SituacionTactica extends JPanel {
                 String naturaleza = txtNaturaleza.getText().trim();
                 String fecha = dtf.format(LocalDateTime.now());
                 if(nombre.isEmpty()||naturaleza.isEmpty()){
-                    JOptionPane.showMessageDialog(dialog,"Complete todos los campos","Error",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dialog,"Complete todos los campos","Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                double x = parseDoubleLocale(campoX.getText());
-                double y = parseDoubleLocale(campoY.getText());
+                double x = Double.parseDouble(campoX.getText().trim());
+                double y = Double.parseDouble(campoY.getText().trim());
                 coordRectangulares coords = new coordRectangulares(x,y,0);
 
                 if(blancoEditar==null){
@@ -231,9 +254,9 @@ public class SituacionTactica extends JPanel {
                 }
 
                 dialog.dispose();
-            } catch(ParseException ex){
+            } catch(NumberFormatException ex){
                 JOptionPane.showMessageDialog(dialog,
-                    "Formato numérico inválido en X/Y. Ej: -61.524, -38.123",
+                    "Formato numérico inválido en X/Y.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -241,18 +264,6 @@ public class SituacionTactica extends JPanel {
         btnCancelar.addActionListener(ev -> dialog.dispose());
 
         dialog.setVisible(true);
-    }
-
-    private static double parseDoubleLocale(String s) throws ParseException {
-        if (s == null) return 0d;
-        s = s.trim().replace(" ", "");
-        try {
-            Number n = DF.parse(s);
-            return n.doubleValue();
-        } catch (ParseException ex) {
-            String alt = s.replace(',', '.');
-            return Double.parseDouble(alt);
-        }
     }
 
     private void addPlaceholder(JTextField field, String placeholder){
