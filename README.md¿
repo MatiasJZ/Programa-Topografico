@@ -1,1 +1,3 @@
 Programa en desarrollo del Batallon de Artilleria de Campaña N°1 para la integracion de un Sistema de Artillería de Reconocimiento y Gestión Operacional.
+Para la rama main, se necesita ka libreria GeoTools y el archivo .TIF 
+Para la rama implementacionConMapServer se necesitan las librerias JMapViewer, JDBC SQLite y el archivo .mbtiles
