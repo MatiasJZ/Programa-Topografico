@@ -150,7 +150,7 @@ public class SituacionTactica extends JPanel {
     private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
-        dialog.setSize(5a00,400);
+        dialog.setSize(500,400);
         dialog.setLocationRelativeTo(this);
 
         JPanel panelDialog = new JPanel(new GridBagLayout());
