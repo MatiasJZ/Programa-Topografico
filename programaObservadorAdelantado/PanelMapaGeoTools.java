@@ -1,6 +1,8 @@
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.style.Style;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.data.collection.ListFeatureCollection;
@@ -16,6 +18,7 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.swing.JMapPane;
 import org.geotools.swing.tool.PanTool;
+import org.geotools.swing.tool.ZoomInTool;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -38,45 +41,17 @@ public class PanelMapaGeoTools extends JPanel {
     public PanelMapaGeoTools(String rutaArchivo) {
         setLayout(new BorderLayout());
 
-        try {
-            File file = new File(rutaArchivo);
-            if (!file.exists()) {
-                throw new IllegalArgumentException("No se encontró el archivo: " + rutaArchivo);
-            }
-
             mapContent = new MapContent();
-            mapContent.setTitle("Mapa táctico");
-
-            if (rutaArchivo.toLowerCase().endsWith(".tif") || rutaArchivo.toLowerCase().endsWith(".tiff")) {
-                GeoTiffFormat format = new GeoTiffFormat();
-                GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
-                
-                CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-                if (crs == null) {
-                    crs = CRS.decode("EPSG:9265", true);
-                }
-                mapContent.getViewport().setCoordinateReferenceSystem(crs);
-                StyleBuilder sb = new StyleBuilder();
-                Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
-                mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
-
-            } else throw new IllegalArgumentException("Formato no soportado: " + rutaArchivo);
+            mapContent.setTitle("Mapa Táctico");
+            
+            try {
+				leerTIFF(rutaArchivo);
+			} catch (IllegalArgumentException | FactoryException e) {e.printStackTrace();}
 
             // Crear capa editable para Blancos
-            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-            builder.setName("Blancos");
-            builder.add("location", Point.class);
-            builder.setCRS(mapContent.getCoordinateReferenceSystem());
-            layerDeBlancos = builder.buildFeatureType();
-            
-            blancosCollection = new ListFeatureCollection(layerDeBlancos, new ArrayList<>());
+            crearLayerDeBlancos();
 
-            Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 14.0f);
-
-            FeatureLayer blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
-            mapContent.addLayer(blancosLayer);
-
-            // Map pane 
+            // MapPane 
             mapPane = new JMapPane(mapContent);
             add(mapPane, BorderLayout.CENTER);
 
@@ -85,35 +60,71 @@ public class PanelMapaGeoTools extends JPanel {
                 mapPane.setDisplayArea(mapContent.getMaxBounds());
             }
 
-            // Herramientas de navegación
-            mapPane.setCursorTool(new PanTool()); // Pan por defecto
-
-            // Listener para clicks 
-            mapPane.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        Point2D worldPos = mapPane.getScreenToWorldTransform()
-                                .inverseTransform(new Point2D.Double(e.getX(), e.getY()), null);
-
-                        GeometryFactory gf = new GeometryFactory();
-                        Point p = gf.createPoint(new Coordinate(worldPos.getX(), worldPos.getY()));
-
-                        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
-                        blancosCollection.add(feature);
-
-                        mapPane.repaint();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
+            mapPane.setCursorTool(new ZoomInTool());
             
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error al cargar mapa: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+            crearListenerParaClick();
+    }
+    
+    private void crearLayerDeBlancos() {
+    	
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName("Blancos");
+        builder.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
+        
+        //seteo el sistema coordinado de referencia
+        builder.setCRS(mapContent.getCoordinateReferenceSystem());
+        
+        layerDeBlancos = builder.buildFeatureType();
+        blancosCollection = new ListFeatureCollection(layerDeBlancos, new LinkedList<>());
+        
+        //estilo del punto de marca
+        Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 14.0f);
+        FeatureLayer blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
+        
+        mapContent.addLayer(blancosLayer);
+    }
+    
+    private void crearListenerParaClick() {
+        mapPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Point2D worldPos = mapPane.getScreenToWorldTransform()
+                            .inverseTransform(new Point2D.Double(e.getX(), e.getY()), null);
+
+                    GeometryFactory gf = new GeometryFactory();
+                    Point p = gf.createPoint(new Coordinate(worldPos.getX(), worldPos.getY()));
+
+                    SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
+                    blancosCollection.add(feature);
+
+                    mapPane.repaint();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+    }
+    
+    private void leerTIFF(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException{
+            File file = new File(ruta);
+            if (!file.exists()) {
+                throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
+            }
+    	if (ruta.toLowerCase().endsWith(".tif") || ruta.toLowerCase().endsWith(".tiff")) {
+            GeoTiffFormat format = new GeoTiffFormat();
+            GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
+            
+            CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
+            if (crs == null) {
+                crs = CRS.decode("EPSG:9265", true);
+            }
+            mapContent.getViewport().setCoordinateReferenceSystem(crs);
+            StyleBuilder sb = new StyleBuilder();
+            Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
+            mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
+
+        } else throw new IllegalArgumentException("Formato no soportado: " + ruta);
     }
 
     public JMapPane getMapPane() {
@@ -126,7 +137,7 @@ public class PanelMapaGeoTools extends JPanel {
 
         GeometryFactory gf = new GeometryFactory();
         Point p = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
+        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, b.getNombre());
         blancosCollection.add(feature);
         mapPane.repaint();
     }

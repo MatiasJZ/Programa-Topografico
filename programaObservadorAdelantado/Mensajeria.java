@@ -62,7 +62,8 @@ class Mensajeria extends JPanel {
         JTextArea txtMensaje = new JTextArea();
         txtMensaje.setLineWrap(true);
         txtMensaje.setWrapStyleWord(true);
-        txtMensaje.setFont(new Font("Arial", Font.PLAIN, 24));
+        txtMensaje.setBackground(new Color(143,140,140));
+        txtMensaje.setFont(new Font("Arial", Font.PLAIN, 30));
 
         JScrollPane scroll = new JScrollPane(txtMensaje);
         panelChat.add(scroll, BorderLayout.CENTER);
