@@ -1,13 +1,9 @@
-import org.geotools.api.data.DataStore;
-import org.geotools.api.data.DataStoreFinder;
-import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.style.Style;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.data.collection.ListFeatureCollection;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.geotiff.GeoTiffFormat;
@@ -37,7 +33,7 @@ public class PanelMapaGeoTools extends JPanel {
     private MapContent mapContent;
     private JMapPane mapPane;
     private ListFeatureCollection blancosCollection;
-    private SimpleFeatureType blancoType;
+    private SimpleFeatureType layerDeBlancos;
 
     public PanelMapaGeoTools(String rutaArchivo) {
         setLayout(new BorderLayout());
@@ -51,53 +47,36 @@ public class PanelMapaGeoTools extends JPanel {
             mapContent = new MapContent();
             mapContent.setTitle("Mapa táctico");
 
-            // === 1) Cargar dependiendo si es TIFF o GPKG ===
             if (rutaArchivo.toLowerCase().endsWith(".tif") || rutaArchivo.toLowerCase().endsWith(".tiff")) {
                 GeoTiffFormat format = new GeoTiffFormat();
                 GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
-
-                // Si el TIFF no tiene CRS definido, forzar POSGAR 2007 / UTM 19S
+                
                 CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
                 if (crs == null) {
                     crs = CRS.decode("EPSG:9265", true);
                 }
                 mapContent.getViewport().setCoordinateReferenceSystem(crs);
-
                 StyleBuilder sb = new StyleBuilder();
                 Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
                 mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
 
-            } else if (rutaArchivo.toLowerCase().endsWith(".gpkg")) {
-                Map<String, Object> params = new HashMap<>();
-                params.put("dbtype", "geopkg");
-                params.put("database", file.getAbsolutePath());
-                DataStore datastore = DataStoreFinder.getDataStore(params);
+            } else throw new IllegalArgumentException("Formato no soportado: " + rutaArchivo);
 
-                if (datastore != null) {
-                    for (String typeName : datastore.getTypeNames()) {
-                        SimpleFeatureSource source = datastore.getFeatureSource(typeName);
-                        Style style = SLD.createSimpleStyle(source.getSchema());
-                        mapContent.addLayer(new FeatureLayer(source, style));
-                    }
-                } else {
-                    throw new RuntimeException("No se pudo abrir el GeoPackage");
-                }
-            } else {
-                throw new IllegalArgumentException("Formato no soportado: " + rutaArchivo);
-            }
-
-            // === 2) Crear capa editable para "Blancos" ===
+            // Crear capa editable para Blancos
             SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
             builder.setName("Blancos");
             builder.add("location", Point.class);
-            blancoType = builder.buildFeatureType();
+            builder.setCRS(mapContent.getCoordinateReferenceSystem());
+            layerDeBlancos = builder.buildFeatureType();
+            
+            blancosCollection = new ListFeatureCollection(layerDeBlancos, new ArrayList<>());
 
-            blancosCollection = new ListFeatureCollection(blancoType, new ArrayList<>());
-            Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 12.0f);
+            Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 14.0f);
+
             FeatureLayer blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
             mapContent.addLayer(blancosLayer);
 
-            // === 3) Map pane ===
+            // Map pane 
             mapPane = new JMapPane(mapContent);
             add(mapPane, BorderLayout.CENTER);
 
@@ -109,7 +88,7 @@ public class PanelMapaGeoTools extends JPanel {
             // Herramientas de navegación
             mapPane.setCursorTool(new PanTool()); // Pan por defecto
 
-            // === 4) Listener para clicks ===
+            // Listener para clicks 
             mapPane.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -120,7 +99,7 @@ public class PanelMapaGeoTools extends JPanel {
                         GeometryFactory gf = new GeometryFactory();
                         Point p = gf.createPoint(new Coordinate(worldPos.getX(), worldPos.getY()));
 
-                        SimpleFeature feature = SimpleFeatureBuilder.build(blancoType, new Object[]{p}, null);
+                        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
                         blancosCollection.add(feature);
 
                         mapPane.repaint();
@@ -129,7 +108,7 @@ public class PanelMapaGeoTools extends JPanel {
                     }
                 }
             });
-
+            
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al cargar mapa: " + e.getMessage(),
@@ -141,46 +120,29 @@ public class PanelMapaGeoTools extends JPanel {
         return mapPane;
     }
 
-    // === API de Blancos ===
     public void agregarBlanco(Blanco b) {
-        if (!(b.getCoordenadas() instanceof coordRectangulares)) return;
-        coordRectangulares c = (coordRectangulares) b.getCoordenadas();
+        coordenadas base = b.getCoordenadas();
+        coordRectangulares c = (base instanceof coordRectangulares) ? (coordRectangulares) base : ((coordPolares) base).toRectangulares();
 
         GeometryFactory gf = new GeometryFactory();
         Point p = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-
-        SimpleFeature feature = SimpleFeatureBuilder.build(blancoType, new Object[]{p}, null);
+        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
         blancosCollection.add(feature);
         mapPane.repaint();
     }
+
 
     public void eliminarBlanco(Blanco b) {
         if (!(b.getCoordenadas() instanceof coordRectangulares)) return;
         coordRectangulares c = (coordRectangulares) b.getCoordenadas();
-        eliminarPorCoordenadas(c.getX(), c.getY());
-    }
-
-    public void agregarBlanco(double x, double y) {
-        GeometryFactory gf = new GeometryFactory();
-        Point p = gf.createPoint(new Coordinate(x, y));
-        SimpleFeature feature = SimpleFeatureBuilder.build(blancoType, new Object[]{p}, null);
-        blancosCollection.add(feature);
-        mapPane.repaint();
-    }
-
-    public void eliminarBlanco(double x, double y) {
-        eliminarPorCoordenadas(x, y);
-    }
-
-    private void eliminarPorCoordenadas(double x, double y) {
         final double EPS = 1e-7;
         ArrayList<SimpleFeature> aBorrar = new ArrayList<>();
 
-        try (FeatureIterator<SimpleFeature> it = blancosCollection.features()) {
+        try (var it = blancosCollection.features()) {
             while (it.hasNext()) {
                 SimpleFeature f = it.next();
                 Point p = (Point) f.getAttribute("location");
-                if (Math.abs(p.getX() - x) < EPS && Math.abs(p.getY() - y) < EPS) {
+                if (Math.abs(p.getX() - c.getX()) < EPS && Math.abs(p.getY() - c.getY()) < EPS) {
                     aBorrar.add(f);
                 }
             }

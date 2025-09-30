@@ -82,7 +82,7 @@ public class InterfazDeObservador extends JPanel {
 
             for (String valido : IDS_VALIDOS) {
                 if (idIngresado.equals(valido)) {
-                    idOAA = idIngresado;
+                    setIdOAA(idIngresado);
                     JOptionPane.showMessageDialog(null,
                         "Acceso concedido. Bienvenido " + idIngresado,
                         "Correcto",
@@ -102,4 +102,12 @@ public class InterfazDeObservador extends JPanel {
             botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
     }
+
+	public String getIdOAA() {
+		return idOAA;
+	}
+
+	public void setIdOAA(String idOAA) {
+		this.idOAA = idOAA;
+	}
 }

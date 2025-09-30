@@ -31,13 +31,13 @@ public class SituacionTactica extends JPanel {
         listaUI.setCellRenderer(new DefaultListCellRenderer() {
             private static final long serialVersionUID = 1L;
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                          int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value,int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
                 label.setHorizontalAlignment(SwingConstants.CENTER);
                 if (value instanceof Blanco) {
                     Blanco b = (Blanco) value;
+                    label.setText(b.getNombre());
                     label.setForeground(b.isAliado() ? new Color(100, 150, 255) : new Color(255, 100, 100));
                 }
                 return label;
@@ -65,13 +65,13 @@ public class SituacionTactica extends JPanel {
         btnEliminar.setForeground(Color.WHITE);
         btnActualizar.setBackground(Color.red);
         btnActualizar.setForeground(Color.WHITE);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5,5,5,5);
 
         gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
         gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; panelBotones.add(btnActualizar, gbc);	
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; panelBotones.add(btnActualizar, gbc);
 
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
@@ -83,20 +83,19 @@ public class SituacionTactica extends JPanel {
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
 
-        // CLICK EN MAPA AGREGA
+        // CLICK EN MAPA
         panelMapa.getMapPane().setCursorTool(new CursorTool() {
             @Override
             public void onMouseClicked(MapMouseEvent ev) {
                 double lon = ev.getWorldPos().getX();
                 double lat = ev.getWorldPos().getY();
                 coordRectangulares coord = new coordRectangulares(lon, lat, 0);
-                mostrarDialogoAgregar(null, coord);
+                mostrarDialogoAgregar(null, coord); // el punto se dibuja si el usuario acepta
             }
         });
 
-     // AGREGAR
+        // AGREGAR
         btnAgregar.addActionListener(e -> {
-            // lanzar dialogo vacío
             mostrarDialogoAgregar(null, new coordRectangulares(0, 0, 0));
         });
 
@@ -113,7 +112,7 @@ public class SituacionTactica extends JPanel {
         // ACTUALIZAR
         btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
 
-     // ===== MENU CONTEXTUAL (click derecho) =====
+        // MENU CONTEXTUAL
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem itemEditar = new JMenuItem("Editar/Marcar");
         JMenuItem itemMedir = new JMenuItem("Medir");
@@ -139,7 +138,7 @@ public class SituacionTactica extends JPanel {
             }
         });
     }
-    
+
     private void actualizarBlancosEnMapa() {
         for (Blanco b : listaDeBlancos) {
             panelMapa.agregarBlanco(b);
@@ -161,12 +160,16 @@ public class SituacionTactica extends JPanel {
         gbc.insets = new Insets(5,5,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextField txtNombre = new JTextField(); txtNombre.setPreferredSize(new Dimension(250,30));
-        JTextField txtNaturaleza = new JTextField(); txtNaturaleza.setPreferredSize(new Dimension(250,30));
+        JTextField txtNombre = new JTextField(); 
+        txtNombre.setPreferredSize(new Dimension(250,30));
+        JTextField txtNaturaleza = new JTextField(); 
+        txtNaturaleza.setPreferredSize(new Dimension(250,30));
         addPlaceholder(txtNombre, blancoEditar!=null?blancoEditar.getNombre():"Nombre del Blanco");
         addPlaceholder(txtNaturaleza, blancoEditar!=null?blancoEditar.getNaturaleza():"Naturaleza");
-        txtNombre.setBackground(new Color(70,70,70)); txtNombre.setForeground(Color.WHITE);
-        txtNaturaleza.setBackground(new Color(70,70,70)); txtNaturaleza.setForeground(Color.WHITE);
+        txtNombre.setBackground(new Color(70,70,70)); 
+        txtNombre.setForeground(Color.WHITE);
+        txtNaturaleza.setBackground(new Color(70,70,70));
+        txtNaturaleza.setForeground(Color.WHITE);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         JTextField txtFecha = new JTextField(blancoEditar!=null?blancoEditar.getFechaDeActualizacion():dtf.format(LocalDateTime.now()));
@@ -199,7 +202,7 @@ public class SituacionTactica extends JPanel {
         } else {
             campoX.setText("0"); campoY.setText("0");
         }
-
+        
         JLabel lblCampoX = new JLabel("X"); lblCampoX.setForeground(Color.WHITE);
         JLabel lblCampoY = new JLabel("Y"); lblCampoY.setForeground(Color.WHITE);
 
@@ -243,13 +246,14 @@ public class SituacionTactica extends JPanel {
                     Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
                     listaDeBlancos.add(nuevo);
                     modeloLista.addElement(nuevo);
-                    panelMapa.agregarBlanco(nuevo);
+                    panelMapa.agregarBlanco(nuevo); // ⬅️ se pinta en el mapa al aceptar
                 } else {
                     blancoEditar.setNombre(nombre);
                     blancoEditar.setNaturaleza(naturaleza);
                     blancoEditar.setFecha(fecha);
                     blancoEditar.setCoordenadas(coords);
                     blancoEditar.setAliado(chkAliado.isSelected());
+                    panelMapa.agregarBlanco(blancoEditar); // refresco el punto editado
                     listaUI.repaint();
                 }
 

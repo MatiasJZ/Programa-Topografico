@@ -83,11 +83,12 @@ public class TiroYControlPanel extends JPanel {
         lblTot.setForeground(Color.WHITE);
         lblTot.setFont(new Font("Arial", Font.BOLD, 18));
 
-        txtTot = new JTextField(" seg");
+        txtTot = new JTextField();
         txtTot.setForeground(Color.GRAY);
         txtTot.setFont(new Font("Arial", Font.PLAIN, 18));
         txtTot.setPreferredSize(new Dimension(40, 28));
-
+        addPlaceholderTot("seg");
+        
         totPanel.add(lblTot);
         totPanel.add(txtTot);
         panelTYC2.add(totPanel, gbc2);
@@ -250,6 +251,29 @@ public class TiroYControlPanel extends JPanel {
         return borde;
     }
 
+    public void addPlaceholderTot(String placeholder) {
+        txtTot.setText(placeholder);
+        txtTot.setForeground(Color.GRAY);
+
+        txtTot.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtTot.getText().equals(placeholder)) {
+                    txtTot.setText("");
+                    txtTot.setForeground(Color.WHITE);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtTot.getText().isEmpty()) {
+                    txtTot.setText(placeholder);
+                    txtTot.setForeground(Color.GRAY);
+                }
+            }
+        });
+    }
+    
     // ==== Métodos de acceso públicos ====
     public boolean isCuandoListo() { return rbCuandoListo.isSelected(); }
     public boolean isAMiOrden() { return rbAMiOrden.isSelected(); }

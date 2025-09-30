@@ -22,7 +22,4 @@ public class Blanco extends tipoDeBlanco {
     public void setNaturaleza(String n) { naturaleza = n; }
     public String getFechaDeActualizacion() { return fecha; }
     public void setFecha(String f) { fecha = f; }
-
-    @Override
-    public String toString() { return nombre; }
 }

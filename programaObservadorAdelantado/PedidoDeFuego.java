@@ -18,7 +18,7 @@ class PedidoDeFuego extends JPanel {
 
     public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos) {
 
-        this.listaDeBlancos = listaDeBlancos;
+        this.setListaDeBlancos(listaDeBlancos);
 
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
@@ -63,7 +63,7 @@ class PedidoDeFuego extends JPanel {
 
         // Paneles específicos
         metodoAtaquePanel = new MetodoAtaquePanel();
-        localizacionDeBlancoPanel = new LocalizacionDeBlancoPanel();
+        localizacionDeBlancoPanel = new LocalizacionDeBlancoPanel(listaDeBlancos);
         naturalezaDeBlancoPanel = new NaturalezaDeBlancoPanel();
         tiroYControlPanel = new TiroYControlPanel();
 
@@ -146,4 +146,12 @@ class PedidoDeFuego extends JPanel {
     public LocalizacionDeBlancoPanel getLocalizacionDeBlancoPanel() { return localizacionDeBlancoPanel; }
     public NaturalezaDeBlancoPanel getNaturalezaDeBlancoPanel() { return naturalezaDeBlancoPanel; }
     public TiroYControlPanel getTiroYControlPanel() { return tiroYControlPanel; }
+
+	public LinkedList<Blanco> getListaDeBlancos() {
+		return listaDeBlancos;
+	}
+
+	public void setListaDeBlancos(LinkedList<Blanco> listaDeBlancos) {
+		this.listaDeBlancos = listaDeBlancos;
+	}
 }
