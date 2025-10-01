@@ -12,7 +12,7 @@ public class ObservadorAdelantado {
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setLocationRelativeTo(null);
-        Image icon = Toolkit.getDefaultToolkit().getImage("C:/Users/54293/Desktop/LOGOBIAC.png");
+        Image icon = Toolkit.getDefaultToolkit().getImage("C:/Users/54293/Desktop/Archivos SARGO/LOGOBIAC.png");
         ventana.setIconImage(icon);
         
         InterfazDeObservador panelObservador = new InterfazDeObservador(listaDeBlancos);

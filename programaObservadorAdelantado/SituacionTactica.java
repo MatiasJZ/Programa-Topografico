@@ -15,7 +15,7 @@ public class SituacionTactica extends JPanel {
     private DefaultListModel<Blanco> modeloLista;
     private JList<Blanco> listaUI;
     protected LinkedList<Blanco> listaDeBlancos;
-    private PanelMapaGeoTools panelMapa;
+    private PanelMapa panelMapa;
 
     public SituacionTactica(LinkedList<Blanco> listaDeBlancos) {
         setSize(900, 600);
@@ -76,7 +76,7 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // MAPA 
-        panelMapa = new PanelMapaGeoTools("C:/Users/54293/Desktop/mapaV2.tif");
+        panelMapa = new PanelMapa("C:/Users/54293/Desktop/Archivos SARGO/mapaV2.tif");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
         splitPane.setDividerLocation(250);

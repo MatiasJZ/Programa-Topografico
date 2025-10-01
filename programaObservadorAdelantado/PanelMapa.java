@@ -17,7 +17,6 @@ import org.geotools.referencing.CRS;
 import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.swing.JMapPane;
-import org.geotools.swing.tool.PanTool;
 import org.geotools.swing.tool.ZoomInTool;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -31,21 +30,21 @@ import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 
-public class PanelMapaGeoTools extends JPanel {
+public class PanelMapa extends JPanel {
     private static final long serialVersionUID = 1L;
     private MapContent mapContent;
     private JMapPane mapPane;
     private ListFeatureCollection blancosCollection;
     private SimpleFeatureType layerDeBlancos;
 
-    public PanelMapaGeoTools(String rutaArchivo) {
+    public PanelMapa(String rutaArchivo) {
         setLayout(new BorderLayout());
 
             mapContent = new MapContent();
             mapContent.setTitle("Mapa Táctico");
             
             try {
-				leerTIFF(rutaArchivo);
+            	leerArchivo(rutaArchivo);
 			} catch (IllegalArgumentException | FactoryException e) {e.printStackTrace();}
 
             // Crear capa editable para Blancos
@@ -106,7 +105,7 @@ public class PanelMapaGeoTools extends JPanel {
         });
     }
     
-    private void leerTIFF(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException{
+    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException{
             File file = new File(ruta);
             if (!file.exists()) {
                 throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
