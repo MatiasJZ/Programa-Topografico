@@ -14,17 +14,26 @@ class PedidoDeFuego extends JPanel {
     private LocalizacionDeBlancoPanel localizacionDeBlancoPanel;
     private NaturalezaDeBlancoPanel naturalezaDeBlancoPanel;
     private TiroYControlPanel tiroYControlPanel;
-    private JPanel correccionesPanel;
+    private JPanel correccionesPanel, pifPanel;
 
+    // Botones superiores
+    private JButton btnLocBlanco;
+    private JButton btnNatBlanco;
+    private JButton btnMetodo;
+    private JButton btnTiro;
+
+    private final String[] ordenNavegable = {"localizacion", "naturaleza", "metodo", "tiro"};
+    private int indiceActual = 0;
+    
     public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos) {
 
-        this.setListaDeBlancos(listaDeBlancos);
+        this.listaDeBlancos=listaDeBlancos;
 
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 
-        // ====== PANEL PIF ======
-        JPanel pifPanel = new JPanel(new BorderLayout());
+        // PANEL PIF 
+        pifPanel = new JPanel(new BorderLayout());
         pifPanel.setBackground(Color.BLACK);
         pifPanel.setBorder(crearBordeTitulo(""));
 
@@ -32,10 +41,10 @@ class PedidoDeFuego extends JPanel {
         JPanel botonesPanel = new JPanel(new GridLayout(1, 4, 5, 5));
         botonesPanel.setBackground(Color.BLACK);
 
-        JButton btnLocBlanco = new JButton("LOCALIZACION BLANCO");
-        JButton btnNatBlanco = new JButton("NATURALEZA BLANCO");
-        JButton btnMetodo = new JButton("METODO DE ATAQUE");
-        JButton btnTiro = new JButton("TIRO Y CONTROL");
+        btnLocBlanco = new JButton("LOCALIZACION BLANCO");
+        btnNatBlanco = new JButton("NATURALEZA BLANCO");
+        btnMetodo = new JButton("METODO DE ATAQUE");
+        btnTiro = new JButton("TIRO Y CONTROL");
 
         for (JButton b : new JButton[]{btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro}) {
             b.setBackground(new Color(60, 60, 60));
@@ -50,7 +59,7 @@ class PedidoDeFuego extends JPanel {
 
         pifPanel.add(botonesPanel, BorderLayout.NORTH);
 
-        // ====== CARDLAYOUT PARA EL CONTENIDO DE PIF ======
+        // CARDLAYOUT PARA EL CONTENIDO DE PIF 
         cardLayout = new CardLayout();
         pifCardPanel = new JPanel(cardLayout);
         pifCardPanel.setBackground(Color.BLACK);
@@ -67,7 +76,7 @@ class PedidoDeFuego extends JPanel {
         naturalezaDeBlancoPanel = new NaturalezaDeBlancoPanel();
         tiroYControlPanel = new TiroYControlPanel();
 
-        // ====== PANEL CORRECCIONES ======
+        // PANEL CORRECCIONES
         correccionesPanel = new CorreccionesPanel(this);
 
         // Registrar vistas en el CardLayout
@@ -78,13 +87,12 @@ class PedidoDeFuego extends JPanel {
         pifCardPanel.add(tiroYControlPanel, "tiro");
         pifCardPanel.add(correccionesPanel, "correcciones");
 
-        // Mostrar LOCALIZACION BLANCO por defecto
         cardLayout.show(pifCardPanel, "localizacion");
-        resaltarBoton(btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro);
+        resaltarSegunCard("localizacion");
 
         pifPanel.add(pifCardPanel, BorderLayout.CENTER);
 
-        // ====== PANEL HISTORIAL ======
+        // PANEL HISTORIAL
         JPanel historialPanel = new JPanel(new BorderLayout());
         historialPanel.setBackground(Color.BLACK);
         historialPanel.setBorder(crearBordeTitulo("HISTORIAL"));
@@ -93,31 +101,101 @@ class PedidoDeFuego extends JPanel {
         add(pifPanel, BorderLayout.CENTER);
         add(historialPanel, BorderLayout.EAST);
 
-        // ====== ACCIONES DE BOTONES (con resaltado) ======
+        inicializarAcciones();
+        
+        crearBotonesDeNavegacion();	
+    }
+
+    private void inicializarAcciones() {
+    	// ACCIONES DE BOTONES SUPERIORES
         btnLocBlanco.addActionListener(e -> {
+            indiceActual = 0;
             cardLayout.show(pifCardPanel, "localizacion");
-            resaltarBoton(btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro);
+            resaltarSegunCard("localizacion");
         });
 
         btnNatBlanco.addActionListener(e -> {
+            indiceActual = 1;
             cardLayout.show(pifCardPanel, "naturaleza");
-            resaltarBoton(btnNatBlanco, btnLocBlanco, btnMetodo, btnTiro);
+            resaltarSegunCard("naturaleza");
         });
 
         btnMetodo.addActionListener(e -> {
+            indiceActual = 2;
             cardLayout.show(pifCardPanel, "metodo");
-            resaltarBoton(btnMetodo, btnLocBlanco, btnNatBlanco, btnTiro);
+            resaltarSegunCard("metodo");
         });
 
         btnTiro.addActionListener(e -> {
+            indiceActual = 3;
             cardLayout.show(pifCardPanel, "tiro");
-            resaltarBoton(btnTiro, btnLocBlanco, btnNatBlanco, btnMetodo);
+            resaltarSegunCard("tiro");
         });
 
-        // ====== CONEXIÓN CON TiroYControlPanel ======
+        // CONEXIÓN CON TiroYControlPanel 
         tiroYControlPanel.setEnviarListener(() -> {
             cardLayout.show(pifCardPanel, "correcciones");
         });
+    }
+    
+    private void crearBotonesDeNavegacion() {
+    	
+    	JButton btnPrev = new JButton("<");
+    	btnPrev.setFont(new Font("Arial", Font.BOLD, 24));
+    	btnPrev.setBackground(new Color(0, 100, 0));
+    	btnPrev.setForeground(Color.WHITE);
+    	btnPrev.setFocusPainted(false);
+
+    	JButton btnNext = new JButton(">");
+    	btnNext.setFont(new Font("Arial", Font.BOLD, 24));
+    	btnNext.setBackground(new Color(0, 100, 0));
+    	btnNext.setForeground(Color.WHITE);
+    	btnNext.setFocusPainted(false);
+
+    	JPanel centerWithNav = new JPanel(new BorderLayout());
+    	centerWithNav.setBackground(Color.BLACK);
+
+    	centerWithNav.add(btnPrev, BorderLayout.WEST);
+    	centerWithNav.add(pifCardPanel, BorderLayout.CENTER);
+    	centerWithNav.add(btnNext, BorderLayout.EAST);
+
+    	pifPanel.add(centerWithNav, BorderLayout.CENTER);
+
+    	// ACCIONES
+    	btnPrev.addActionListener(e -> {
+    	    if (indiceActual > 0) {
+    	        indiceActual--;
+    	        String card = ordenNavegable[indiceActual];
+    	        cardLayout.show(pifCardPanel, card);
+    	        resaltarSegunCard(card);
+    	    }
+    	});
+
+    	btnNext.addActionListener(e -> {
+    	    if (indiceActual < ordenNavegable.length - 1) {
+    	        indiceActual++;
+    	        String card = ordenNavegable[indiceActual];
+    	        cardLayout.show(pifCardPanel, card);
+    	        resaltarSegunCard(card);
+    	    }
+    	});
+    }
+    
+    private void resaltarSegunCard(String cardName) {
+        switch (cardName) {
+            case "localizacion":
+                resaltarBoton(btnLocBlanco, btnNatBlanco, btnMetodo, btnTiro);
+                break;
+            case "naturaleza":
+                resaltarBoton(btnNatBlanco, btnLocBlanco, btnMetodo, btnTiro);
+                break;
+            case "metodo":
+                resaltarBoton(btnMetodo, btnLocBlanco, btnNatBlanco, btnTiro);
+                break;
+            case "tiro":
+                resaltarBoton(btnTiro, btnLocBlanco, btnNatBlanco, btnMetodo);
+                break;
+        }
     }
 
     private TitledBorder crearBordeTitulo(String titulo) {
@@ -149,9 +227,5 @@ class PedidoDeFuego extends JPanel {
 
 	public LinkedList<Blanco> getListaDeBlancos() {
 		return listaDeBlancos;
-	}
-
-	public void setListaDeBlancos(LinkedList<Blanco> listaDeBlancos) {
-		this.listaDeBlancos = listaDeBlancos;
 	}
 }
