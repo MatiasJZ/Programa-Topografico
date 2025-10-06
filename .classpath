@@ -8,7 +8,6 @@
 	<classpathentry kind="src" path="programaCDFBateria"/>
 	<classpathentry kind="src" path="programaJefeDePieza"/>
 	<classpathentry kind="src" path="programaObservadorAdelantado"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Desktop/jmapviewer-2.24.jar"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Downloads/sqlite-jdbc-3.50.3.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GeoTools"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
