@@ -1,11 +1,15 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 class PedidoDeFuego extends JPanel {
 
-    private LinkedList<Blanco> listaDeBlancos;
+	private static final long serialVersionUID = 1L;
+
+	private LinkedList<Blanco> listaDeBlancos;
 
     // Referencias al CardLayout y a los paneles
     private CardLayout cardLayout;
@@ -107,7 +111,7 @@ class PedidoDeFuego extends JPanel {
     }
 
     private void inicializarAcciones() {
-    	// ACCIONES DE BOTONES SUPERIORES
+    	// acciones de botones superiores
         btnLocBlanco.addActionListener(e -> {
             indiceActual = 0;
             cardLayout.show(pifCardPanel, "localizacion");
@@ -132,55 +136,74 @@ class PedidoDeFuego extends JPanel {
             resaltarSegunCard("tiro");
         });
 
-        // CONEXIÓN CON TiroYControlPanel 
+        // conexion con TiroYControlPanel 
         tiroYControlPanel.setEnviarListener(() -> {
             cardLayout.show(pifCardPanel, "correcciones");
         });
     }
     
-    private void crearBotonesDeNavegacion() {
-    	
-    	JButton btnPrev = new JButton("<");
-    	btnPrev.setFont(new Font("Arial", Font.BOLD, 24));
-    	btnPrev.setBackground(new Color(0, 100, 0));
-    	btnPrev.setForeground(Color.WHITE);
-    	btnPrev.setFocusPainted(false);
+    @SuppressWarnings("serial")
+	private void crearBotonesDeNavegacion() {
+        JButton btnPrev = new JButton("<");
+        btnPrev.setFont(new Font("Arial", Font.BOLD, 24));
+        btnPrev.setBackground(new Color(0, 100, 0));
+        btnPrev.setForeground(Color.WHITE);
+        btnPrev.setFocusPainted(false);
 
-    	JButton btnNext = new JButton(">");
-    	btnNext.setFont(new Font("Arial", Font.BOLD, 24));
-    	btnNext.setBackground(new Color(0, 100, 0));
-    	btnNext.setForeground(Color.WHITE);
-    	btnNext.setFocusPainted(false);
+        JButton btnNext = new JButton(">");
+        btnNext.setFont(new Font("Arial", Font.BOLD, 24));
+        btnNext.setBackground(new Color(0, 100, 0));
+        btnNext.setForeground(Color.WHITE);
+        btnNext.setFocusPainted(false);
 
-    	JPanel centerWithNav = new JPanel(new BorderLayout());
-    	centerWithNav.setBackground(Color.BLACK);
+        JPanel centerWithNav = new JPanel(new BorderLayout());
+        centerWithNav.setBackground(Color.BLACK);
 
-    	centerWithNav.add(btnPrev, BorderLayout.WEST);
-    	centerWithNav.add(pifCardPanel, BorderLayout.CENTER);
-    	centerWithNav.add(btnNext, BorderLayout.EAST);
+        centerWithNav.add(btnPrev, BorderLayout.WEST);
+        centerWithNav.add(pifCardPanel, BorderLayout.CENTER);
+        centerWithNav.add(btnNext, BorderLayout.EAST);
 
-    	pifPanel.add(centerWithNav, BorderLayout.CENTER);
+        pifPanel.add(centerWithNav, BorderLayout.CENTER);
 
-    	// ACCIONES
-    	btnPrev.addActionListener(e -> {
-    	    if (indiceActual > 0) {
-    	        indiceActual--;
-    	        String card = ordenNavegable[indiceActual];
-    	        cardLayout.show(pifCardPanel, card);
-    	        resaltarSegunCard(card);
-    	    }
-    	});
+        btnPrev.addActionListener(e -> {
+            if (indiceActual > 0) {
+                indiceActual--;
+                String card = ordenNavegable[indiceActual];
+                cardLayout.show(pifCardPanel, card);
+                resaltarSegunCard(card);
+            }
+        });
 
-    	btnNext.addActionListener(e -> {
-    	    if (indiceActual < ordenNavegable.length - 1) {
-    	        indiceActual++;
-    	        String card = ordenNavegable[indiceActual];
-    	        cardLayout.show(pifCardPanel, card);
-    	        resaltarSegunCard(card);
-    	    }
-    	});
+        btnNext.addActionListener(e -> {
+            if (indiceActual < ordenNavegable.length - 1) {
+                indiceActual++;
+                String card = ordenNavegable[indiceActual];
+                cardLayout.show(pifCardPanel, card);
+                resaltarSegunCard(card);
+            }
+        });
+        // Atajos con flechas
+        InputMap inputMap = pifPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = pifPanel.getActionMap();
+
+        // Flecha izquierda → botón Prev
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "irPrev");
+        actionMap.put("irPrev", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnPrev.doClick();
+            }
+        });
+        // Flecha derecha → botón Next
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "irNext");
+        actionMap.put("irNext", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnNext.doClick();
+            }
+        });
     }
-    
+
     private void resaltarSegunCard(String cardName) {
         switch (cardName) {
             case "localizacion":

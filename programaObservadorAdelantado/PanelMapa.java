@@ -24,9 +24,6 @@ import org.locationtech.jts.geom.Point;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.*;
 
@@ -36,93 +33,68 @@ public class PanelMapa extends JPanel {
     private JMapPane mapPane;
     private ListFeatureCollection blancosCollection;
     private SimpleFeatureType layerDeBlancos;
+    private FeatureLayer blancosLayer;
 
     public PanelMapa(String rutaArchivo) {
         setLayout(new BorderLayout());
+        mapContent = new MapContent();
+        mapContent.setTitle("Mapa Táctico");
 
-            mapContent = new MapContent();
-            mapContent.setTitle("Mapa Táctico");
-            
-            try {
-            	leerArchivo(rutaArchivo);
-			} catch (IllegalArgumentException | FactoryException e) {e.printStackTrace();}
+        try {
+            leerArchivo(rutaArchivo);
+        } catch (IllegalArgumentException | FactoryException e) {
+            e.printStackTrace();
+        }
 
-            // Crear capa editable para Blancos
-            crearLayerDeBlancos();
+        crearLayerDeBlancos();
 
-            // MapPane 
-            mapPane = new JMapPane(mapContent);
-            add(mapPane, BorderLayout.CENTER);
+        mapPane = new JMapPane(mapContent);
+        add(mapPane, BorderLayout.CENTER);
 
-            // Ajustar vista
-            if (mapContent.getMaxBounds() != null) {
-                mapPane.setDisplayArea(mapContent.getMaxBounds());
-            }
+        if (mapContent.getMaxBounds() != null) {
+            mapPane.setDisplayArea(mapContent.getMaxBounds());
+        }
 
-            mapPane.setCursorTool(new ZoomInTool());
-            
-            crearListenerParaClick();
+        mapPane.setCursorTool(new ZoomInTool());
     }
-    
+
     private void crearLayerDeBlancos() {
-    	
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Blancos");
         builder.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
-        
-        //seteo el sistema coordinado de referencia
+        builder.add("nombre", String.class);
+        builder.add("naturaleza", String.class);
+        builder.add("fecha", String.class);
+        builder.add("aliado", Boolean.class);
         builder.setCRS(mapContent.getCoordinateReferenceSystem());
-        
+
         layerDeBlancos = builder.buildFeatureType();
         blancosCollection = new ListFeatureCollection(layerDeBlancos, new LinkedList<>());
-        
-        //estilo del punto de marca
+
         Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 14.0f);
-        FeatureLayer blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
-        
+        blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
+        blancosLayer.setTitle("Blancos");
+
         mapContent.addLayer(blancosLayer);
+        System.out.println("[MAPA] Capa de blancos creada correctamente.");
     }
-    
-    private void crearListenerParaClick() {
-        mapPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    Point2D worldPos = mapPane.getScreenToWorldTransform()
-                            .inverseTransform(new Point2D.Double(e.getX(), e.getY()), null);
 
-                    GeometryFactory gf = new GeometryFactory();
-                    Point p = gf.createPoint(new Coordinate(worldPos.getX(), worldPos.getY()));
+    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException {
+        File file = new File(ruta);
+        if (!file.exists()) throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
 
-                    SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, null);
-                    blancosCollection.add(feature);
-
-                    mapPane.repaint();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-    }
-    
-    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException{
-            File file = new File(ruta);
-            if (!file.exists()) {
-                throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
-            }
-    	if (ruta.toLowerCase().endsWith(".tif") || ruta.toLowerCase().endsWith(".tiff")) {
+        if (ruta.toLowerCase().endsWith(".tif") || ruta.toLowerCase().endsWith(".tiff")) {
             GeoTiffFormat format = new GeoTiffFormat();
             GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
-            
             CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-            if (crs == null) {
-                crs = CRS.decode("EPSG:9265", true);
-            }
+            if (crs == null) crs = CRS.decode("EPSG:9265", true);
             mapContent.getViewport().setCoordinateReferenceSystem(crs);
+
             StyleBuilder sb = new StyleBuilder();
             Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
             mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
 
+            System.out.println("[RASTER] Archivo cargado: " + ruta);
         } else throw new IllegalArgumentException("Formato no soportado: " + ruta);
     }
 
@@ -131,41 +103,76 @@ public class PanelMapa extends JPanel {
     }
 
     public void agregarBlanco(Blanco b) {
+        if (b == null) return;
+
         coordenadas base = b.getCoordenadas();
-        coordRectangulares c = (base instanceof coordRectangulares) ? (coordRectangulares) base : ((coordPolares) base).toRectangulares();
+        coordRectangulares c = (base instanceof coordRectangulares)
+                ? (coordRectangulares) base
+                : ((coordPolares) base).toRectangulares();
 
         GeometryFactory gf = new GeometryFactory();
         Point p = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, new Object[]{p}, b.getNombre());
+
+        Object[] atributos = {
+                p,
+                b.getNombre(),
+                b.getNaturaleza(),
+                b.getFechaDeActualizacion(),
+                b.isAliado()
+        };
+
+        String fid = "blanco-" + b.hashCode();
+        SimpleFeature feature = SimpleFeatureBuilder.build(layerDeBlancos, atributos, fid);
+
+        blancosCollection.removeIf(f -> f.getID().equals(fid));
         blancosCollection.add(feature);
-        mapPane.repaint();
+
+        System.out.println("[AGREGAR BLANCO] " + b.getNombre() + " agregado en (" + c.getX() + ", " + c.getY() + ")");
+        System.out.println("Total de blancos: " + blancosCollection.size());
+
+        refrescarCapas();
     }
 
-
     public void eliminarBlanco(Blanco b) {
-        if (!(b.getCoordenadas() instanceof coordRectangulares)) return;
+        if (b == null || !(b.getCoordenadas() instanceof coordRectangulares)) return;
+
         coordRectangulares c = (coordRectangulares) b.getCoordenadas();
         final double EPS = 1e-7;
-        ArrayList<SimpleFeature> aBorrar = new ArrayList<>();
+        LinkedList<SimpleFeature> aBorrar = new LinkedList<>();
 
         try (var it = blancosCollection.features()) {
             while (it.hasNext()) {
                 SimpleFeature f = it.next();
-                Point p = (Point) f.getAttribute("location");
-                if (Math.abs(p.getX() - c.getX()) < EPS && Math.abs(p.getY() - c.getY()) < EPS) {
+                Point p = (Point) f.getAttribute("the_geom");
+                if (p != null &&
+                        Math.abs(p.getX() - c.getX()) < EPS &&
+                        Math.abs(p.getY() - c.getY()) < EPS) {
                     aBorrar.add(f);
                 }
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        for (SimpleFeature f : aBorrar) {
-            blancosCollection.remove(f);
-        }
+
+        for (SimpleFeature f : aBorrar) blancosCollection.remove(f);
+        System.out.println("[ELIMINAR BLANCO] Eliminados: " + aBorrar.size());
+
+        refrescarCapas();
+    }
+
+    public void refrescarCapas() {
+        mapContent.layers().forEach(layer -> {
+            if (layer instanceof FeatureLayer) {
+                FeatureLayer fl = (FeatureLayer) layer;
+                fl.setVisible(false);
+                fl.setVisible(true);
+                System.out.println("[DEBUG] Refrescando capa: " + fl.getTitle());
+            }
+        });
         mapPane.repaint();
     }
 
     public void dispose() {
-        if (mapContent != null) {
-            mapContent.dispose();
-        }
+        if (mapContent != null) mapContent.dispose();
     }
 }

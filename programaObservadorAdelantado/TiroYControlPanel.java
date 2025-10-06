@@ -4,10 +4,9 @@ import javax.swing.border.TitledBorder;
 
 public class TiroYControlPanel extends JPanel {
 
-    private JButton btnEnviar;
+	private static final long serialVersionUID = 1L;
+	private JButton btnEnviar;
     private JRadioButton rbCuandoListo, rbAMiOrden;
-
-    // === Controles declarados como atributos para poder accederlos ===
     private JComboBox<String> comboPiezas;
     private JComboBox<String> comboSeccion;
     private JRadioButton rbPiqueSi, rbPiqueNo;
@@ -24,9 +23,9 @@ public class TiroYControlPanel extends JPanel {
 
     public TiroYControlPanel() {
         setBackground(Color.BLACK);
-        setLayout(new GridLayout(2, 2, 5, 5)); // 2x2 celdas
+        setLayout(new GridLayout(2, 2, 5, 5)); 
 
-        // ====== PANEL TYC (ARRIBA IZQUIERDA) ======
+        // PANEL TYC (ARRIBA IZQUIERDA)
         JPanel panelTYC1 = crearPanelTYC();
         panelTYC1.setLayout(new GridBagLayout());
         GridBagConstraints gbc1 = new GridBagConstraints();
@@ -58,7 +57,7 @@ public class TiroYControlPanel extends JPanel {
         gbc1.gridx = 0; gbc1.gridy = 2; gbc1.gridwidth = 2;
         panelTYC1.add(crearRadioGroupAlineado("PIQUE:", true), gbc1);
 
-        // ====== PANEL TYC (ABAJO IZQUIERDA) ======
+        // PANEL TYC (ABAJO IZQUIERDA)
         JPanel panelTYC2 = crearPanelTYC();
         panelTYC2.setLayout(new GridBagLayout());
         GridBagConstraints gbc2 = new GridBagConstraints();
@@ -77,10 +76,10 @@ public class TiroYControlPanel extends JPanel {
         // TOT
         gbc2.gridy = 2;
         JPanel totPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        totPanel.setBackground(Color.BLACK);
+        totPanel.setBackground(Color.WHITE);
 
         JLabel lblTot = new JLabel(" TOT: ");
-        lblTot.setForeground(Color.WHITE);
+        lblTot.setForeground(Color.BLACK);
         lblTot.setFont(new Font("Arial", Font.BOLD, 18));
 
         txtTot = new JTextField();
@@ -93,7 +92,7 @@ public class TiroYControlPanel extends JPanel {
         totPanel.add(txtTot);
         panelTYC2.add(totPanel, gbc2);
 
-        // ====== PANEL ACCIONES (ABAJO DERECHA) ======
+        // PANEL ACCIONES (ABAJO DERECHA) 
         JPanel panelAcciones = new JPanel(new GridBagLayout());
         panelAcciones.setBackground(Color.BLACK);
         panelAcciones.setBorder(crearBordeTitulo("Acciones"));
@@ -131,7 +130,7 @@ public class TiroYControlPanel extends JPanel {
         ga.gridx = 1; panelAcciones.add(rbAMiOrden, ga);
         ga.gridx = 0; ga.gridy = 1; ga.gridwidth = 2; panelAcciones.add(btnEnviar, ga);
 
-        // ====== AGREGAR CELDAS ======
+        // AGREGAR CELDAS
         add(panelTYC1);    
         JPanel filler = new JPanel(); filler.setBackground(Color.BLACK);
         add(filler);
@@ -139,8 +138,6 @@ public class TiroYControlPanel extends JPanel {
         add(panelAcciones);
     }
 
-
-    // Método para crear JLabel con estilo
     private JLabel crearLabelConfig(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setForeground(Color.WHITE);
@@ -273,8 +270,7 @@ public class TiroYControlPanel extends JPanel {
             }
         });
     }
-    
-    // ==== Métodos de acceso públicos ====
+
     public boolean isCuandoListo() { return rbCuandoListo.isSelected(); }
     public boolean isAMiOrden() { return rbAMiOrden.isSelected(); }
     public String getPiezas() { return (String) comboPiezas.getSelectedItem(); }

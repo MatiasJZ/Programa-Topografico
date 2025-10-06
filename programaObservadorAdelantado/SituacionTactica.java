@@ -1,6 +1,8 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -82,17 +84,17 @@ public class SituacionTactica extends JPanel {
         splitPane.setDividerLocation(250);
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
-
+        
         // CLICK EN MAPA
-        panelMapa.getMapPane().setCursorTool(new CursorTool() {
-            @Override
-            public void onMouseClicked(MapMouseEvent ev) {
-                double lon = ev.getWorldPos().getX();
-                double lat = ev.getWorldPos().getY();
-                coordRectangulares coord = new coordRectangulares(lon, lat, 0);
-                mostrarDialogoAgregar(null, coord); // el punto se dibuja si el usuario acepta
-            }
-        });
+	        panelMapa.getMapPane().setCursorTool(new CursorTool() {
+	            @Override
+	            public void onMouseClicked(MapMouseEvent ev) {
+	                double lon = ev.getWorldPos().getX();
+	                double lat = ev.getWorldPos().getY();
+	                coordRectangulares coord = new coordRectangulares(lon, lat, 0);
+	                mostrarDialogoAgregar(null, coord); // el punto se dibuja si el usuario acepta
+	            }
+	        });	
 
         // AGREGAR
         btnAgregar.addActionListener(e -> {
@@ -136,7 +138,7 @@ public class SituacionTactica extends JPanel {
                     popupMenu.show(listaUI, e.getX(), e.getY());
                 }
             }
-        });
+        });        
     }
 
     private void actualizarBlancosEnMapa() {
@@ -146,7 +148,8 @@ public class SituacionTactica extends JPanel {
         listaUI.repaint();
     }
 
-    private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial){
+    @SuppressWarnings("serial")
+	private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial){
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
         dialog.setSize(500,400);
@@ -229,47 +232,57 @@ public class SituacionTactica extends JPanel {
         gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2; panelDialog.add(panelBotonesDialog, gbc);
 
         btnAceptar.addActionListener(ev -> {
-            try{
+            try {
                 String nombre = txtNombre.getText().trim();
                 String naturaleza = txtNaturaleza.getText().trim();
                 String fecha = dtf.format(LocalDateTime.now());
-                if(nombre.isEmpty()||naturaleza.isEmpty()){
-                    JOptionPane.showMessageDialog(dialog,"Complete todos los campos","Error", JOptionPane.ERROR_MESSAGE);
+                if (nombre.isEmpty() || naturaleza.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Complete todos los campos",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
                 double x = Double.parseDouble(campoX.getText().trim());
                 double y = Double.parseDouble(campoY.getText().trim());
-                coordRectangulares coords = new coordRectangulares(x,y,0);
-
-                if(blancoEditar==null){
+                coordRectangulares coords = new coordRectangulares(x, y, 0);
+                if (blancoEditar == null) {
                     Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
                     listaDeBlancos.add(nuevo);
                     modeloLista.addElement(nuevo);
-                    panelMapa.agregarBlanco(nuevo); // ⬅️ se pinta en el mapa al aceptar
+                    panelMapa.agregarBlanco(nuevo);
                 } else {
                     blancoEditar.setNombre(nombre);
                     blancoEditar.setNaturaleza(naturaleza);
                     blancoEditar.setFecha(fecha);
                     blancoEditar.setCoordenadas(coords);
                     blancoEditar.setAliado(chkAliado.isSelected());
-                    panelMapa.agregarBlanco(blancoEditar); // refresco el punto editado
+                    panelMapa.agregarBlanco(blancoEditar); 
                     listaUI.repaint();
                 }
-
                 dialog.dispose();
-            } catch(NumberFormatException ex){
+            } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(dialog,
-                    "Formato numérico inválido en X/Y.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                        "Formato numérico inválido en X/Y.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        btnCancelar.addActionListener(ev -> dialog.dispose());
+        JRootPane rootPane = dialog.getRootPane();
+        rootPane.setDefaultButton(btnAceptar);
+        KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(escapeStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                btnCancelar.doClick();
             }
         });
 
-        btnCancelar.addActionListener(ev -> dialog.dispose());
-
         dialog.setVisible(true);
     }
-
+    
     private void addPlaceholder(JTextField field, String placeholder){
         Color placeholderColor = new Color(180,180,180);
         Color textColor = Color.WHITE;
