@@ -10,6 +10,8 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffReader;
+import org.geotools.geopkg.GeoPackage;
+import org.geotools.geopkg.mosaic.GeoPackageReader;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
@@ -25,6 +27,7 @@ import org.locationtech.jts.geom.Point;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class PanelMapa extends JPanel {
@@ -42,7 +45,7 @@ public class PanelMapa extends JPanel {
 
         try {
             leerArchivo(rutaArchivo);
-        } catch (IllegalArgumentException | FactoryException e) {
+        } catch (IllegalArgumentException | FactoryException | IOException  e) {
             e.printStackTrace();
         }
 
@@ -71,7 +74,7 @@ public class PanelMapa extends JPanel {
         layerDeBlancos = builder.buildFeatureType();
         blancosCollection = new ListFeatureCollection(layerDeBlancos, new LinkedList<>());
 
-        Style pointStyle = SLD.createPointStyle("circle", Color.BLUE, Color.BLACK, 1.0f, 14.0f);
+        Style pointStyle = SLD.createPointStyle("cross", Color.WHITE, new Color(0,123,255), 1.0f, 18.0f); ///////////////////////////////////////////////////////////////
         blancosLayer = new FeatureLayer(blancosCollection, pointStyle);
         blancosLayer.setTitle("Blancos");
 
@@ -79,23 +82,49 @@ public class PanelMapa extends JPanel {
         System.out.println("[MAPA] Capa de blancos creada correctamente.");
     }
 
-    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException {
+    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException, IOException {
         File file = new File(ruta);
         if (!file.exists()) throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
-
-        if (ruta.toLowerCase().endsWith(".tif") || ruta.toLowerCase().endsWith(".tiff")) {
+        
+        String extension = ruta.toLowerCase();
+        
+        if (extension.endsWith(".tif") || extension.endsWith(".tiff")) {
             GeoTiffFormat format = new GeoTiffFormat();
             GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
             CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-            if (crs == null) crs = CRS.decode("EPSG:9265", true);
+            if (crs == null) 
+            	crs = CRS.decode("EPSG:9265", true);
             mapContent.getViewport().setCoordinateReferenceSystem(crs);
 
             StyleBuilder sb = new StyleBuilder();
-            Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
+            Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());		
             mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
 
-            System.out.println("[RASTER] Archivo cargado: " + ruta);
-        } else throw new IllegalArgumentException("Formato no soportado: " + ruta);
+            System.out.println("[TIFF] Archivo cargado: " + ruta);
+        } else {
+        	if(extension.endsWith(".gpkg")) {
+        		System.out.println("[GEOPACKAGE] Cargando GeoPackage: " + ruta);
+
+                GeoPackage geoPackage = new GeoPackage(file);
+                geoPackage.init();
+
+                GeoPackageReader gpkgReader = new GeoPackageReader(file, null);
+
+                CoordinateReferenceSystem crs = CRS.decode("EPSG:5347", true);
+                mapContent.getViewport().setCoordinateReferenceSystem(crs);
+                
+                StyleBuilder sb = new StyleBuilder();
+                Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
+                GridReaderLayer gpkgLayer = new GridReaderLayer(gpkgReader, rasterStyle);
+                mapContent.addLayer(gpkgLayer);
+                
+                System.out.println("[GEOPACKAGE] GeoPackage raster agregado al mapa.");
+
+                geoPackage.close();
+
+        	}
+        	else throw new IllegalArgumentException("Formato no soportado: " + ruta);
+        }
     }
 
     public JMapPane getMapPane() {
@@ -166,7 +195,6 @@ public class PanelMapa extends JPanel {
                 FeatureLayer fl = (FeatureLayer) layer;
                 fl.setVisible(false);
                 fl.setVisible(true);
-                System.out.println("[DEBUG] Refrescando capa: " + fl.getTitle());
             }
         });
         mapPane.repaint();

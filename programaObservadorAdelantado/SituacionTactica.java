@@ -78,7 +78,7 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // MAPA 
-        panelMapa = new PanelMapa("C:/Users/54293/Desktop/Archivos SARGO/mapaV2.tif");
+        panelMapa = new PanelMapa("C:/Users/54293/Desktop/Archivos SARGO/mapa.GPKG");
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
         splitPane.setDividerLocation(250);
