@@ -8,6 +8,7 @@
 	<classpathentry kind="src" path="programaCDFBateria"/>
 	<classpathentry kind="src" path="programaJefeDePieza"/>
 	<classpathentry kind="src" path="programaObservadorAdelantado"/>
+	<classpathentry kind="src" path="imagenes"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GeoTools"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

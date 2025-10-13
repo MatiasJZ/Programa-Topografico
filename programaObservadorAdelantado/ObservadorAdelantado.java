@@ -42,7 +42,6 @@ public class ObservadorAdelantado extends JPanel{
 
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
-
         // Menú superior con 3 botones
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
         menuSuperior.setBackground(Color.DARK_GRAY);
@@ -89,8 +88,7 @@ public class ObservadorAdelantado extends JPanel{
     }
 
     private void pedirID() {
-        String rutaLogo = "C:/Users/54293/Desktop/Archivos SARGO/LOGOBIAC.png";
-        ImageIcon iconoOriginal = new ImageIcon(rutaLogo);
+        ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
         ImageIcon icono = new ImageIcon(imgEscalada);
         while (true) {

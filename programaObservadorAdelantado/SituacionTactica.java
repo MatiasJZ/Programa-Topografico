@@ -78,13 +78,12 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
         // MAPA 
-        panelMapa = new PanelMapa("C:/Users/54293/Desktop/Archivos SARGO/mapa.GPKG");
-
+        panelMapa = new PanelMapa("C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF");
+        
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
         splitPane.setDividerLocation(250);
         splitPane.setContinuousLayout(true);
-        add(splitPane, BorderLayout.CENTER);
-        
+        add(splitPane, BorderLayout.CENTER);      
         // CLICK EN MAPA
 	        panelMapa.getMapPane().setCursorTool(new CursorTool() {
 	            @Override
@@ -95,12 +94,10 @@ public class SituacionTactica extends JPanel {
 	                mostrarDialogoAgregar(null, coord); // el punto se dibuja si el usuario acepta
 	            }
 	        });	
-
         // AGREGAR
         btnAgregar.addActionListener(e -> {
             mostrarDialogoAgregar(null, new coordRectangulares(0, 0, 0));
         });
-
         // ELIMINAR
         btnEliminar.addActionListener(e -> {
             Blanco seleccionado = listaUI.getSelectedValue();
@@ -149,7 +146,7 @@ public class SituacionTactica extends JPanel {
     }
 
     @SuppressWarnings("serial")
-	private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial){
+    private void mostrarDialogoAgregar(Blanco blancoEditar, coordRectangulares coordInicial) {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, (blancoEditar==null?"Nuevo Blanco":"Editar Blanco"), true);
         dialog.setSize(500,400);
@@ -205,7 +202,7 @@ public class SituacionTactica extends JPanel {
         } else {
             campoX.setText("0"); campoY.setText("0");
         }
-        
+
         JLabel lblCampoX = new JLabel("X"); lblCampoX.setForeground(Color.WHITE);
         JLabel lblCampoY = new JLabel("Y"); lblCampoY.setForeground(Color.WHITE);
 
@@ -219,9 +216,30 @@ public class SituacionTactica extends JPanel {
         chkAliado.setForeground(Color.WHITE);
         if(blancoEditar!=null) chkAliado.setSelected(blancoEditar.isAliado());
         else chkAliado.setSelected(true);
-
         gbc.gridx=0; gbc.gridy=5; panelDialog.add(new JLabel("Tipo:"), gbc);
         gbc.gridx=1; panelDialog.add(chkAliado, gbc);
+
+        // 🔹 NUEVAS OPCIONES: forma geométrica y color automático
+        String[] formas = {"círculo", "cruz", "triángulo"};
+        JComboBox<String> comboForma = new JComboBox<>(formas);
+        comboForma.setBackground(new Color(70,70,70));
+        comboForma.setForeground(Color.WHITE);
+        if (blancoEditar != null && blancoEditar.getForma()!=null) comboForma.setSelectedItem(blancoEditar.getForma());
+
+        JLabel lblColor = new JLabel("Color:");
+        lblColor.setForeground(Color.WHITE);
+        JLabel lblColorPreview = new JLabel("    ");
+        lblColorPreview.setOpaque(true);
+        lblColorPreview.setBackground(chkAliado.isSelected() ? Color.BLUE : Color.RED);
+
+        chkAliado.addActionListener(e -> {
+            lblColorPreview.setBackground(chkAliado.isSelected() ? Color.BLUE : Color.RED);
+        });
+
+        gbc.gridx=0; gbc.gridy=6; panelDialog.add(new JLabel("Forma:"), gbc);
+        gbc.gridx=1; panelDialog.add(comboForma, gbc);
+        gbc.gridx=0; gbc.gridy=7; panelDialog.add(lblColor, gbc);
+        gbc.gridx=1; panelDialog.add(lblColorPreview, gbc);
 
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -229,7 +247,7 @@ public class SituacionTactica extends JPanel {
         panelBotonesDialog.setBackground(new Color(50,50,50));
         panelBotonesDialog.add(btnAceptar);
         panelBotonesDialog.add(btnCancelar);
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2; panelDialog.add(panelBotonesDialog, gbc);
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 2; panelDialog.add(panelBotonesDialog, gbc);
 
         btnAceptar.addActionListener(ev -> {
             try {
@@ -238,16 +256,18 @@ public class SituacionTactica extends JPanel {
                 String fecha = dtf.format(LocalDateTime.now());
                 if (nombre.isEmpty() || naturaleza.isEmpty()) {
                     JOptionPane.showMessageDialog(dialog,
-                            "Complete todos los campos",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                            "Complete todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 double x = Double.parseDouble(campoX.getText().trim());
                 double y = Double.parseDouble(campoY.getText().trim());
                 coordRectangulares coords = new coordRectangulares(x, y, 0);
+
+                String forma = (String) comboForma.getSelectedItem();
+                Color color = chkAliado.isSelected() ? Color.BLUE : Color.RED;
+
                 if (blancoEditar == null) {
-                    Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected());
+                    Blanco nuevo = new Blanco(nombre, coords, naturaleza, fecha, chkAliado.isSelected(), forma, color);
                     listaDeBlancos.add(nuevo);
                     modeloLista.addElement(nuevo);
                     panelMapa.agregarBlanco(nuevo);
@@ -257,6 +277,8 @@ public class SituacionTactica extends JPanel {
                     blancoEditar.setFecha(fecha);
                     blancoEditar.setCoordenadas(coords);
                     blancoEditar.setAliado(chkAliado.isSelected());
+                    blancoEditar.setForma(forma);
+                    blancoEditar.setColor(color);
                     panelMapa.agregarBlanco(blancoEditar); 
                     listaUI.repaint();
                 }
@@ -269,20 +291,18 @@ public class SituacionTactica extends JPanel {
             }
         });
         btnCancelar.addActionListener(ev -> dialog.dispose());
+
         JRootPane rootPane = dialog.getRootPane();
         rootPane.setDefaultButton(btnAceptar);
         KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(escapeStroke, "ESCAPE");
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
         rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                btnCancelar.doClick();
-            }
+            public void actionPerformed(ActionEvent e) { btnCancelar.doClick(); }
         });
 
         dialog.setVisible(true);
     }
-    
+
     private void addPlaceholder(JTextField field, String placeholder){
         Color placeholderColor = new Color(180,180,180);
         Color textColor = Color.WHITE;
