@@ -3,6 +3,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -18,6 +20,7 @@ public class SituacionTactica extends JPanel {
     private JList<Blanco> listaUI;
     protected LinkedList<Blanco> listaDeBlancos;
     private PanelMapa panelMapa;
+    
 
     public SituacionTactica(LinkedList<Blanco> listaDeBlancos) {
         setSize(900, 600);
@@ -60,20 +63,33 @@ public class SituacionTactica extends JPanel {
         JButton btnAgregar = new JButton("AGREGAR");
         JButton btnEliminar = new JButton("ELIMINAR");
         JButton btnActualizar = new JButton("ACTUALIZAR");
+        JButton btnPIF = new JButton("PIF");
 
-        btnAgregar.setBackground(new Color(0, 120, 255));
-        btnAgregar.setForeground(Color.WHITE);
-        btnEliminar.setBackground(Color.orange);
-        btnEliminar.setForeground(Color.WHITE);
-        btnActualizar.setBackground(Color.red);
-        btnActualizar.setForeground(Color.WHITE);
+        btnAgregar.setBackground(new Color(0,120,255)); btnAgregar.setForeground(Color.WHITE);
+        btnEliminar.setBackground(Color.ORANGE);        btnEliminar.setForeground(Color.WHITE);
+        btnActualizar.setBackground(Color.RED);         btnActualizar.setForeground(Color.WHITE);
+        btnPIF.setBackground(Color.GREEN);              btnPIF.setForeground(Color.WHITE);
+        
+        Dimension compacto = new Dimension(110, 32); // ajustá a gusto (ancho, alto)
+        Font fuente = new Font("Arial", Font.BOLD, 12);
+        Insets padding = new Insets(4, 10, 4, 10);
 
+        for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
+            b.setFont(fuente);
+            b.setMargin(padding);
+            b.setPreferredSize(compacto);
+            b.setMinimumSize(compacto);
+            b.setMaximumSize(compacto);
+            b.setFocusPainted(false);
+        }
+        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5,5,5,5);
 
         gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
         gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; panelBotones.add(btnActualizar, gbc);
+        gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc); 
+        gbc.gridx = 1; panelBotones.add(btnPIF,gbc);
 
         panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 
@@ -107,28 +123,52 @@ public class SituacionTactica extends JPanel {
                 panelMapa.eliminarBlanco(seleccionado);
             }
         });
-
         // ACTUALIZAR
         btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
-
+        //PIF
+        btnPIF.addActionListener(e -> armarPIF(listaUI.getSelectedValue()));
+        
         // MENU CONTEXTUAL
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem itemEditar = new JMenuItem("Editar/Marcar");
+        JMenuItem itemEditar = new JMenuItem("Editar Blanco");
+        JMenuItem itemMarcarPolares = new JMenuItem("Marcar en Polares");
         JMenuItem itemMedir = new JMenuItem("Medir");
 
         popupMenu.add(itemEditar);
         popupMenu.add(itemMedir);
-
-        listaUI.addMouseListener(new java.awt.event.MouseAdapter() {
+        popupMenu.add(itemMarcarPolares);
+        
+        itemMedir.addActionListener(e -> {
+            Blanco BSeleccionado = listaUI.getSelectedValue();
+            if (BSeleccionado != null) {
+                mostrarDialogoMedir(BSeleccionado);
+            }
+        });
+        
+        itemEditar.addActionListener(e -> {
+            Blanco BSeleccionado = listaUI.getSelectedValue();
+            if (BSeleccionado != null) {
+                mostrarDialogoEditar(BSeleccionado);
+            }
+        });
+        
+        itemMarcarPolares.addActionListener(e -> {
+            Blanco seleccionado = listaUI.getSelectedValue();
+            if (seleccionado != null) {
+                mostrarDialogoPolares(seleccionado);
+            }
+        });
+        
+        listaUI.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(java.awt.event.MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) mostrarPopup(e);
             }
             @Override
-            public void mouseReleased(java.awt.event.MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) mostrarPopup(e);
             }
-            private void mostrarPopup(java.awt.event.MouseEvent e) {
+            private void mostrarPopup(MouseEvent e) {
                 int idx = listaUI.locationToIndex(e.getPoint());
                 if (idx >= 0) {
                     listaUI.setSelectedIndex(idx);
@@ -137,12 +177,350 @@ public class SituacionTactica extends JPanel {
             }
         });        
     }
+    
+    private void mostrarDialogoPolares(Blanco referencia) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "Marcar en Polares desde: " + referencia.getNombre(), true);
+        dialog.setSize(600, 420);
+        dialog.setLocationRelativeTo(this);
 
+        JPanel panelDialog = new JPanel(new GridBagLayout());
+        panelDialog.setBackground(new Color(50, 50, 50));
+        dialog.setContentPane(panelDialog);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // labels 
+        JLabel lblTitulo = new JLabel("Ingrese los datos del nuevo blanco:");
+        lblTitulo.setForeground(Color.WHITE);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        panelDialog.add(lblTitulo, gbc);
+
+        JLabel lblNombre = new JLabel("Nombre:");
+        JLabel lblNaturaleza = new JLabel("Naturaleza:");
+        JLabel lblDir = new JLabel("Dirección (milésimos):");
+        JLabel lblDist = new JLabel("Distancia (m):");
+        JLabel lblAng = new JLabel("Ángulo vertical (milésimos):");
+
+        JLabel[] labels = {lblNombre, lblNaturaleza, lblDir, lblDist, lblAng};
+        for (JLabel l : labels) l.setForeground(Color.WHITE);
+
+        // campos
+        JTextField txtNombre = new JTextField();
+        JTextField txtNaturaleza = new JTextField();
+        JTextField txtDireccion = new JTextField();
+        JTextField txtDistancia = new JTextField();
+        JTextField txtAngulo = new JTextField("0");
+
+        JTextField[] fields = {txtNombre, txtNaturaleza, txtDireccion, txtDistancia, txtAngulo};
+        for (JTextField f : fields) {
+            f.setPreferredSize(new Dimension(300, 30));
+            f.setBackground(new Color(70, 70, 70));
+            f.setForeground(Color.WHITE);
+            f.setCaretColor(Color.WHITE);
+        }
+
+        // placeholders
+        addPlaceholder(txtNombre, "Nombre");
+        addPlaceholder(txtNaturaleza, "Naturaleza");
+        addPlaceholder(txtDireccion, "Milésimos");
+        addPlaceholder(txtDistancia, "Metros");
+        addPlaceholder(txtAngulo, "Milésimos");
+
+        // layout 
+        gbc.gridwidth = 1;
+        gbc.gridx = 0; gbc.gridy = 1; panelDialog.add(lblNombre, gbc);
+        gbc.gridx = 1; panelDialog.add(txtNombre, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; panelDialog.add(lblNaturaleza, gbc);
+        gbc.gridx = 1; panelDialog.add(txtNaturaleza, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; panelDialog.add(lblDir, gbc);
+        gbc.gridx = 1; panelDialog.add(txtDireccion, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; panelDialog.add(lblDist, gbc);
+        gbc.gridx = 1; panelDialog.add(txtDistancia, gbc);
+        gbc.gridx = 0; gbc.gridy = 5; panelDialog.add(lblAng, gbc);
+        gbc.gridx = 1; panelDialog.add(txtAngulo, gbc);
+
+        // tipo y forma
+        JCheckBox chkAliado = new JCheckBox("Aliado");
+        chkAliado.setBackground(new Color(50, 50, 50));
+        chkAliado.setForeground(Color.WHITE);
+        chkAliado.setSelected(referencia.isAliado());
+        gbc.gridx = 0; gbc.gridy = 6; panelDialog.add(new JLabel("Tipo:"), gbc);
+        gbc.gridx = 1; panelDialog.add(chkAliado, gbc);
+
+        String[] formas = {"círculo", "cruz", "triángulo"};
+        JComboBox<String> comboForma = new JComboBox<>(formas);
+        comboForma.setBackground(new Color(70, 70, 70));
+        comboForma.setForeground(Color.WHITE);
+        comboForma.setSelectedItem(referencia.getForma() != null ? referencia.getForma() : "círculo");
+        gbc.gridx = 0; gbc.gridy = 7; panelDialog.add(new JLabel("Forma:"), gbc);
+        gbc.gridx = 1; panelDialog.add(comboForma, gbc);
+
+        // botones
+        JButton btnAceptar = new JButton("Aceptar");
+        JButton btnCancelar = new JButton("Cancelar");
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelBotones.setBackground(new Color(50, 50, 50));
+        panelBotones.add(btnAceptar);
+        panelBotones.add(btnCancelar);
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 2;
+        panelDialog.add(panelBotones, gbc);
+
+        // acción aceptar 
+        btnAceptar.addActionListener(e -> {
+            try {
+                double direccionMils = Double.parseDouble(txtDireccion.getText().trim());
+                double distancia = Double.parseDouble(txtDistancia.getText().trim());
+                double angVertMils = Double.parseDouble(txtAngulo.getText().trim());
+
+                String nombre = txtNombre.getText().trim();
+                String naturaleza = txtNaturaleza.getText().trim();
+
+                if (nombre.isEmpty() || naturaleza.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Complete todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                coordRectangulares refCoord = (coordRectangulares) referencia.getCoordenadas();
+                coordPolares polar = new coordPolares(direccionMils, distancia, angVertMils, refCoord);
+                coordRectangulares nuevasCoords = polar.toRectangulares();
+
+                Color color = chkAliado.isSelected() ? Color.BLUE : Color.RED;
+                String forma = (String) comboForma.getSelectedItem();
+                String fecha = LocalDateTime.now().toString();
+
+                Blanco nuevo = new Blanco(nombre, nuevasCoords, naturaleza, fecha,chkAliado.isSelected(), forma, color);
+                listaDeBlancos.add(nuevo);
+                modeloLista.addElement(nuevo);
+                panelMapa.agregarBlanco(nuevo);
+                JOptionPane.showMessageDialog(dialog,String.format("Blanco '%s' marcado a %.2f m y %.1f mils desde '%s'.",nombre, distancia, direccionMils, referencia.getNombre()),"Éxito", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Formato numérico inválido en dirección o distancia.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        JRootPane rootPane = dialog.getRootPane();
+        rootPane.setDefaultButton(btnAceptar);
+        KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnCancelar.doClick();
+            }
+        });
+        dialog.setVisible(true);
+    }
+    
+    private void mostrarDialogoMedir(Blanco b1) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b1.getNombre(), true);
+        dialog.setSize(500, 250);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panelDialog = new JPanel(new GridBagLayout());
+        panelDialog.setBackground(new Color(50, 50, 50));
+        dialog.setContentPane(panelDialog);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel lblTitulo = new JLabel("Seleccione el blanco de destino:");
+        lblTitulo.setForeground(Color.WHITE);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        panelDialog.add(lblTitulo, gbc);
+
+        JComboBox<Blanco> comboBlancos = new JComboBox<>();
+        comboBlancos.setBackground(new Color(70, 70, 70));
+        comboBlancos.setForeground(Color.WHITE);
+
+        comboBlancos.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Blanco) {
+                    Blanco b = (Blanco) value;
+                    setText(b.NombretoString()); // usar tu método
+                }
+                setBackground(isSelected ? new Color(100, 100, 100) : new Color(70, 70, 70));
+                setForeground(Color.WHITE);
+                return this;
+            }
+        });
+        for (Blanco b : listaDeBlancos) {
+            if (b != b1) comboBlancos.addItem(b);
+        }
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
+        panelDialog.add(comboBlancos, gbc);
+
+        // botones
+        JButton btnAceptar = new JButton("Aceptar");
+        JButton btnCancelar = new JButton("Cancelar");
+
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelBotones.setBackground(new Color(50, 50, 50));
+        panelBotones.add(btnAceptar);
+        panelBotones.add(btnCancelar);
+
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+        panelDialog.add(panelBotones, gbc);
+
+        // acción de los botones
+        btnAceptar.addActionListener(e -> {
+            Blanco b2 = (Blanco) comboBlancos.getSelectedItem();
+            if (b2 == null) {
+                JOptionPane.showMessageDialog(dialog, "Seleccione un blanco destino válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            try {
+                double distancia = b1.getCoordenadas().distanciaA(b2.getCoordenadas());
+                String mensaje = String.format("Distancia entre %s y %s:\n%.2f metros",b1.getNombre(), b2.getNombre(), distancia);
+                JOptionPane.showMessageDialog(dialog, mensaje, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog,"Error al calcular la distancia:\n" + ex.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        JRootPane rootPane = dialog.getRootPane();
+        rootPane.setDefaultButton(btnAceptar);
+        KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnCancelar.doClick();
+            }
+        });
+        dialog.setVisible(true);
+    }
+
+    
+    private void mostrarDialogoEditar(Blanco b) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "Editar Blanco", true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+        JPanel panelDialog = new JPanel(new GridBagLayout());
+        panelDialog.setBackground(new Color(50, 50, 50));
+        dialog.setContentPane(panelDialog);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        // campos
+        JTextField txtNombre = new JTextField(b.getNombre());
+        txtNombre.setPreferredSize(new Dimension(250, 30));
+        JTextField txtNaturaleza = new JTextField(b.getNaturaleza());
+        txtNaturaleza.setPreferredSize(new Dimension(250, 30));
+        JTextField txtTipo = new JTextField(b.isAliado() ? "Aliado" : "Enemigo");
+        txtTipo.setPreferredSize(new Dimension(250, 30));
+        // coordenadas
+        JTextField txtX = new JTextField(String.valueOf(b.getCoordenadas().getX()));
+        JTextField txtY = new JTextField(String.valueOf(b.getCoordenadas().getY()));
+        txtX.setPreferredSize(new Dimension(250, 30));
+        txtY.setPreferredSize(new Dimension(250, 30));
+        txtX.setEditable(false);
+        txtY.setEditable(false);
+        txtTipo.setEditable(false);
+        
+        JTextField[] fields = {txtNombre, txtNaturaleza, txtTipo, txtX, txtY};
+        for (JTextField f : fields) {
+            f.setBackground(new Color(70, 70, 70));
+            f.setForeground(Color.WHITE);
+            f.setCaretColor(Color.WHITE);
+        }
+
+        // labels
+        JLabel lblNombre = new JLabel("Nombre:");
+        JLabel lblNaturaleza = new JLabel("Naturaleza:");
+        JLabel lblTipo = new JLabel("Tipo (Aliado/Enemigo):");
+        JLabel lblX = new JLabel("Coordenada X:");
+        JLabel lblY = new JLabel("Coordenada Y:");
+        JLabel[] labels = {lblNombre, lblNaturaleza, lblTipo, lblX, lblY};
+        for (JLabel l : labels) l.setForeground(Color.WHITE);
+
+        gbc.gridx = 0; gbc.gridy = 0; panelDialog.add(lblNombre, gbc);
+        gbc.gridx = 1; panelDialog.add(txtNombre, gbc);
+
+        gbc.gridx = 0; gbc.gridy++; panelDialog.add(lblNaturaleza, gbc);
+        gbc.gridx = 1; panelDialog.add(txtNaturaleza, gbc);
+
+        gbc.gridx = 0; gbc.gridy++; panelDialog.add(lblTipo, gbc);
+        gbc.gridx = 1; panelDialog.add(txtTipo, gbc);
+
+        gbc.gridx = 0; gbc.gridy++; panelDialog.add(lblX, gbc);
+        gbc.gridx = 1; panelDialog.add(txtX, gbc);
+
+        gbc.gridx = 0; gbc.gridy++; panelDialog.add(lblY, gbc);
+        gbc.gridx = 1; panelDialog.add(txtY, gbc);
+
+        // botones
+        JButton btnAceptar = new JButton("Aceptar");
+        JButton btnCancelar = new JButton("Cancelar");
+        JPanel panelBotonesDialog = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelBotonesDialog.setBackground(new Color(50, 50, 50));
+        panelBotonesDialog.add(btnAceptar);
+        panelBotonesDialog.add(btnCancelar);
+        gbc.gridx = 0; gbc.gridy++; gbc.gridwidth = 2;
+        panelDialog.add(panelBotonesDialog, gbc);
+
+        btnAceptar.addActionListener(e -> {
+        	b.setNombre(txtNombre.getText());
+            b.setNaturaleza(txtNaturaleza.getText());
+            listaUI.repaint();
+            dialog.dispose();
+        });
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        
+        dialog.setMinimumSize(new Dimension(400, 350));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        
+        JRootPane rootPane = dialog.getRootPane();
+        rootPane.setDefaultButton(btnAceptar);
+        KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnCancelar.doClick();
+            }
+        });
+        
+        dialog.setVisible(true);
+    }
+    
     private void actualizarBlancosEnMapa() {
         for (Blanco b : listaDeBlancos) {
             panelMapa.agregarBlanco(b);
         }
         listaUI.repaint();
+    }
+    
+    private void armarPIF(Blanco b) {
+    	JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "Pedido Inicial de Fuego", true);
+        dialog.setSize(1000,600);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panelDialog = new JPanel(new GridBagLayout());
+        panelDialog.setBackground(new Color(50, 50, 50));
+        dialog.setContentPane(panelDialog);
+        
+        /////
+        /*proximos camiobios*/
+        /////
+        
+        dialog.setVisible(true);
     }
 
     @SuppressWarnings("serial")

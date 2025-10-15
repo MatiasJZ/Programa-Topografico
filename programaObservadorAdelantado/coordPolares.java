@@ -1,8 +1,8 @@
 public class coordPolares extends coordenadas {
-    private double direccion;   // grados
+    private double direccion;   // milésimos (0–6399)
     private double distancia;   // metros
-    private double angVertical; // grados, opcional
-    private coordRectangulares referencia; // lat/lon de referencia
+    private double angVertical; // milésimos
+    private coordRectangulares referencia;
 
     public coordPolares(double direccion, double distancia, double angVertical, coordRectangulares referencia) {
         this.direccion = direccion;
@@ -10,36 +10,43 @@ public class coordPolares extends coordenadas {
         this.angVertical = angVertical;
         this.referencia = referencia;
     }
-
-    public double getDireccion() { return direccion; }
-    public double getDistancia() { return distancia; }
-    public double getAnguloVertical() { return angVertical; }
-
-    // Convertir polar -> coordenada rectangular real (lat/lon)
+    public double getDireccion() { return direccion; }       // en mils
+    public double getDistancia() { return distancia; }       // en metros
+    public double getAnguloVertical() { return angVertical; }// en mils
+    // Convertir coordenadas polares a rectangulares (en metros)
     public coordRectangulares toRectangulares() {
-        double R = 6371000; // radio Tierra
-        double deltaLat = (distancia * Math.cos(Math.toRadians(direccion))) / R;
-        double deltaLon = (distancia * Math.sin(Math.toRadians(direccion))) / 
-                          (R * Math.cos(Math.toRadians(referencia.getY())));
-        double lat = referencia.getY() + Math.toDegrees(deltaLat);
-        double lon = referencia.getX() + Math.toDegrees(deltaLon);
-        return new coordRectangulares(lon, lat, 0);
-    }
+        if (referencia == null) {
+            throw new IllegalStateException("No hay referencia definida para la conversión polar.");
+        }
+        // Convertir milésimos a radianes (6400 mils = 2π rad)
+        double dirRad = direccion * (Math.PI / 3200.0);
+        // Descomposición
+        double deltaX = distancia * Math.sin(dirRad);
+        double deltaY = distancia * Math.cos(dirRad);
+        // Sumar desplazamientos
+        double x = referencia.getX() + deltaX;
+        double y = referencia.getY() + deltaY;
 
+        return new coordRectangulares(x, y, 0);
+    }
     @Override
     public double distanciaA(coordenadas otro) {
-        coordRectangulares punto1 = this.toRectangulares();
-        coordRectangulares punto2;
+        coordRectangulares p1 = this.toRectangulares();
+        coordRectangulares p2;
 
         if (otro instanceof coordRectangulares) {
-            punto2 = (coordRectangulares) otro;
+            p2 = (coordRectangulares) otro;
         } else if (otro instanceof coordPolares) {
-            punto2 = ((coordPolares) otro).toRectangulares();
+            p2 = ((coordPolares) otro).toRectangulares();
         } else {
-            throw new IllegalArgumentException("Tipo de coordenada no soportado");
+            throw new IllegalArgumentException("Tipo de coordenada no soportado: " + otro.getClass().getSimpleName());
         }
-
-        return new coordRectangulares(0,0,0).distanciaVincenty(punto1.getY(), punto1.getX(),punto2.getY(), punto2.getX()
-        );
+        double dx = p2.getX() - p1.getX();
+        double dy = p2.getY() - p1.getY();
+        return Math.hypot(dx, dy);
     }
+    @Override
+    public double getX() { return this.toRectangulares().getX(); }
+    @Override
+    public double getY() { return this.toRectangulares().getY(); }
 }

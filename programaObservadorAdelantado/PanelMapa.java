@@ -104,17 +104,11 @@ public class PanelMapa extends JPanel {
     public void agregarBlanco(Blanco b) {
         if (b == null) return;
         coordenadas base = b.getCoordenadas();
-        coordRectangulares c = (base instanceof coordRectangulares)
-                ? (coordRectangulares) base
-                : ((coordPolares) base).toRectangulares();
+        coordRectangulares c = (base instanceof coordRectangulares)?(coordRectangulares) base:((coordPolares) base).toRectangulares();
         GeometryFactory gf = new GeometryFactory();
         Point p = gf.createPoint(new Coordinate(c.getX(), c.getY()));
         String f = (b.getForma() == null ? "círculo" : b.getForma().trim().toLowerCase());
-        String formaWKN =
-                (f.startsWith("círc") || f.startsWith("circ")) ? "circle" :
-                (f.startsWith("cruz"))                          ? "cross"  :
-                (f.startsWith("trián") || f.startsWith("trian"))? "triangle" :
-                                                                   "circle";
+        String formaWKN = (f.startsWith("círc") || f.startsWith("circ")) ? "circle" : (f.startsWith("cruz")) ? "cross"  : (f.startsWith("trián") || f.startsWith("trian"))? "triangle" : "circle";
         Color color = b.isAliado() ? Color.BLUE : Color.RED;
         String clave = formaWKN + (b.isAliado() ? "_azul" : "_rojo");
 
@@ -135,7 +129,6 @@ public class PanelMapa extends JPanel {
 
         refrescarCapas();
     }
-
 
     public void eliminarBlanco(Blanco b) {
         if (b == null || !(b.getCoordenadas() instanceof coordRectangulares)) return;
@@ -161,16 +154,14 @@ public class PanelMapa extends JPanel {
         refrescarCapas();
     }
     
-    private void refrescarCapas() {
+    public void refrescarCapas() {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this::refrescarCapas);
             return;
         }
-        // Asegura visibles sin toggle (por si alguna quedó oculta)
         for (FeatureLayer capa : capasPorBucket.values()) {
             if (!capa.isVisible()) capa.setVisible(true);
         }
-        // Nudge suave al render sin cambiar estado de capas
         mapPane.setDisplayArea(mapPane.getDisplayArea());
         mapPane.repaint();
     }
@@ -216,7 +207,7 @@ public class PanelMapa extends JPanel {
             b.setBorderPainted(false);
             b.setContentAreaFilled(true);
             b.setOpaque(true);
-            b.setBackground(new Color(25, 25, 25)); // negro sólido
+            b.setBackground(new Color(25, 25, 25));
             b.setForeground(Color.WHITE);
             overlay.add(b);
         }
