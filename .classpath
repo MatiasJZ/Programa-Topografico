@@ -10,5 +10,7 @@
 	<classpathentry kind="src" path="programaObservadorAdelantado"/>
 	<classpathentry kind="src" path="imagenes"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GeoTools"/>
+	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/jsvg-1.4.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/mil-sym-java-2.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
