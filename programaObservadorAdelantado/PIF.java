@@ -13,7 +13,7 @@ public class PIF {
     private String metodoAtaque; private int piezas; private int rondas; private String tipoMunicion; private String espoleta; private String carga;                                                   
     
     public PIF(String id,LocalDateTime fechaHora,String solicitante,Blanco blanco,String crs,String naturaleza,String metodoAtaque,int piezas,int rondas,
-            String tipoMunicion,String espoleta,String carga,Serie serie) {
+            String tipoMunicion,String espoleta,String carga) {
         this.id = id != null ? id : UUID.randomUUID().toString();
         this.fechaHora = fechaHora != null ? fechaHora : LocalDateTime.now();
         this.solicitante = solicitante;
