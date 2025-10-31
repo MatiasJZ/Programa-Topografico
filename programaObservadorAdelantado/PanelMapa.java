@@ -61,19 +61,22 @@ public class PanelMapa extends JPanel {
 	private final Map<String, Style> estilosPorSIDC = new HashMap<>();
 
     public PanelMapa(String rutaArchivo) {
+    	
         setLayout(new BorderLayout());
         mapContent = new MapContent();
         mapContent.setTitle("Mapa Táctico");
+        
         try {
             leerArchivo(rutaArchivo);
-        } catch (IllegalArgumentException | FactoryException | IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IllegalArgumentException | FactoryException | IOException e) {e.printStackTrace();}
+        
         mapPane = new JMapPane(mapContent);
         add(mapPane, BorderLayout.CENTER);
+        
         if (mapContent.getMaxBounds() != null) {
             mapPane.setDisplayArea(mapContent.getMaxBounds());
         }
+        
         mapPane.setCursorTool(new ZoomInTool());
         mapPane.setOpaque(true);
         mapPane.setBackground(Color.BLACK);
@@ -83,7 +86,8 @@ public class PanelMapa extends JPanel {
     }
 
     private void crearLayerDeBlancos() {
-        // --- Tipo para BLANCOS ---
+    	
+        // Tipo para BLANCOS 
         SimpleFeatureTypeBuilder b1 = new SimpleFeatureTypeBuilder();
         b1.setName("Blanco");
         b1.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
@@ -95,7 +99,7 @@ public class PanelMapa extends JPanel {
         b1.setCRS(mapContent.getCoordinateReferenceSystem());
         tipoBlancos = b1.buildFeatureType();
 
-        // --- Tipo para PUNTOS ---
+        // Tipo para PUNTOS 
         SimpleFeatureTypeBuilder b2 = new SimpleFeatureTypeBuilder();
         b2.setName("Punto");
         b2.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
@@ -112,8 +116,7 @@ public class PanelMapa extends JPanel {
         GeoTiffFormat format = new GeoTiffFormat();
         GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
         CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-        if (crs == null)
-            crs = CRS.decode("EPSG:9265", true);
+        if (crs == null) crs = CRS.decode("EPSG:9265", true);
         mapContent.getViewport().setCoordinateReferenceSystem(crs);
 
         StyleBuilder sb = new StyleBuilder();
@@ -158,7 +161,7 @@ public class PanelMapa extends JPanel {
     public void agregarBlanco(Blanco b) {
         if (b == null) return;
 
-        // --- Coordenadas ---
+        // Coordenadas 
         coordenadas base = b.getCoordenadas();
         coordRectangulares c = (base instanceof coordRectangulares)
                 ? (coordRectangulares) base
@@ -166,19 +169,19 @@ public class PanelMapa extends JPanel {
 
         GeometryFactory gf = new GeometryFactory();
         Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-
-        // --- Determinar el SIDC ---
+        
+        // Determinar el SIDC 
         String sidc = b.getSimID();
         if (sidc == null || sidc.isEmpty()) {
             sidc = CodigosMilitares.obtenerSIDC(b.getNaturaleza());
             b.setSimID(sidc);
         }
 
-        // 🔹 Usamos el SIDC como clave de capa (una por tipo de símbolo)
+        // Usamos el SIDC como clave de capa (una por tipo de símbolo)
         String clave = "blancos_" + sidc;
         ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
 
-        // --- Crear colección y capa si no existe ---
+        // Crear colección y capa si no existe 
         if (coleccion == null) {
             coleccion = new ListFeatureCollection(tipoBlancos, new LinkedList<>());
             coleccionesPorBucket.put(clave, coleccion);
@@ -187,7 +190,7 @@ public class PanelMapa extends JPanel {
             Style estiloSimbolo = estilosPorSIDC.get(sidc);
             if (estiloSimbolo == null && sidc != null && !sidc.isEmpty()) {
                 try {
-                    proveedorMilSym prov = new proveedorMilSym(sidc, 64);
+                    proveedorMilSym prov = new proveedorMilSym(sidc, 70);
                     Field f = proveedorMilSym.class.getDeclaredField("simbolo");
                     f.setAccessible(true);
                     BufferedImage simbolo = (BufferedImage) f.get(prov);
@@ -200,7 +203,7 @@ public class PanelMapa extends JPanel {
                         StyleBuilder sb = new StyleBuilder();
                         ExternalGraphic eg = sb.createExternalGraphic(imageURL, "image/png");
 
-                        // --- Ícono principal ---
+                        // Ícono principal
                         Graphic graphic = sb.createGraphic(
                                 new ExternalGraphic[]{eg},
                                 null, null,
@@ -208,10 +211,10 @@ public class PanelMapa extends JPanel {
                         );
                         PointSymbolizer ps = sb.createPointSymbolizer(graphic);
 
-                        // --- Texto (nombre del blanco) ---
-                        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial", false, false, 16),"nombre");
+                        // Texto (nombre del blanco) 
+                        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", false, false, 18),"nombre");
 
-                        // --- Combinar ícono + texto en un único Style ---
+                        // Combinar ícono + texto en un único Style
                         StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
                         FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle();
                         Rule rule = styleFactory.createRule();
@@ -233,23 +236,14 @@ public class PanelMapa extends JPanel {
             if (estiloSimbolo == null) {
                 estiloSimbolo = SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 16.0f);
             }
-
             // Crear capa independiente para este tipo de símbolo
             FeatureLayer capa = new FeatureLayer(coleccion, estiloSimbolo);
             capa.setTitle("Blancos " + b.getNaturaleza());
             capasPorBucket.put(clave, capa);
             mapContent.addLayer(capa);
         }
-
-        // --- Crear el Feature ---
-        Object[] attrs = new Object[]{
-                geom,
-                b.getNombre(),
-                b.getNaturaleza(),
-                b.getFechaDeActualizacion(),
-                c.getX(),
-                c.getY()
-        };
+        // Crear el Feature
+        Object[] attrs = new Object[]{geom,b.getNombre(),b.getNaturaleza(),b.getFechaDeActualizacion(),c.getX(),c.getY()};
         String fid = "blanco-" + UUID.randomUUID();
         SimpleFeature feature = SimpleFeatureBuilder.build(tipoBlancos, attrs, fid);
         coleccion.add(feature);
@@ -257,7 +251,6 @@ public class PanelMapa extends JPanel {
         refrescarCapas();
     }
 
-    
     public void eliminarPunto(Punto p) {
         if (p == null || p.getCoord() == null) return;
 
@@ -287,28 +280,34 @@ public class PanelMapa extends JPanel {
     }
     
     public void eliminarBlanco(Blanco b) {
+        eliminarBlanco(b, b != null ? b.getSimID() : null);
+    }
+
+    public void eliminarBlanco(Blanco b, String sidcReferencia) {
         if (b == null || b.getCoordenadas() == null) return;
 
-        // --- Coordenadas base ---
         coordRectangulares c = (b.getCoordenadas() instanceof coordRectangulares)
                 ? (coordRectangulares) b.getCoordenadas()
                 : ((coordPolares) b.getCoordenadas()).toRectangulares();
 
-        // --- Determinar la capa correspondiente ---
-        String sidc = b.getSimID();
+        // Determinar la capa correspondiente 
+        String sidc = (sidcReferencia != null && !sidcReferencia.isEmpty())
+                ? sidcReferencia
+                : b.getSimID();
+
         if (sidc == null || sidc.isEmpty()) {
             sidc = CodigosMilitares.obtenerSIDC(b.getNaturaleza());
             b.setSimID(sidc);
         }
-        String clave = "blancos_" + sidc;
 
+        String clave = "blancos_" + sidc;
         ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
-        if (coleccion == null) return; // no hay capa con ese tipo
+        if (coleccion == null) return;
 
         final double EPS = 1e-6;
         LinkedList<SimpleFeature> borrar = new LinkedList<>();
 
-        // --- Buscar el feature por coordenadas ---
+        // Buscar el feature por coordenadas 
         try (var it = coleccion.features()) {
             while (it.hasNext()) {
                 SimpleFeature f = it.next();
@@ -323,13 +322,12 @@ public class PanelMapa extends JPanel {
             ex.printStackTrace();
         }
 
-        // --- Remover los features encontrados ---
         for (SimpleFeature f : borrar) {
             coleccion.remove(f);
         }
 
-        // --- Si la colección queda vacía, eliminar la capa completa ---
-        if (coleccion.size() == 0) {
+        // Si la colección quedó vacía, limpiamos la capa 
+        if (coleccion.isEmpty()) {
             FeatureLayer capa = capasPorBucket.remove(clave);
             coleccionesPorBucket.remove(clave);
             if (capa != null) {
@@ -337,10 +335,9 @@ public class PanelMapa extends JPanel {
             }
             estilosPorSIDC.remove(sidc);
         }
-
+        
         refrescarCapas();
     }
-
     
     public void refrescarCapas() {
         if (!SwingUtilities.isEventDispatchThread()) {

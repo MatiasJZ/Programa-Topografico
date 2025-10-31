@@ -97,7 +97,6 @@ public class ObservadorAdelantado extends JPanel{
             for (String valido : IDS_VALIDOS) {
                 if (idIngresado.equals(valido)) {
                     setIdOAA(idIngresado);
-                    JOptionPane.showMessageDialog(null,"Acceso concedido","BIAC",JOptionPane.INFORMATION_MESSAGE,icono);
                     return;
                 }
             }

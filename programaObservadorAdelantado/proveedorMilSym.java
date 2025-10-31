@@ -15,7 +15,6 @@ public class proveedorMilSym extends JPanel {
 
         setBackground(Color.BLACK);
         try {
-            // Config básica (solo lo que está en javadoc 2525D)
             RendererSettings rs = RendererSettings.getInstance();
             rs.setDefaultPixelSize(size);
             rs.setUseLineInterpolation(true);
@@ -24,18 +23,10 @@ public class proveedorMilSym extends JPanel {
             
             MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
 
-            Map<String, String> modifiers = new HashMap<>();   // vacío está bien
+            Map<String, String> modifiers = new HashMap<>(); 
             Map<String, String> attributes = new HashMap<>();
-            attributes.put("SIZE", Integer.toString(size));     // tamaño en px
-	    
+            attributes.put("SIZE", Integer.toString(size)); 
 
-            // Ejemplo:
-	    // Usa un SIDC 2525D numérico (20 chars). Ejemplos que funcionan:
-            //  - 10031000001101000000  -> Friendly Infantry Unit 1
-            //  - 10031000001201000000  -> Friendly Armored Unit 2
-            //  - 10031000001301000000  -> Friendly Artillery Unit
-            //String sidc = "10031000001101000000";
-            //int size = 180;
             ImageInfo info = renderer.RenderIcon(sidc, modifiers, attributes);
             if (info != null) simbolo = info.getImage();
         } catch (Exception e) {
