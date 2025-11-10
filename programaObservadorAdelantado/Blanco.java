@@ -6,9 +6,9 @@ public class Blanco {
     private String simID;
     private SituacionMovimiento situacionMovimiento;
     private String informacionAdicional;
-    //private Expression rotacion;
+    private double orientacion;
     
-    public Blanco(String nombre, coordRectangulares c, String naturaleza, String fecha/*, Expression rotacion*/) {
+    public Blanco(String nombre, coordRectangulares c, String naturaleza, String fecha) {
         this.nombre = nombre;
         this.coordenadas = c;
         this.naturaleza = naturaleza;
@@ -16,7 +16,7 @@ public class Blanco {
         this.simID = "";
         this.situacionMovimiento = SituacionMovimiento.DESCONOCIDO; 
         this.informacionAdicional = ""; // por defecto vacío
-        //this.rotacion = rotacion;
+        this.orientacion = 0.0;
     }
 
     public String getNombre() { return nombre; }
@@ -31,13 +31,13 @@ public class Blanco {
         return nombre;
     }
     
-    /*public void setRotacion(Expression e) {
-    	rotacion = e;
-    }*/
+    public void setOrientacion(double e) {
+    	orientacion = e;
+    }
     
-    /*public String getRotacion() {
-    	return e.
-    }*/
+    public double getOrientacion() {
+    	return orientacion;
+    }
     
     public String getNaturaleza() { return naturaleza; }
     

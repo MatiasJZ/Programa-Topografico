@@ -157,11 +157,9 @@ public class PanelMapa extends JPanel {
         refrescarCapas();
     }
 
-
     public void agregarBlanco(Blanco b) {
         if (b == null) return;
 
-        // coordenadas 
         coordenadas base = b.getCoordenadas();
         coordRectangulares c = (base instanceof coordRectangulares)
                 ? (coordRectangulares) base
@@ -169,73 +167,77 @@ public class PanelMapa extends JPanel {
 
         GeometryFactory gf = new GeometryFactory();
         Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-        
-        // determinar el SIDC 
+
         String sidc = b.getSimID();
         if (sidc == null || sidc.isEmpty()) {
             sidc = CodigosMilitares.obtenerSIDC(b.getNaturaleza());
             b.setSimID(sidc);
         }
 
-        // uso el SIDC como clave de capa 
         String clave = "blancos_" + sidc;
         ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
 
-        // crear colección y capa si no existe 
         if (coleccion == null) {
             coleccion = new ListFeatureCollection(tipoBlancos, new LinkedList<>());
             coleccionesPorBucket.put(clave, coleccion);
 
-            // obtener o crear el estilo para este SIDC
-            Style estiloSimbolo = estilosPorSIDC.get(sidc);
-            if (estiloSimbolo == null && sidc != null && !sidc.isEmpty()) {
-                try {
-                    proveedorMilSym prov = new proveedorMilSym(sidc, 70);
-                    Field f = proveedorMilSym.class.getDeclaredField("simbolo");
-                    f.setAccessible(true);
-                    BufferedImage simbolo = (BufferedImage) f.get(prov);
+            Style estiloSimbolo = null;
 
-                    if (simbolo != null) {
-                        File tempFile = File.createTempFile("milSym_" + sidc, ".png");
-                        ImageIO.write(simbolo, "png", tempFile);
-                        URL imageURL = tempFile.toURI().toURL();
+            try {
+                proveedorMilSym prov = new proveedorMilSym(sidc, 70);
+                Field f = proveedorMilSym.class.getDeclaredField("simbolo");
+                f.setAccessible(true);
+                BufferedImage simbolo = (BufferedImage) f.get(prov);
 
-                        StyleBuilder sb = new StyleBuilder();
-                        ExternalGraphic eg = sb.createExternalGraphic(imageURL, "image/png");
-                        Graphic graphic = sb.createGraphic(new ExternalGraphic[]{eg},null, null,1.0, 0.0, 0.0);
-                        PointSymbolizer ps = sb.createPointSymbolizer(graphic);
-                        
-                        // graphic.setRotation(EX);
-                        
-                        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", false, false, 18),"nombre");
-                        StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
-                        FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle();
-                        Rule rule = styleFactory.createRule();
-                        rule.symbolizers().add(ps);
-                        rule.symbolizers().add(ts);
-                        fts.rules().add(rule);
+                if (simbolo != null) {
+                    File tempFile = File.createTempFile("milSym_" + sidc, ".png");
+                    ImageIO.write(simbolo, "png", tempFile);
+                    tempFile.deleteOnExit();
+                    URL imageURL = tempFile.toURI().toURL();
 
-                        estiloSimbolo = styleFactory.createStyle();
-                        estiloSimbolo.featureTypeStyles().add(fts);
+                    StyleBuilder sb = new StyleBuilder();
+                    ExternalGraphic eg = sb.createExternalGraphic(imageURL, "image/png");
 
-                        estilosPorSIDC.put(sidc, estiloSimbolo);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                    double rotacionGrados = b.getOrientacion() * 0.05625;
+
+                    Graphic graphic = sb.createGraphic(new ExternalGraphic[]{eg}, null, null, 1.0, 0.0, rotacionGrados);
+
+                    PointSymbolizer ps = sb.createPointSymbolizer(graphic);
+
+                    TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", false, false, 18),"nombre");
+
+                    StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
+                    FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle();
+                    Rule rule = styleFactory.createRule();
+                    rule.symbolizers().add(ps);
+                    rule.symbolizers().add(ts);
+                    fts.rules().add(rule);
+
+                    estiloSimbolo = styleFactory.createStyle();
+                    estiloSimbolo.featureTypeStyles().add(fts);
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
 
-            if (estiloSimbolo == null) {
-                estiloSimbolo = SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 16.0f);
-            }
-            // creo la capa independiente para este tipo de símbolo
+            if (estiloSimbolo == null)
+                estiloSimbolo = SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
+
             FeatureLayer capa = new FeatureLayer(coleccion, estiloSimbolo);
             capa.setTitle("Blancos " + b.getNaturaleza());
             capasPorBucket.put(clave, capa);
-            mapContent.addLayer(capa);
+
+            mapContent.addLayer(capa); // se añade luego del raster, visible
         }
-        // creo el Feature
-        Object[] attrs = new Object[]{geom,b.getNombre(),b.getNaturaleza(),b.getFechaDeActualizacion(),c.getX(),c.getY()};
+
+        Object[] attrs = new Object[]{
+                geom,
+                b.getNombre(),
+                b.getNaturaleza(),
+                b.getFechaDeActualizacion(),
+                c.getX(),
+                c.getY()
+        };
         String fid = "blanco-" + UUID.randomUUID();
         SimpleFeature feature = SimpleFeatureBuilder.build(tipoBlancos, attrs, fid);
         coleccion.add(feature);
