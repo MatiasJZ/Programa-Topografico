@@ -3,7 +3,7 @@ import armyc2.c5isr.renderer.utilities.MSInfo;
 
 public class ExploradorSIDC_Modificadores {
 
-    // ===== TABLAS =====
+    // tablas:
     private static final String[] HQ_CODES = {"00", "01", "02", "03"}; 
     // 00 = None, 01 = HQ, 02 = TF, 03 = TF HQ
 
@@ -46,12 +46,10 @@ public class ExploradorSIDC_Modificadores {
 
     public static void main(String[] args) {
         MSLookup lookup = MSLookup.getInstance();
-
-        // Probamos con un símbolo base (por ejemplo Infantry)
         String symbolSet = "10";
-        String entity = "121100"; // Infantry base
+        String entity = "121100";
 
-        System.out.println("=== Explorador de SIDC – HQ / Task Force / Echelon / Mobility ===\n");
+        System.out.println("Explorador de SIDC – HQ / Task Force / Echelon / Mobility \n");
 
         for (String hq : HQ_CODES) {
             for (String[] echelon : ECHELONS) {
@@ -81,6 +79,6 @@ public class ExploradorSIDC_Modificadores {
             }
         }
 
-        System.out.println("\n✅ Exploración completa. Combinaciones listadas arriba.");
+        System.out.println("/n Exploracion completa. Combinaciones listadas arriba.");
     }
 }

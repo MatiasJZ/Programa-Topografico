@@ -10,8 +10,6 @@ class MetodoAtaquePanel extends JPanel {
     private JComboBox<String> comboGranada;
     private JComboBox<String> comboEspoleta;
     private JComboBox<String> comboHaz;
-
-    // Nuevos controles para volumen
     private JTextField txtVolumen;
     private JRadioButton rbDisparos, rbRafaga;
 
@@ -34,7 +32,7 @@ class MetodoAtaquePanel extends JPanel {
 
         Icon radioIcon = new RadioButtonGrande(28);
 
-        // ===== CERCANO =====
+        // cercano
         JPanel panelCercano = crearPanelApartado("CERCANO:", fontLabel, white, apartadoBorder);
         panelCercano.setBackground(new Color(72,82,122));
         rbCercanoSi = crearRadio("Sí", fontControl, white, radioIcon);
@@ -46,7 +44,7 @@ class MetodoAtaquePanel extends JPanel {
         panelCercano.add(rbCercanoSi); panelCercano.add(rbCercanoNo);
         gbc.gridx = 0; gbc.gridy = 0; add(panelCercano, gbc);
 
-        // ===== GRAN ANGULO =====
+        // gran angulo
         JPanel panelGranAngulo = crearPanelApartado("GRAN ANGULO:", fontLabel, white, apartadoBorder);
         panelGranAngulo.setBackground(new Color(72,82,122));
         rbGranAnguloSi = crearRadio("Sí", fontControl, white, radioIcon);
@@ -58,21 +56,21 @@ class MetodoAtaquePanel extends JPanel {
         panelGranAngulo.add(rbGranAnguloSi); panelGranAngulo.add(rbGranAnguloNo);
         gbc.gridy = 1; add(panelGranAngulo, gbc);
 
-        // ===== GRANADA =====
+        // granada
         JPanel panelGranada = crearPanelApartado("GRANADA:", fontLabel, white, apartadoBorder);
         panelGranada.setBackground(new Color(72,82,122));
         comboGranada = crearCombo(new String[]{"HE", "IL", "WP"}, fontControl, comboSize);
         panelGranada.add(comboGranada);
         gbc.gridy = 2; add(panelGranada, gbc);
 
-        // ===== ESPOLETA =====
+        // espoleta
         JPanel panelEspoleta = crearPanelApartado("ESPOLETA:", fontLabel, white, apartadoBorder);
         panelEspoleta.setBackground(new Color(72,82,122));
         comboEspoleta = crearCombo(new String[]{"I", "VT", "CM"}, fontControl, comboSize);
         panelEspoleta.add(comboEspoleta);
         gbc.gridy = 3; add(panelEspoleta, gbc);
 
-        // ===== VOLUMEN =====
+        // volumen
         JPanel panelVolumen = crearPanelApartado("VOLUMEN:", fontLabel, white, apartadoBorder);
         panelVolumen.setBackground(new Color(72,82,122));
         txtVolumen = new JTextField("         Número (1-50)");
@@ -80,7 +78,6 @@ class MetodoAtaquePanel extends JPanel {
         txtVolumen.setFont(fontControl);
         txtVolumen.setForeground(Color.GRAY);
 
-        // Placeholder comportamiento
         txtVolumen.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -98,7 +95,6 @@ class MetodoAtaquePanel extends JPanel {
             }
         });
 
-        // Validación: solo números 1–50
         txtVolumen.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
@@ -135,7 +131,7 @@ class MetodoAtaquePanel extends JPanel {
 
         gbc.gridy = 4; add(panelVolumen, gbc);
 
-        // ===== HAZ =====
+        // haz
         JPanel panelHaz = crearPanelApartado("HAZ:", fontLabel, white, apartadoBorder);
         panelHaz.setBackground(new Color(72,82,122));
         comboHaz = crearCombo(new String[]{"PARALELO", "CONVERGENTE","ABIERTO","ESPECIAL","CIRCULAR"}, fontControl, comboSize);
@@ -143,7 +139,6 @@ class MetodoAtaquePanel extends JPanel {
         gbc.gridy = 5; add(panelHaz, gbc);
     }
 
-    // === Helpers ===
     private JPanel crearPanelApartado(String titulo, Font fontLabel, Color color, Border border) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
         panel.setBackground(Color.BLACK);
@@ -173,16 +168,20 @@ class MetodoAtaquePanel extends JPanel {
         return combo;
     }
 
-    // === Métodos para acceder a valores ===
     public boolean isCercano() { return rbCercanoSi.isSelected(); }
+    
     public boolean isGranAngulo() { return rbGranAnguloSi.isSelected(); }
+    
     public String getGranada() { return (String) comboGranada.getSelectedItem(); }
+    
     public String getEspoleta() { return (String) comboEspoleta.getSelectedItem(); }
+    
     public String getHaz() { return (String) comboHaz.getSelectedItem(); }
+    
     public boolean isDisparos() { return rbDisparos.isSelected(); }
+    
     public boolean isRafaga() { return rbRafaga.isSelected(); }
-
-    // Devuelve el valor numérico ingresado o -1 si no es válido
+    
     public int getVolumen() {
         try {
             String text = txtVolumen.getText();

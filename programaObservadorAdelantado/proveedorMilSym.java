@@ -9,6 +9,7 @@ import armyc2.c5isr.renderer.utilities.ImageInfo;
 import armyc2.c5isr.renderer.utilities.RendererSettings;
 
 public class proveedorMilSym extends JPanel {
+	
     private BufferedImage simbolo;
 
     public proveedorMilSym(String sidc, int size) {

@@ -10,9 +10,13 @@ public class coordPolares extends coordenadas {
         this.angVertical = angVertical;
         this.referencia = referencia;
     }
+    
     public double getDireccion() { return direccion; }       // en mils
+    
     public double getDistancia() { return distancia; }       // en metros
+    
     public double getAnguloVertical() { return angVertical; }// en mils
+    
     // Convertir coordenadas polares a rectangulares (en metros)
     public coordRectangulares toRectangulares() {
         if (referencia == null) {
@@ -29,6 +33,7 @@ public class coordPolares extends coordenadas {
 
         return new coordRectangulares(x, y, 0);
     }
+    
     @Override
     public double distanciaA(coordenadas otro) {
         coordRectangulares p1 = this.toRectangulares();
@@ -45,8 +50,10 @@ public class coordPolares extends coordenadas {
         double dy = p2.getY() - p1.getY();
         return Math.hypot(dx, dy);
     }
+    
     @Override
     public double getX() { return this.toRectangulares().getX(); }
+    
     @Override
     public double getY() { return this.toRectangulares().getY(); }
 }

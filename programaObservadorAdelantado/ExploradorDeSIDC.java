@@ -11,6 +11,7 @@ import armyc2.c5isr.renderer.utilities.SymbolID;
 public class ExploradorDeSIDC {
 
     public static void main(String[] args) {
+    	
         try {
             int version = SymbolID.Version_2525D;
             MSLookup lookup = MSLookup.getInstance();
@@ -30,11 +31,10 @@ public class ExploradorDeSIDC {
                     if (id == null || id.length() < 8)
                         continue;
 
-                    String symbolSet = id.substring(0, 2);   // 01, 10, 30, etc.
-                    String entityCode = id.substring(2, 8);  // 111000, 121000, etc.
-
-                    // 🧩 reconstruimos el SIDC completo de 20 dígitos:
-                    // Formato: 10 03 [SymbolSet] 0000 [EntityCode] 00000000
+                    String symbolSet = id.substring(0, 2);   
+                    String entityCode = id.substring(2, 8); 
+                    
+                    // formato: 10 03 [SymbolSet] 0000 [EntityCode] 00000000
                     String sidc = "10" + "03" + symbolSet + "0000" + entityCode + "00000000";
 
                     String name = "Unknown";
@@ -55,7 +55,6 @@ public class ExploradorDeSIDC {
                     if (count % 500 == 0)
                         System.out.println("Progreso: " + count + " / " + idList.size());
                 }
-
                 bw.write("\nTotal símbolos listados: " + count + "\n");
                 System.out.println("\n✅ Archivo generado correctamente en: " + outFile);
             }

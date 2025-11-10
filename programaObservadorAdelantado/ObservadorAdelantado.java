@@ -23,6 +23,7 @@ public class ObservadorAdelantado extends JPanel{
     private int panelActual = 0;
 	
     public static void main(String[] args) {
+    	
     	LinkedList<Blanco> listaDeBlancos = new LinkedList<Blanco>();
         JFrame ventana = new JFrame("Sistema de Artillería de Reconocimiento y Gestión Operacional - OBSERVADOR");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -37,12 +38,13 @@ public class ObservadorAdelantado extends JPanel{
     }
 
     public ObservadorAdelantado(LinkedList<Blanco> listaDeBlancos) {
-        // Pide la ID antes de cargar la interfaz
+        // pide la contraseña antes de cargar la interfaz
         pedirID();
 
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
-        // Menú superior con 3 botones
+        
+        // menu superior con 3 botones
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
         menuSuperior.setBackground(Color.DARK_GRAY);
         String[] secciones = {"SITUACION TACTICA", "PEDIDO DE FUEGO", "MENSAJERIA"};
@@ -71,18 +73,16 @@ public class ObservadorAdelantado extends JPanel{
         }
         add(menuSuperior, BorderLayout.NORTH);
 
-        // Contenedor de cards
+        // contenedor de cards
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        // Paneles con clases cardboard
+        // paneles con clases cardboard
         cards.add(new SituacionTactica(listaDeBlancos),"SITUACION");
         cards.add(new PedidoDeFuego(listaDeBlancos), "PEDIDO");
         cards.add(new Mensajeria(), "MENSAJERIA");
 
         add(cards, BorderLayout.CENTER);
-
-        // Mostrar primera card
         cardLayout.show(cards, "SITUACION");
         actualizarBotonesMenu();
     }
@@ -105,7 +105,7 @@ public class ObservadorAdelantado extends JPanel{
                     "ID incorrecto. Intente de nuevo.",
                     "Error",
                     JOptionPane.ERROR_MESSAGE,
-                    icono); // idem aquí, para uniformidad
+                    icono); 
         }
     }
 
