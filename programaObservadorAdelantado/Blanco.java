@@ -15,8 +15,8 @@ public class Blanco {
         this.fecha = fecha;
         this.simID = "";
         this.situacionMovimiento = SituacionMovimiento.DESCONOCIDO; 
-        this.informacionAdicional = ""; // por defecto vacío
-        this.orientacion = 0.0;
+        this.informacionAdicional = ""; 
+        this.orientacion = 0;
     }
 
     public String getNombre() { return nombre; }

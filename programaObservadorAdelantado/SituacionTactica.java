@@ -12,6 +12,7 @@ import org.geotools.swing.tool.CursorTool;
 
 public class SituacionTactica extends JPanel {
 
+	
     private static final long serialVersionUID = 1L;
     private DefaultListModel<Blanco> modeloListaBlancos;
     private JList<Blanco> listaUIBlancos;
@@ -21,13 +22,14 @@ public class SituacionTactica extends JPanel {
     private JList<Punto> listaUIPuntos;
     protected LinkedList<Punto> listaDePuntos;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
+    protected PedidoDeFuego panelPIF;
     
     private static String ultimaEntidad = "INFANTERIA";
     private static String ultimaAfiliacion = "ALIADO";
     private static String ultimaHQTF = "Por Defecto";
     private static String ultimaEchelon = "Por Defecto";
 
-    public SituacionTactica(LinkedList<Blanco> listaDeBlancos) {
+    public SituacionTactica(LinkedList<Blanco> listaDeBlancos, PedidoDeFuego pif) {
         setSize(900, 600);
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
@@ -37,6 +39,8 @@ public class SituacionTactica extends JPanel {
         listaUIBlancos = new JList<>(modeloListaBlancos);
         listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20));
         listaUIBlancos.setBackground(Color.BLACK);
+        
+        panelPIF = pif;
 
         listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
 		private static final long serialVersionUID = 1L;
@@ -141,6 +145,8 @@ public class SituacionTactica extends JPanel {
         // mapa
         pedirArchivoAMostrar();
         panelMapa = new PanelMapa(rutaArchivoMapa);
+
+        panelPIF.setMapaObservacion(panelMapa);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
         splitPane.setDividerLocation(250);
@@ -347,7 +353,7 @@ public class SituacionTactica extends JPanel {
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter("Archivos TIFF (*.tif, *.tiff)", "tif", "tiff")
+                new FileNameExtensionFilter("Archivos TIFF (*.tif, *.tiff)", "tif", "tiff")
             );
 
             int result = chooser.showOpenDialog(dialog);
@@ -375,9 +381,7 @@ public class SituacionTactica extends JPanel {
 
         // acción cancelar
         btnCancelar.addActionListener(e -> {
-            JOptionPane.showMessageDialog(dialog,
-                "Se usará la ruta por defecto:\n" + rutaArchivoMapa,
-                "Ruta por defecto", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dialog,"Se usará la ruta por defecto:\n" + rutaArchivoMapa,"Ruta por defecto", JOptionPane.INFORMATION_MESSAGE);
             dialog.dispose();
         });
 
@@ -638,6 +642,7 @@ public class SituacionTactica extends JPanel {
     }
 
     private void mostrarDialogoPolares(Blanco referencia) {
+    	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Marcar en Polares desde: " + referencia.getNombre(), true);
         dialog.setSize(740, 540);
@@ -781,11 +786,8 @@ public class SituacionTactica extends JPanel {
                 Blanco nuevo = new Blanco(nombre, nuevas, naturaleza, LocalDateTime.now().toString());
                 nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
                 nuevo.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
-                try {
-                    nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
-                } catch (Exception ex) {
-                    nuevo.setOrientacion(0);
-                }
+                nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
+
                 String info = txtInfo.getText().trim();
                 if (info.equals("Información adicional necesaria")) info = "";
                 nuevo.setInformacionAdicional(info);
@@ -947,9 +949,17 @@ public class SituacionTactica extends JPanel {
         String[] escalafones = {"Por Defecto", "PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
+        cbEntidad.setSelectedItem(ultimaEntidad);
+        
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
+        cbAfiliacion.setSelectedItem(ultimaAfiliacion);
+        
         JComboBox<String> cbHQTF = new JComboBox<>(tipoHQTF);
+        cbHQTF.setSelectedItem(ultimaHQTF);
+        
         JComboBox<String> cbEchelon = new JComboBox<>(escalafones);
+        cbEchelon.setSelectedItem(ultimaEchelon);
+        
         for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbHQTF, cbEchelon}) {
             cb.setPreferredSize(new Dimension(220, 26));
             cb.setBackground(new Color(70, 70, 70));
@@ -1078,21 +1088,16 @@ public class SituacionTactica extends JPanel {
     }
     
     private void armarPIF(Blanco b) {
-    	
-    	JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "Pedido Inicial de Fuego", true);
-        dialog.setSize(1000,600);
-        dialog.setLocationRelativeTo(this);
+        panelPIF.getDatosDeBlancoPanel().setDatosBlanco(b);
 
-        JPanel panelDialog = new JPanel(new GridBagLayout());
-        panelDialog.setBackground(new Color(50, 50, 50));
-        dialog.setContentPane(panelDialog);
-        
-        /////
-        /*proximos cambios*/
-        /////
-        
-        dialog.setVisible(true);
+        // Buscar ObservadorAdelantado y pedirle que muestre el panel Pedido
+        Container parent = this.getParent();
+        while (parent != null && !(parent instanceof ObservadorAdelantado)) {
+            parent = parent.getParent();
+        }
+        if (parent instanceof ObservadorAdelantado obs) {
+            obs.mostrarPanel("PEDIDO");
+        }
     }
     
     private void addPlaceholder(JTextField field, String placeholder){

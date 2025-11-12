@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -76,7 +79,7 @@ public class TiroYControlPanel extends JPanel {
         // TOT
         gbc2.gridy = 2;
         JPanel totPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        totPanel.setBackground(Color.WHITE);
+        totPanel.setBackground(Color.GRAY);
 
         JLabel lblTot = new JLabel(" TOT: ");
         lblTot.setForeground(Color.BLACK);
@@ -143,6 +146,14 @@ public class TiroYControlPanel extends JPanel {
         lbl.setForeground(Color.WHITE);
         lbl.setFont(new Font("Arial", Font.BOLD, 16));
         return lbl;
+    }
+    
+    public void mostrarPIF(PIF pif) {
+        comboPiezas.setSelectedItem(String.valueOf(pif.getPiezas()));
+        comboSeccion.setSelectedItem(pif.getSeccion());
+        txtTot.setText(pif.getTotSegundos());
+        rbCuandoListo.setSelected("CUANDO LISTO".equals(pif.getModoFuego()));
+        rbAMiOrden.setSelected("A MI ORDEN".equals(pif.getModoFuego()));
     }
 
     // Radio group PIQUE y FGO
@@ -252,9 +263,9 @@ public class TiroYControlPanel extends JPanel {
         txtTot.setText(placeholder);
         txtTot.setForeground(Color.GRAY);
 
-        txtTot.addFocusListener(new java.awt.event.FocusAdapter() {
+        txtTot.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
+            public void focusGained(FocusEvent e) {
                 if (txtTot.getText().equals(placeholder)) {
                     txtTot.setText("");
                     txtTot.setForeground(Color.WHITE);
@@ -262,7 +273,7 @@ public class TiroYControlPanel extends JPanel {
             }
 
             @Override
-            public void focusLost(java.awt.event.FocusEvent e) {
+            public void focusLost(FocusEvent e) {
                 if (txtTot.getText().isEmpty()) {
                     txtTot.setText(placeholder);
                     txtTot.setForeground(Color.GRAY);
@@ -282,4 +293,5 @@ public class TiroYControlPanel extends JPanel {
     public boolean isTesSi() { return rbTesSi != null && rbTesSi.isSelected(); }
     public boolean isTesNo() { return rbTesNo != null && rbTesNo.isSelected(); }
     public String getTot() { return txtTot.getText().equals("seg") ? "" : txtTot.getText(); }
+
 }

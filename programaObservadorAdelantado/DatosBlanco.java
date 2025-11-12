@@ -3,92 +3,142 @@ import java.awt.*;
 
 public class DatosBlanco extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	private JTextField txtNombre;
-    private JTextField txtSIDC;
-    private JTextField txtFecha;
-    private JTextField txtX;
-    private JTextField txtY;
-    private JTextField txtSituacion;
+    private static final long serialVersionUID = 1L;
+
+    private JTextField txtNombre, txtNaturaleza, txtFecha, txtOrientacion;
+    private JTextField txtX, txtY, txtSituacion;
+    private JTextArea txtInfoAdicional;
+    private Blanco blancoActual;
 
     public DatosBlanco() {
-    	
         setLayout(new GridBagLayout());
-        setBackground(new Color(30, 30, 30));
+        setBackground(new Color(15, 15, 15));
+        setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
+                "DATOS DEL BLANCO",
+                0, 0,
+                new Font("Consolas", Font.BOLD, 16),
+                new Color(255, 215, 0)
+        ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(3, 10, 3, 10);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        Font fuente = new Font("Consolas", Font.PLAIN, 16);
-        Color textoColor = Color.WHITE;
-
+        Font fuenteCampo = new Font("Consolas", Font.PLAIN, 14);
+        Font fuenteLabel = new Font("Consolas", Font.BOLD, 14);
+        Color colorEtiqueta = new Color(255, 215, 0);
+        Color colorCampo = Color.WHITE;
+        
         int fila = 0;
 
-        // nombre
-        agregarLabel("Nombre:", fila, gbc);
-        txtNombre = crearCampo(fuente, textoColor);
-        agregarCampo(txtNombre, fila++, gbc);
+        agregarLabel("Nombre:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        txtNombre = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtNombre, fila++, 1, gbc);
 
-        // sidc
-        agregarLabel("Naturaleza (SIDC):", fila, gbc);
-        txtSIDC = crearCampo(fuente, textoColor);
-        agregarCampo(txtSIDC, fila++, gbc);
+        agregarLabel("Naturaleza:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        txtNaturaleza = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtNaturaleza, fila++, 1, gbc);
 
-        // fecha
-        agregarLabel("Fecha de actualización:", fila, gbc);
-        txtFecha = crearCampo(fuente, textoColor);
-        agregarCampo(txtFecha, fila++, gbc);
+        agregarLabel("Fecha:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        txtFecha = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtFecha, fila++, 1, gbc);
 
-        // coordenada x
-        agregarLabel("Coordenada X:", fila, gbc);
-        txtX = crearCampo(fuente, textoColor);
-        agregarCampo(txtX, fila++, gbc);
+        agregarLabel("Orientación (mils):", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        txtOrientacion = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtOrientacion, fila++, 1, gbc);
 
-        // coordenada y
-        agregarLabel("Coordenada Y:", fila, gbc);
-        txtY = crearCampo(fuente, textoColor);
-        agregarCampo(txtY, fila++, gbc);
+        fila = 0;
 
-        // situación de movimiento 
-        agregarLabel("Situación de movimiento:", fila, gbc);
-        txtSituacion = crearCampo(fuente, textoColor);
-        agregarCampo(txtSituacion, fila++, gbc);
+        agregarLabel("Coord. X:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        txtX = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtX, fila++, 3, gbc);
+
+        agregarLabel("Coord. Y:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        txtY = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtY, fila++, 3, gbc);
+
+        agregarLabel("Situación:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        txtSituacion = crearCampo(fuenteCampo, colorCampo);
+        agregarCampo(txtSituacion, fila++, 3, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 4;
+        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+        sep.setForeground(new Color(255, 215, 0));
+        add(sep, gbc);
+
+        gbc.gridy = 6;
+        JLabel lblInfo = new JLabel("INFORMACIÓN ADICIONAL");
+        lblInfo.setFont(new Font("Consolas", Font.BOLD, 13));
+        lblInfo.setForeground(colorEtiqueta);
+        add(lblInfo, gbc);
+
+        txtInfoAdicional = new JTextArea(2, 30); 
+        txtInfoAdicional.setFont(fuenteCampo);
+        txtInfoAdicional.setBackground(new Color(35, 35, 35));
+        txtInfoAdicional.setForeground(Color.WHITE);
+        txtInfoAdicional.setLineWrap(true);
+        txtInfoAdicional.setWrapStyleWord(true);
+        txtInfoAdicional.setEditable(false);
+        txtInfoAdicional.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
+        gbc.gridy = 7;
+        gbc.weighty = 0;
+        add(new JScrollPane(txtInfoAdicional), gbc);
     }
 
-    private void agregarLabel(String texto, int fila, GridBagConstraints gbc) {
-        gbc.gridx = 0; gbc.gridy = fila;
+    private void agregarLabel(String texto, int fila, int col, Font fuente, Color color, GridBagConstraints gbc) {
+        gbc.gridx = col;
+        gbc.gridy = fila;
         JLabel lbl = new JLabel(texto);
-        lbl.setForeground(Color.YELLOW);
+        lbl.setFont(fuente);
+        lbl.setForeground(color);
         add(lbl, gbc);
     }
 
-    private void agregarCampo(JTextField campo, int fila, GridBagConstraints gbc) {
-        gbc.gridx = 1; gbc.gridy = fila;
+    private void agregarCampo(JTextField campo, int fila, int col, GridBagConstraints gbc) {
+        gbc.gridx = col;
+        gbc.gridy = fila;
         add(campo, gbc);
     }
 
     private JTextField crearCampo(Font fuente, Color color) {
-        JTextField campo = new JTextField(20);
+        JTextField campo = new JTextField(18);
         campo.setFont(fuente);
-        campo.setBackground(new Color(50, 50, 50));
+        campo.setBackground(new Color(35, 35, 35));
         campo.setForeground(color);
         campo.setCaretColor(Color.WHITE);
-        campo.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        campo.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80)));
+        campo.setEditable(false);
+        campo.setHorizontalAlignment(SwingConstants.LEFT); 
         return campo;
     }
 
     public void setDatosBlanco(Blanco b) {
         if (b == null) return;
-        SwingUtilities.invokeLater(() -> { 
+        this.blancoActual = b;
+
+        SwingUtilities.invokeLater(() -> {
             txtNombre.setText(b.getNombre());
-            txtSIDC.setText(b.getNaturaleza());
+            txtNaturaleza.setText(b.getNaturaleza());
             txtFecha.setText(b.getFechaDeActualizacion());
-            txtX.setText(String.valueOf(b.getCoordenadas().getX()));
-            txtY.setText(String.valueOf(b.getCoordenadas().getY()));
+            txtOrientacion.setText(String.format("%.1f°", b.getOrientacion()));
+            txtX.setText(String.format("%.2f", b.getCoordenadas().getX()));
+            txtY.setText(String.format("%.2f", b.getCoordenadas().getY()));
             txtSituacion.setText(b.getSituacionMovimiento().toString());
+            txtInfoAdicional.setText(
+                (b.getInformacionAdicional() == null || b.getInformacionAdicional().isEmpty())
+                    ? "Sin información adicional."
+                    : b.getInformacionAdicional()
+            );
         });
+    }
+
+    public Blanco getBlancoActual() {
+        return blancoActual;
     }
 }

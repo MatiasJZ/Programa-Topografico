@@ -85,6 +85,124 @@ public class PanelMapa extends JPanel {
         agregarControlesDeZoom();
     }
 
+    public JPanel crearVistaSoloObservacion() {
+        // Crea un segundo JMapPane que comparte el mismo MapContent (misma vista/capas)
+        JMapPane mapPaneSoloObs = new JMapPane(mapContent);
+        mapPaneSoloObs.setOpaque(true);
+        mapPaneSoloObs.setBackground(Color.BLACK);
+
+        // CursorTool "inofensivo": no hace nada en clicks
+        CursorTool noClickTool = new CursorTool() {};
+        mapPaneSoloObs.setCursorTool(noClickTool);
+
+        // Contenedor en capas con overlay de controles (zoom y pan) propio de esta vista
+        JLayeredPane capa = new JLayeredPane();
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(Color.BLACK);
+        wrapper.add(capa, BorderLayout.CENTER);
+
+        // map al fondo
+        capa.add(mapPaneSoloObs, JLayeredPane.DEFAULT_LAYER);
+
+        // overlay con botones
+        JPanel overlay = new JPanel(null);
+        overlay.setOpaque(false);
+        capa.add(overlay, JLayeredPane.PALETTE_LAYER);
+
+        // resize bounds
+        wrapper.addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                mapPaneSoloObs.setBounds(0, 0, wrapper.getWidth(), wrapper.getHeight());
+                overlay.setBounds(0, 0, wrapper.getWidth(), wrapper.getHeight());
+            }
+        });
+
+        // Botones (idénticos estilo a los de este PanelMapa)
+        int size = 42, margin = 10;
+        JButton btnZoomIn = new JButton("+");
+        JButton btnZoomOut = new JButton("-");
+        JButton btnPan = new JButton();
+
+        // icono arrastrar si lo tenés en recursos (mismo que usás arriba)
+        try {
+            ImageIcon icono = new ImageIcon(getClass().getResource("/arrastrar.png"));
+            Image imgEscalada = icono.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
+            btnPan.setIcon(new ImageIcon(imgEscalada));
+        } catch (Exception ignore) {}
+
+        JButton[] botones = {btnZoomIn, btnZoomOut, btnPan};
+        for (int i = 0; i < botones.length; i++) {
+            JButton b = botones[i];
+            b.setBounds(margin, margin + i * (size + 8), size, size);
+            b.setFocusPainted(false);
+            b.setBorderPainted(false);
+            b.setContentAreaFilled(true);
+            b.setOpaque(true);
+            b.setBackground(new Color(25, 25, 25));
+            b.setForeground(Color.WHITE);
+            overlay.add(b);
+        }
+
+        PanTool panTool = new PanTool();
+        final boolean[] modoPan = {false};
+        final CursorTool[] anterior = {noClickTool};
+        btnPan.addActionListener(e -> {
+            if (!modoPan[0]) {
+                anterior[0] = mapPaneSoloObs.getCursorTool();
+                mapPaneSoloObs.setCursorTool(panTool);
+                mapPaneSoloObs.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                btnPan.setBackground(new Color(60, 160, 60, 180));
+                modoPan[0] = true;
+            } else {
+                mapPaneSoloObs.setCursorTool(anterior[0]);
+                mapPaneSoloObs.setCursor(Cursor.getDefaultCursor());
+                btnPan.setBackground(new Color(25, 25, 25));
+                modoPan[0] = false;
+            }
+        });
+        	ActionListener zoom = e -> {
+            boolean in = e.getSource() == btnZoomIn;
+            double factor = in ? 0.5 : 2.0;
+            ReferencedEnvelope view = mapPaneSoloObs.getDisplayArea();
+            if (view == null) view = mapContent.getViewport().getBounds();
+            ReferencedEnvelope bounds = mapContent.getMaxBounds();
+
+            double cx = view.getMedian(0);
+            double cy = view.getMedian(1);
+            double w = view.getWidth() * factor;
+            double h = view.getHeight() * factor;
+
+            ReferencedEnvelope nueva =
+                new ReferencedEnvelope(
+                    cx - w/2, cx + w/2, cy - h/2, cy + h/2, view.getCoordinateReferenceSystem()
+                );
+
+            if (bounds != null) {
+                if (nueva.getWidth() > bounds.getWidth() || nueva.getHeight() > bounds.getHeight()) {
+                    nueva = bounds;
+                } else {
+                    if (nueva.getMinX() < bounds.getMinX()) nueva.translate(bounds.getMinX() - nueva.getMinX(), 0);
+                    if (nueva.getMaxX() > bounds.getMaxX()) nueva.translate(bounds.getMaxX() - nueva.getMaxX(), 0);
+                    if (nueva.getMinY() < bounds.getMinY()) nueva.translate(0, bounds.getMinY() - nueva.getMinY());
+                    if (nueva.getMaxY() > bounds.getMaxY()) nueva.translate(0, bounds.getMaxY() - nueva.getMaxY());
+                }
+            }
+            mapPaneSoloObs.setDisplayArea(nueva);
+        };
+        btnZoomIn.addActionListener(zoom);
+        btnZoomOut.addActionListener(zoom);
+
+        overlay.addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                for (int i = 0; i < botones.length; i++) {
+                    botones[i].setBounds(margin, margin + i * (size + 8), size, size);
+                }
+            }
+        });
+
+        return wrapper;
+    }
+    	
     private void crearLayerDeBlancos() {
     	
         // Tipo para blancos 
@@ -184,7 +302,7 @@ public class PanelMapa extends JPanel {
             Style estiloSimbolo = null;
 
             try {
-                proveedorMilSym prov = new proveedorMilSym(sidc, 70);
+                proveedorMilSym prov = new proveedorMilSym(sidc, 75);
                 Field f = proveedorMilSym.class.getDeclaredField("simbolo");
                 f.setAccessible(true);
                 BufferedImage simbolo = (BufferedImage) f.get(prov);

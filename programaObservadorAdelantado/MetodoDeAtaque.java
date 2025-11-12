@@ -149,6 +149,12 @@ class MetodoAtaquePanel extends JPanel {
         panel.add(lbl);
         return panel;
     }
+    
+    public void mostrarPIF(PIF pif) {
+        comboGranada.setSelectedItem(pif.getTipoMunicion());
+        comboEspoleta.setSelectedItem(pif.getEspoleta());
+        comboHaz.setSelectedItem(pif.getHaz());
+    }
 
     private JRadioButton crearRadio(String text, Font font, Color color, Icon icon) {
         JRadioButton rb = new JRadioButton(text);

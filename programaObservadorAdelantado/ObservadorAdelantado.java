@@ -77,16 +77,30 @@ public class ObservadorAdelantado extends JPanel{
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
+        PedidoDeFuego pedidoDeFuego = new PedidoDeFuego(listaDeBlancos);
+        SituacionTactica situacionTactica = new SituacionTactica(listaDeBlancos,pedidoDeFuego);
+        Mensajeria mensajeria = new Mensajeria();
+        	
         // paneles con clases cardboard
-        cards.add(new SituacionTactica(listaDeBlancos),"SITUACION");
-        cards.add(new PedidoDeFuego(listaDeBlancos), "PEDIDO");
-        cards.add(new Mensajeria(), "MENSAJERIA");
+        cards.add(situacionTactica,"SITUACION");
+        cards.add(pedidoDeFuego, "PEDIDO");
+        cards.add(mensajeria, "MENSAJERIA");
 
         add(cards, BorderLayout.CENTER);
         cardLayout.show(cards, "SITUACION");
         actualizarBotonesMenu();
     }
 
+    public void mostrarPanel(String nombreCard) {
+        switch (nombreCard) {
+            case "SITUACION" -> panelActual = 0;
+            case "PEDIDO" -> panelActual = 1;
+            case "MENSAJERIA" -> panelActual = 2;
+        }
+        cardLayout.show(cards, nombreCard);
+        actualizarBotonesMenu();
+    }
+    
     private void pedirID() {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
