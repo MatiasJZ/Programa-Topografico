@@ -77,7 +77,7 @@ public class ObservadorAdelantado extends JPanel{
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        PedidoDeFuego pedidoDeFuego = new PedidoDeFuego(listaDeBlancos);
+        PedidoDeFuego pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
         SituacionTactica situacionTactica = new SituacionTactica(listaDeBlancos,pedidoDeFuego);
         Mensajeria mensajeria = new Mensajeria();
         	

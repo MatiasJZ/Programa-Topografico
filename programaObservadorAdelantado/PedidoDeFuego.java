@@ -14,32 +14,28 @@ class PedidoDeFuego extends JPanel {
     private CardLayout cardLayout;
     private JPanel pifCardPanel;
     private DatosBlanco datosDeBlancoPanel;
-    private MetodoAtaquePanel metodoAtaquePanel;
-    private TiroYControlPanel tiroYControlPanel;
-    private JPanel correccionesPanel, pifPanel;
+    private MetodoAtaqueYTiroPanel metodoYTiroPanel;
+    private JPanel pifPanel;
     private JPanel panelMapaObsHolder;
-    private JPanel panelSuperior; // Datos del blanco
+    private JPanel panelSuperior;
     private JPanel panelInferior;
     private DefaultListModel<PIF> modeloHistorial;
     private JList<PIF> listaHistorial;
-
     // botones superiores
     private JButton btnDatos;
     private JButton btnMetodo;
-    private JButton btnTiro;
-
-    // navegación
-    private final String[] ordenNavegable = {"datos", "metodo", "tiro"};
-    private volatile int indiceActual = 0; 
+    private final String[] ordenNavegable = {"datos", "metodoTiro"};
+    private volatile int indiceActual = 0;
     private volatile boolean transicionEnCurso = false;
+    private String idOAA;
 
-    public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos) {
+    public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos, String idOAA) {
+    	this.idOAA = idOAA;
         this.listaDeBlancos = listaDeBlancos;
 
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 
-        // panel principal
         pifPanel = new JPanel(new BorderLayout());
         pifPanel.setBackground(Color.BLACK);
         pifPanel.setBorder(crearBordeTitulo(""));
@@ -48,24 +44,24 @@ class PedidoDeFuego extends JPanel {
         crearCardLayout();
         crearBotonesDeNavegacion();
         crearPanelHistorial();
-
         inicializarAcciones();
     }
-    
+
     private void crearCardLayout() {
         cardLayout = new CardLayout();
         pifCardPanel = new JPanel(cardLayout);
         pifCardPanel.setBackground(Color.BLACK);
 
         datosDeBlancoPanel = new DatosBlanco();
-        metodoAtaquePanel = new MetodoAtaquePanel();
-        tiroYControlPanel = new TiroYControlPanel();
+        metodoYTiroPanel = new MetodoAtaqueYTiroPanel();
 
+        // parte superior con datos del blanco
         panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setBackground(Color.BLACK);
         panelSuperior.add(datosDeBlancoPanel, BorderLayout.CENTER);
-        panelSuperior.setPreferredSize(new Dimension(0, 240)); 
+        panelSuperior.setPreferredSize(new Dimension(0, 240));
 
+        // visor de mapa
         panelMapaObsHolder = new JPanel(new BorderLayout());
         panelMapaObsHolder.setBackground(Color.BLACK);
 
@@ -73,15 +69,15 @@ class PedidoDeFuego extends JPanel {
         panelInferior.setBackground(Color.BLACK);
         panelInferior.add(panelMapaObsHolder, BorderLayout.CENTER);
 
-        JPanel contenedorVertical = new JPanel();
-        contenedorVertical.setLayout(new BorderLayout());
+        // contenedor vertical
+        JPanel contenedorVertical = new JPanel(new BorderLayout());
         contenedorVertical.setBackground(Color.BLACK);
         contenedorVertical.add(panelSuperior, BorderLayout.NORTH);
         contenedorVertical.add(panelInferior, BorderLayout.CENTER);
 
+        // agregar cards
         pifCardPanel.add(contenedorVertical, "datos");
-        pifCardPanel.add(metodoAtaquePanel, "metodo");
-        pifCardPanel.add(tiroYControlPanel, "tiro");
+        pifCardPanel.add(metodoYTiroPanel, "metodoTiro");
 
         cardLayout.show(pifCardPanel, "datos");
         resaltarSegunCard("datos");
@@ -99,14 +95,13 @@ class PedidoDeFuego extends JPanel {
     }
 
     private void crearPanelDeBotones() {
-        JPanel botonesPanel = new JPanel(new GridLayout(1, 3, 5, 5));
+        JPanel botonesPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         botonesPanel.setBackground(Color.BLACK);
 
         btnDatos = new JButton("DATOS DEL BLANCO");
-        btnMetodo = new JButton("MÉTODO DE ATAQUE");
-        btnTiro = new JButton("TIRO Y CONTROL");
+        btnMetodo = new JButton("MÉTODO Y TIRO");
 
-        for (JButton b : new JButton[]{btnDatos, btnMetodo, btnTiro}) {
+        for (JButton b : new JButton[]{btnDatos, btnMetodo}) {
             b.setBackground(new Color(60, 60, 60));
             b.setForeground(Color.WHITE);
             b.setFocusPainted(false);
@@ -114,7 +109,6 @@ class PedidoDeFuego extends JPanel {
 
         botonesPanel.add(btnDatos);
         botonesPanel.add(btnMetodo);
-        botonesPanel.add(btnTiro);
         pifPanel.add(botonesPanel, BorderLayout.NORTH);
     }
 
@@ -132,49 +126,48 @@ class PedidoDeFuego extends JPanel {
         listaHistorial.setFont(new Font("Consolas", Font.PLAIN, 14));
 
         listaHistorial.setCellRenderer(new DefaultListCellRenderer() {
-            private static final long serialVersionUID = 1L;
-
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,boolean isSelected, boolean cellHasFocus) {
+
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof PIF pif) {
-                    Blanco b = pif.getBlanco();
-                    String afiliacion = b != null ? b.getNaturaleza().toUpperCase() : "";
-                    // texto en dos líneas
-                    String texto = String.format(
-                        "<html><div style='margin:2px 0; line-height:120%%;'>"
-                      + "<b>%s</b><br><span style='font-size:10px; color:gray;'>%s</span></div></html>",
-                        b != null ? b.getNombre() : "Sin nombre",
-                        pif.getFechaHora().toString().replace('T', ' ')
-                    );
-                    label.setText(texto);
-                    // color de afiliación
-                    if (afiliacion.contains("HOSTIL")) label.setForeground(new Color(255, 128, 128));
-                    else if (afiliacion.contains("ALIADO")) label.setForeground(new Color(128, 224, 255));
-                    else if (afiliacion.contains("NEUTRO")) label.setForeground(new Color(170, 255, 170));
-                    else if (afiliacion.contains("DESCONOCIDO")) label.setForeground(new Color(255, 255, 128));
-                    else if (afiliacion.contains("ASUMIDO AMIGO")) label.setForeground(new Color(128, 224, 255));
-                    else if (afiliacion.contains("ASUMIDO ENEMIGO")) label.setForeground(new Color(255, 128, 128));
-                    else if (afiliacion.contains("PENDIENTE")) label.setForeground(new Color(255, 255, 128));
-                    else label.setForeground(Color.LIGHT_GRAY);
+                PIF pif = (PIF) value;
+                Blanco b = pif.getBlanco();
 
-                    label.setHorizontalAlignment(SwingConstants.LEFT);
-                    label.setFont(new Font("Consolas", Font.PLAIN, 13));
-                    label.setBackground(isSelected ? new Color(40, 80, 120) : new Color(20, 20, 20));
+                String naturaleza = b != null ? b.getNaturaleza().toUpperCase() : "";
+                String fecha = pif.getFechaHora().toString().replace('T', ' ');
 
-                    label.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(80, 80, 80)),
-                        BorderFactory.createEmptyBorder(4, 6, 4, 6)
-                    ));
-                }
+                String texto = String.format("<html>"+ "<div style='margin:2px 0; line-height:130%%;'>"+ "<span style='font-size:12px; color:white;'>%s</span><br>"
+                  + "<span style='font-size:11px;'>%s</span>"+ "</div></html>",fecha,naturaleza);
+                label.setText(texto);
+
+                Color colorTexto;
+
+                if (naturaleza.contains("HOSTIL")) colorTexto = new Color(255,128,128);
+                else if (naturaleza.contains("ASUMIDO ENEMIGO")) colorTexto = new Color(255,128,128);
+                else if (naturaleza.contains("ALIADO")) colorTexto = new Color(128,224,255);
+                else if (naturaleza.contains("ASUMIDO AMIGO")) colorTexto = new Color(128,224,255);
+                else if (naturaleza.contains("NEUTRO")) colorTexto = new Color(170,255,170);
+                else if (naturaleza.contains("DESCONOCIDO")) colorTexto = new Color(255,255,128);
+                else if (naturaleza.contains("PENDIENTE")) colorTexto = new Color(255,255,128);
+                else colorTexto = Color.LIGHT_GRAY;
+
+                label.setForeground(colorTexto);
+                label.setBackground(isSelected ? new Color(40, 80, 120) : new Color(20, 20, 20));
+                label.setOpaque(true);
+                label.setHorizontalAlignment(SwingConstants.LEFT);
+                label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(80, 80, 80)),
+                    BorderFactory.createEmptyBorder(4, 6, 4, 6)
+                ));
+
                 return label;
             }
         });
+
         JScrollPane scroll = new JScrollPane(listaHistorial);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         historialPanel.add(scroll, BorderLayout.CENTER);
-        // botón ver PIF
+
         JButton btnVer = new JButton("Ver PIF");
         btnVer.setBackground(new Color(60, 60, 60));
         btnVer.setForeground(Color.WHITE);
@@ -187,67 +180,54 @@ class PedidoDeFuego extends JPanel {
 
     private void inicializarAcciones() {
         btnDatos.addActionListener(e -> mostrarPanelSeguro("datos", 0));
-        btnMetodo.addActionListener(e -> mostrarPanelSeguro("metodo", 1));
-        btnTiro.addActionListener(e -> mostrarPanelSeguro("tiro", 2));
-
-        tiroYControlPanel.setEnviarListener(() -> {
-            registrarNuevoPIF();
-        });
+        btnMetodo.addActionListener(e -> mostrarPanelSeguro("metodoTiro", 1));
+        // accion enviar
+        metodoYTiroPanel.setEnviarListener(() -> registrarNuevoPIF());
     }
 
     private void registrarNuevoPIF() {
-        Blanco b = datosDeBlancoPanel != null ? datosDeBlancoPanel.getBlancoActual() : null;
+
+        Blanco b = datosDeBlancoPanel.getBlancoActual();
         if (b == null) {
-            JOptionPane.showMessageDialog(this, "No hay blanco seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No hay blanco seleccionado.","Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        MetodoAtaqueYTiroPanel mt = metodoYTiroPanel;
+        int rondas = mt.isRafaga() ? 5 : 1;
 
-        MetodoAtaquePanel metodo = metodoAtaquePanel;
-        TiroYControlPanel tyc = tiroYControlPanel;
-
-        String solicitante = "OAA Juarez";
-        String metodoAtaque = metodo.getGranada() + "-" + metodo.getEspoleta();
-        String naturaleza = b.getNaturaleza();
-        int rondas = metodo.isRafaga() ? 5 : 1;
-
-        PIF nuevo = new PIF(
-                null, null, solicitante, b, "EPSG:9265", naturaleza, metodoAtaque,
-                Integer.parseInt(tyc.getPiezas()), rondas,
-                metodo.getGranada(), metodo.getEspoleta(), "Carga estándar"
-        );
-        nuevo.setModoFuego(tyc.isCuandoListo() ? "CUANDO LISTO" : "A MI ORDEN");
-        nuevo.setFuegoContinuo(tyc.isFgoSi());
-        nuevo.setTes(tyc.isTesSi());
-        nuevo.setTotSegundos(tyc.getTot());
-        nuevo.setSeccion(tyc.getSeccion());
+        PIF nuevo = new PIF(null, null,idOAA,b,"EPSG:9265",b.getNaturaleza(),mt.getGranada() + "-" + mt.getEspoleta(),
+            Integer.parseInt(mt.getPiezas()),rondas,mt.getGranada(),mt.getEspoleta(),"Carga estándar");
+        
+        nuevo.setModoFuego(mt.isCuandoListo() ? "CUANDO LISTO" : "A MI ORDEN");
+        nuevo.setFuegoContinuo(mt.isFgoSi());
+        nuevo.setTes(mt.isTesSi());
+        nuevo.setTotSegundos(mt.getTot());
+        nuevo.setSeccion(mt.getSeccion());
 
         modeloHistorial.addElement(nuevo);
 
-        JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado",
-                JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "PIF registrado correctamente.",
+                "Confirmado", JOptionPane.INFORMATION_MESSAGE);
     }
-    
-    private void mostrarPIFSeleccionado() {
-        PIF pifSel = listaHistorial.getSelectedValue();
-        if (pifSel == null) return;
 
-        datosDeBlancoPanel.setDatosBlanco(pifSel.getBlanco());
-        metodoAtaquePanel.mostrarPIF(pifSel);
-        tiroYControlPanel.mostrarPIF(pifSel);
+    private void mostrarPIFSeleccionado() {
+        PIF p = listaHistorial.getSelectedValue();
+        if (p == null) return;
+
+        datosDeBlancoPanel.setDatosBlanco(p.getBlanco());
+        metodoYTiroPanel.mostrarPIF(p);
 
         cardLayout.show(pifCardPanel, "datos");
         resaltarSegunCard("datos");
     }
-    
+
     private void mostrarPanelSeguro(String card, int nuevoIndice) {
-        if (transicionEnCurso) return; // evita flood por clics múltiples
+        if (transicionEnCurso) return;
         transicionEnCurso = true;
 
         Runnable cambio = () -> {
             try {
-                if (nuevoIndice >= 0 && nuevoIndice < ordenNavegable.length)
-                    indiceActual = nuevoIndice;
-
+                indiceActual = nuevoIndice;
                 cardLayout.show(pifCardPanel, card);
                 resaltarSegunCard(card);
             } finally {
@@ -256,11 +236,7 @@ class PedidoDeFuego extends JPanel {
                 t.start();
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            cambio.run();
-        } else {
-            SwingUtilities.invokeLater(cambio);
-        }
+        SwingUtilities.invokeLater(cambio);
     }
 
     private void crearBotonesDeNavegacion() {
@@ -280,16 +256,16 @@ class PedidoDeFuego extends JPanel {
         btnPrev.addActionListener(e -> moverSeguro(-1));
         btnNext.addActionListener(e -> moverSeguro(+1));
 
-        // atajos con teclado
+        // atajos de teclado
         InputMap inputMap = pifPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = pifPanel.getActionMap();
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "prev");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "next");
         actionMap.put("prev", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) { btnPrev.doClick(); }
+            public void actionPerformed(ActionEvent e) { btnPrev.doClick(); }
         });
         actionMap.put("next", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) { btnNext.doClick(); }
+            public void actionPerformed(ActionEvent e) { btnNext.doClick(); }
         });
     }
 
@@ -312,10 +288,9 @@ class PedidoDeFuego extends JPanel {
                 t.start();
             }
         };
-
         SwingUtilities.invokeLater(cambio);
     }
-    
+
     private void configurarBotonNavegacion(JButton b) {
         b.setFont(new Font("Arial", Font.BOLD, 24));
         b.setBackground(new Color(0, 100, 0));
@@ -329,12 +304,14 @@ class PedidoDeFuego extends JPanel {
 
         btnDatos.setBackground(normal);
         btnMetodo.setBackground(normal);
-        btnTiro.setBackground(normal);
 
         switch (cardName) {
-            case "datos": btnDatos.setBackground(resaltado); break;
-            case "metodo": btnMetodo.setBackground(resaltado); break;
-            case "tiro": btnTiro.setBackground(resaltado); break;
+            case "datos":
+                btnDatos.setBackground(resaltado);
+                break;
+            case "metodoTiro":
+                btnMetodo.setBackground(resaltado);
+                break;
         }
     }
 
@@ -346,11 +323,6 @@ class PedidoDeFuego extends JPanel {
         return borde;
     }
 
-    public MetodoAtaquePanel getMetodoAtaquePanel() { return metodoAtaquePanel; }
-    
-    public TiroYControlPanel getTiroYControlPanel() { return tiroYControlPanel; }
-    
     public DatosBlanco getDatosDeBlancoPanel() { return datosDeBlancoPanel; }
-    
     public LinkedList<Blanco> getListaDeBlancos() { return listaDeBlancos; }
 }
