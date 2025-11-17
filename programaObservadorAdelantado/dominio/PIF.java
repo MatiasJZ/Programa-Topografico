@@ -1,3 +1,4 @@
+package dominio;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,30 +38,45 @@ public class PIF {
     }
     
     public String getId() { return id; }
+    
     public LocalDateTime getFechaHora() { return fechaHora; }
+    
     public String getSolicitante() { return solicitante; }
+    
     public Blanco getBlanco() { return blanco; }
+    
     public String getNaturaleza() { return naturaleza; }
+    
     public String getMetodoAtaque() { return metodoAtaque; }
+    
     public int getPiezas() { return piezas; }
+    
     public int getRondas() { return rondas; }
+    
     public String getTipoMunicion() { return tipoMunicion; }
+    
     public String getEspoleta() { return espoleta; }
+    
     public String getCarga() { return carga; }
 
     public String getModoFuego() { return modoFuego; }
+    
     public void setModoFuego(String modoFuego) { this.modoFuego = modoFuego; }
 
     public boolean isFuegoContinuo() { return fuegoContinuo; }
+    
     public void setFuegoContinuo(boolean fuegoContinuo) { this.fuegoContinuo = fuegoContinuo; }
 
     public boolean isTes() { return tes; }
+    
     public void setTes(boolean tes) { this.tes = tes; }
 
     public String getTotSegundos() { return totSegundos; }
+    
     public void setTotSegundos(String totSegundos) { this.totSegundos = totSegundos; }
 
     public String getSeccion() { return seccion; }
+    
     public void setSeccion(String seccion) { this.seccion = seccion; }
 
     @Override

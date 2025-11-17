@@ -1,8 +1,9 @@
+package interfaz;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
-class Mensajeria extends JPanel {
+public class Mensajeria extends JPanel {
 
     public Mensajeria() {
         setBackground(Color.BLACK);

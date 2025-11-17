@@ -1,3 +1,4 @@
+package dominio;
 public class coordRectangulares extends coordenadas {
     private double coordX; 
     private double coordY;

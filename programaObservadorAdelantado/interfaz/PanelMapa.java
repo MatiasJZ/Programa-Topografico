@@ -1,3 +1,4 @@
+package interfaz;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.style.ExternalGraphic;
@@ -32,6 +33,14 @@ import org.geotools.swing.tool.PanTool;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+
+import dominio.Blanco;
+import dominio.CodigosMilitares;
+import dominio.Punto;
+import dominio.coordPolares;
+import dominio.coordRectangulares;
+import dominio.coordenadas;
+import milsymb.proveedorMilSym;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -202,7 +211,7 @@ public class PanelMapa extends JPanel {
 
         return wrapper;
     }
-    	
+    
     private void crearLayerDeBlancos() {
     	
         // Tipo para blancos 

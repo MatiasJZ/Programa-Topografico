@@ -1,3 +1,4 @@
+package dominio;
 public abstract class coordenadas{
 	public abstract double getX();
 	public abstract double getY();

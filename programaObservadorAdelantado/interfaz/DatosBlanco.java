@@ -1,4 +1,8 @@
+package interfaz;
 import javax.swing.*;
+
+import dominio.Blanco;
+
 import java.awt.*;
 
 public class DatosBlanco extends JPanel {

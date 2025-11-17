@@ -1,7 +1,11 @@
+package interfaz;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
+
+import dominio.PIF;
+import mensajes.EnviarListener;
 
 public class MetodoAtaqueYTiroPanel extends JPanel {
 
@@ -21,6 +25,12 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JRadioButton rbCuandoListo, rbAMiOrden;
     private EnviarListener enviarListener;
 
+    private CardLayout cardCorrecciones;
+    private JPanel panelCard;
+    private JPanel panelPrincipal;
+    private CorreccionesPanel panelCorrecciones;
+    private JButton btnCorrecciones;
+
     public void setEnviarListener(EnviarListener l) { this.enviarListener = l; }
 
     public MetodoAtaqueYTiroPanel() {
@@ -29,17 +39,30 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         setBackground(Color.BLACK);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JPanel contenido = new JPanel();
-        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
-        contenido.setBackground(Color.BLACK);
+        panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
+        panelPrincipal.setBackground(Color.BLACK);
 
-        contenido.add(crearMetodoAtaque2Columnas());
-        contenido.add(Box.createVerticalStrut(20));
-        contenido.add(crearTiroYControl2Columnas());
-        contenido.add(Box.createVerticalStrut(20));
-        contenido.add(crearBotonEnviar());
+        panelPrincipal.add(crearMetodoAtaque2Columnas());
+        panelPrincipal.add(Box.createVerticalStrut(20));
+        panelPrincipal.add(crearTiroYControl2Columnas());
+        panelPrincipal.add(Box.createVerticalStrut(20));
+        panelPrincipal.add(crearBotonEnviar());
 
-        add(contenido, BorderLayout.CENTER);
+        panelCorrecciones = new CorreccionesPanel();
+
+        cardCorrecciones = new CardLayout();
+        panelCard = new JPanel(cardCorrecciones);
+        panelCard.setBackground(Color.BLACK);
+
+        panelCard.add(panelPrincipal, "principal");
+        panelCard.add(panelCorrecciones, "correcciones");
+
+        add(panelCard, BorderLayout.CENTER);
+
+        panelCorrecciones.getBtnVolver().addActionListener(e ->
+            cardCorrecciones.show(panelCard, "principal")
+        );
     }
 
     private JPanel crearMetodoAtaque2Columnas() {
@@ -49,8 +72,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         grid.setBackground(Color.BLACK);
         Icon icon = new RadioButtonGrande(22);
         Dimension comboSize = new Dimension(220, 30);
-        
-        // CERCANO
+
         grid.add(crearGrupoRadio("CERCANO:", rb -> {
             rbCercanoSi = crearRadio("Sí", icon);
             rbCercanoNo = crearRadio("No", icon);
@@ -58,7 +80,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
             rb.add(rbCercanoSi); rb.add(rbCercanoNo);
         }));
 
-        // GRAN ANGULO
         grid.add(crearGrupoRadio("GRAN ÁNGULO:", rb -> {
             rbGranAnguloSi = crearRadio("Sí", icon);
             rbGranAnguloNo = crearRadio("No", icon);
@@ -66,15 +87,12 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
             rb.add(rbGranAnguloSi); rb.add(rbGranAnguloNo);
         }));
 
-        // GRANADA
         comboGranada = crearCombo(new String[]{"HE","IL","WP"}, comboSize);
         grid.add(crearItem("GRANADA:", comboGranada));
 
-        // ESPOLETA
         comboEspoleta = crearCombo(new String[]{"I","VT","CM"}, comboSize);
         grid.add(crearItem("ESPOLETA:", comboEspoleta));
 
-        // VOLUMEN
         txtVolumen = new JTextField();
         txtVolumen.setHorizontalAlignment(SwingConstants.CENTER);
         txtVolumen.setPreferredSize(comboSize);
@@ -83,7 +101,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         txtVolumen.setBackground(new Color(60,60,60));
         grid.add(crearItem("VOLUMEN:", txtVolumen));
 
-        // MODO DISPARO
         rbDisparos = crearRadio("DISPAROS", null);
         rbRafaga = crearRadio("RÁFAGA", null);
         agrupar(rbDisparos, rbRafaga);
@@ -96,7 +113,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         comboHaz = crearCombo(new String[]{"PARALELO","CONVERGENTE","ABIERTO","ESPECIAL","CIRCULAR"},comboSize);
         grid.add(crearItem("HAZ:", comboHaz));
         panel.add(grid, BorderLayout.CENTER);
-        
+
         return panel;
     }
 
@@ -105,7 +122,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         renderer.setHorizontalAlignment(SwingConstants.CENTER);
         combo.setRenderer(renderer);
     }
-    
+
     private JPanel crearTiroYControl2Columnas() {
 
         JPanel panel = crearBlindado("TIRO Y CONTROL");
@@ -113,34 +130,34 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         grid.setBackground(Color.BLACK);
         Icon icon = new RadioButtonGrande(22);
         Dimension comboSize = new Dimension(220, 30);
-        // PIEZAS
+
         comboPiezas = crearCombo(new String[]{"1","2","3","4","5","6"}, comboSize);
         grid.add(crearItem("PIEZAS:", comboPiezas));
-        // SECCIÓN
+
         comboSeccion = crearCombo(new String[]{"IZQUIERDA","DERECHA"}, comboSize);
         grid.add(crearItem("SECCIÓN:", comboSeccion));
-        // PIQUE
+
         grid.add(crearGrupoRadio("PIQUE:", rb -> {
             rbPiqueSi = crearRadio("Sí", icon);
             rbPiqueNo = crearRadio("No", icon);
             agrupar(rbPiqueSi, rbPiqueNo);
             rb.add(rbPiqueSi); rb.add(rbPiqueNo);
         }));
-        // FGO CONT
+
         grid.add(crearGrupoRadio("FGO CONT:", rb -> {
             rbFgoSi = crearRadio("Sí", icon);
             rbFgoNo = crearRadio("No", icon);
             agrupar(rbFgoSi, rbFgoNo);
             rb.add(rbFgoSi); rb.add(rbFgoNo);
         }));
-        // TES
+
         grid.add(crearGrupoRadio("TES:", rb -> {
             rbTesSi = crearRadio("Sí", icon);
             rbTesNo = crearRadio("No", icon);
             agrupar(rbTesSi, rbTesNo);
             rb.add(rbTesSi); rb.add(rbTesNo);
         }));
-        // TOT
+
         txtTot = new JTextField("seg");
         txtTot.setHorizontalAlignment(SwingConstants.CENTER);
         txtTot.setPreferredSize(new Dimension(90, 30));
@@ -161,15 +178,15 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
                 }
             }
         });
+
         grid.add(crearItem("TOT:", txtTot));
         panel.add(grid, BorderLayout.CENTER);
-        
+
         return panel;
     }
 
     private JPanel crearBotonEnviar() {
 
-        // radiobutton de modo de fuego
         rbCuandoListo = crearRadio("CUANDO LISTO", null);
         rbAMiOrden    = crearRadio("A MI ORDEN", null);
         agrupar(rbCuandoListo, rbAMiOrden);
@@ -179,23 +196,34 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         radiosModo.add(rbCuandoListo);
         radiosModo.add(rbAMiOrden);
 
-        // boton enviar
-        JButton btn = new JButton("ENVIAR PIF");
-        btn.setPreferredSize(new Dimension(180, 40));
-        btn.setBackground(new Color(140, 30, 30));
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 16));
-        btn.setFocusPainted(false);
+        JButton btnEnviar = new JButton("ENVIAR PIF");
+        btnEnviar.setPreferredSize(new Dimension(180, 40));
+        btnEnviar.setBackground(new Color(140, 30, 30));
+        btnEnviar.setForeground(Color.WHITE);
+        btnEnviar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnEnviar.setFocusPainted(false);
 
-        btn.addActionListener(e -> {
+        btnEnviar.addActionListener(e -> {
             if (enviarListener != null)
                 enviarListener.onEnviar();
         });
-        JPanel total = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
+
+        btnCorrecciones = new JButton("CORRECCIONES");
+        btnCorrecciones.setPreferredSize(new Dimension(180, 40));
+        btnCorrecciones.setFocusPainted(false);
+        btnCorrecciones.setFont(new Font("Arial", Font.BOLD, 15));
+        btnCorrecciones.setForeground(Color.WHITE);
+        btnCorrecciones.setBackground(new Color(20, 40, 90));
+        btnCorrecciones.setBorder(BorderFactory.createLineBorder(new Color(80,80,160)));
+
+        btnCorrecciones.addActionListener(e -> cardCorrecciones.show(panelCard, "correcciones"));
+
+        JPanel total = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 10));
         total.setBackground(Color.BLACK);
 
         total.add(radiosModo);
-        total.add(btn);
+        total.add(btnEnviar);
+        total.add(btnCorrecciones);
 
         return total;
     }
@@ -271,39 +299,34 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     }
 
     public boolean isRafaga(){ return rbRafaga.isSelected(); }
-    
     public boolean isDisparos(){ return rbDisparos.isSelected(); }
-    
     public boolean isCercano(){ return rbCercanoSi.isSelected(); }
-    
     public boolean isGranAngulo(){ return rbGranAnguloSi.isSelected(); }
-
     public String getGranada(){ return (String) comboGranada.getSelectedItem(); }
-    
     public String getEspoleta(){ return (String) comboEspoleta.getSelectedItem(); }
-    
     public String getHaz(){ return (String) comboHaz.getSelectedItem(); }
-
     public int getVolumen(){
         try{ return Integer.parseInt(txtVolumen.getText()); }
         catch(Exception e){ return -1; }
     }
-
     public String getPiezas(){ return (String) comboPiezas.getSelectedItem(); }
-    
     public String getSeccion(){ return (String) comboSeccion.getSelectedItem(); }
-
     public boolean isPiqueSi(){ return rbPiqueSi.isSelected(); }
-    
     public boolean isFgoSi(){ return rbFgoSi.isSelected(); }
-    
     public boolean isTesSi(){ return rbTesSi.isSelected(); }
-
     public boolean isCuandoListo(){ return rbCuandoListo.isSelected(); }
-    
     public boolean isAMiOrden(){ return rbAMiOrden.isSelected(); }
-
     public String getTot(){ return txtTot.getText(); }
+    public void mostrarPanelCorrecciones() {
+        cardCorrecciones.show(panelCard, "correcciones");
+    }
+
+    public void mostrarPanelPrincipal() {
+        cardCorrecciones.show(panelCard, "principal");
+    }
+    public CorreccionesPanel getCorreccionesPanel() {
+    	return panelCorrecciones;
+    }
 
     public void mostrarPIF(PIF p){}
 }

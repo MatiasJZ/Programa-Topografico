@@ -1,3 +1,4 @@
+package dominio;
 public class Punto {
 	
 	private coordenadas coord;

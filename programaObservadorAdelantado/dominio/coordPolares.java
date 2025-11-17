@@ -1,3 +1,4 @@
+package dominio;
 public class coordPolares extends coordenadas {
     private double direccion;   // milésimos (0–6399)
     private double distancia;   // metros

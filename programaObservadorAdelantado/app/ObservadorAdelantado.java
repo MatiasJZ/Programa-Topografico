@@ -1,3 +1,4 @@
+package app;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -9,18 +10,25 @@ import java.util.LinkedList;
 
 import javax.swing.*;
 
+import dominio.Blanco;
+import harris.GestorPuertoHarris;
+import interfaz.Mensajeria;
+import mensajes.ClienteMensajes;
+import mensajes.ProcesadorMensajes;
+
 public class ObservadorAdelantado extends JPanel{
 
     private static final long serialVersionUID = 1L;
 
     private String idOAA;
-
     private static final String[] IDS_VALIDOS = {"juarez"};
-
     private CardLayout cardLayout;
     private JPanel cards;
     private JButton[] botonesMenu;
     private int panelActual = 0;
+    private GestorPuertoHarris gestorPuerto;
+    private ClienteMensajes clienteMensajes;
+    private ProcesadorMensajes procesadorMensajes;
 	
     public static void main(String[] args) {
     	
@@ -29,8 +37,9 @@ public class ObservadorAdelantado extends JPanel{
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setLocationRelativeTo(null);
-        Image icon = Toolkit.getDefaultToolkit().getImage("C:/Users/54293/Desktop/Archivos SARGO/LOGOBIAC.png");
-        ventana.setIconImage(icon);
+        ImageIcon iconoOriginal = new ImageIcon(ObservadorAdelantado.class.getResource("/LOGOBIAC.png"));
+        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
+        ventana.setIconImage(imgEscalada);
         
         ObservadorAdelantado panelObservador = new ObservadorAdelantado(listaDeBlancos);
         ventana.setContentPane(panelObservador);
@@ -80,6 +89,30 @@ public class ObservadorAdelantado extends JPanel{
         PedidoDeFuego pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
         SituacionTactica situacionTactica = new SituacionTactica(listaDeBlancos,pedidoDeFuego);
         Mensajeria mensajeria = new Mensajeria();
+        
+        GestorPuertoHarris gestorPuerto = new GestorPuertoHarris();
+	    boolean ok = gestorPuerto.abrir("COM3");
+	
+	    if(!ok){
+	         JOptionPane.showMessageDialog(this,
+	             "No se pudo abrir el puerto Harris (COM3).",
+	             "ERROR",
+	             JOptionPane.ERROR_MESSAGE
+	         );
+	     }
+	    ProcesadorMensajes procesador = new ProcesadorMensajes(
+	             pedidoDeFuego.getConsolaMensajes(),
+	             situacionTactica,
+	             situacionTactica.getListaDeBlancos()
+	     );
+	
+	     // Lanzar cliente que escucha todo el tiempo el puerto
+	     ClienteMensajes cliente = new ClienteMensajes(gestorPuerto, procesador);
+	
+	     // Guardar referencias si querés usarlas después
+	     this.gestorPuerto = gestorPuerto;
+	     this.clienteMensajes = cliente;
+	     this.procesadorMensajes = procesador;
         	
         // paneles con clases cardboard
         cards.add(situacionTactica,"SITUACION");

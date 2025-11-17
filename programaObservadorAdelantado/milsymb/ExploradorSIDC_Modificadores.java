@@ -1,3 +1,4 @@
+package milsymb;
 import armyc2.c5isr.renderer.utilities.MSLookup;
 import armyc2.c5isr.renderer.utilities.MSInfo;
 

@@ -1,3 +1,4 @@
+package dominio;
 
 public enum SituacionMovimiento {
 	DETENIDO,

@@ -1,3 +1,4 @@
+package dominio;
 public class Blanco {
     private String nombre;
     private coordenadas coordenadas;

@@ -1,3 +1,4 @@
+package app;
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
@@ -9,6 +10,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
+
+import dominio.Blanco;
+import dominio.CodigosMilitares;
+import dominio.Punto;
+import dominio.SituacionMovimiento;
+import dominio.coordPolares;
+import dominio.coordRectangulares;
+import interfaz.PanelMapa;
 
 public class SituacionTactica extends JPanel {
 
@@ -258,7 +267,11 @@ public class SituacionTactica extends JPanel {
     }
 
     private void pedirArchivoAMostrar() {
-    	
+
+        ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
+        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
+        ImageIcon icono = new ImageIcon(imgEscalada);
+
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Subir Mapa", true);
         dialog.setSize(650, 220);
@@ -313,13 +326,11 @@ public class SituacionTactica extends JPanel {
         btnExaminar.setFocusPainted(false);
         btnExaminar.setFont(new Font("Arial", Font.BOLD, 12));
 
-        // campo y boton
         gbc.gridy = 1; gbc.gridwidth = 2; gbc.gridx = 0;
         panel.add(txtRuta, gbc);
         gbc.gridx = 2; gbc.gridwidth = 1;
         panel.add(btnExaminar, gbc);
 
-        // textField invisible que recibe el foco al inicio 
         JTextField txtInvisible = new JTextField();
         txtInvisible.setPreferredSize(new Dimension(1, 1));
         txtInvisible.setOpaque(false);
@@ -338,14 +349,12 @@ public class SituacionTactica extends JPanel {
             b.setForeground(Color.WHITE);
             b.setPreferredSize(new Dimension(180, 32));
         }
-
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         panelBotones.setBackground(new Color(40, 40, 40));
         panelBotones.add(btnAceptar);
         panelBotones.add(btnCancelar);
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 3;
         panel.add(panelBotones, gbc);
-
         // acción examinar
         btnExaminar.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
@@ -363,29 +372,36 @@ public class SituacionTactica extends JPanel {
                 txtRuta.setText(rutaSeleccionada.replace("\\", "/"));
             }
         });
-
-        // acción aceptar 
         btnAceptar.addActionListener(e -> {
             String rutaIngresada = txtRuta.getText().trim();
             if (rutaIngresada.isEmpty() || rutaIngresada.equals(placeholder)) {
-                JOptionPane.showMessageDialog(dialog, "Debe ingresar una ruta válida.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, 
+                    "Debe ingresar una ruta válida.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE, 
+                    icono);
                 return;
             }
-            if (!rutaIngresada.toLowerCase().endsWith(".tif") && !rutaIngresada.toLowerCase().endsWith(".tiff")) {
-                JOptionPane.showMessageDialog(dialog, "Solo se admiten archivos con extensión .TIF o .TIFF.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (!rutaIngresada.toLowerCase().endsWith(".tif") && 
+                !rutaIngresada.toLowerCase().endsWith(".tiff")) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Solo se admiten archivos con extensión .TIF o .TIFF.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE,
+                    icono);
                 return;
             }
             rutaArchivoMapa = rutaIngresada.replace("\\", "/");
             dialog.dispose();
         });
-
-        // acción cancelar
         btnCancelar.addActionListener(e -> {
-            JOptionPane.showMessageDialog(dialog,"Se usará la ruta por defecto:\n" + rutaArchivoMapa,"Ruta por defecto", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dialog,
+                "Se usará la ruta por defecto:\n" + rutaArchivoMapa,
+                "Ruta por defecto",
+                JOptionPane.INFORMATION_MESSAGE,
+                icono);
             dialog.dispose();
         });
-
-        // acción al cerrar con la X 
         dialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -394,14 +410,14 @@ public class SituacionTactica extends JPanel {
                     "¿Desea salir del programa sin cargar un mapa?",
                     "Confirmar salida",
                     JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
+                    JOptionPane.WARNING_MESSAGE,
+                    icono
                 );
                 if (resp == JOptionPane.YES_OPTION) {
                     System.exit(0);
                 }
             }
         });
-
         dialog.setVisible(true);
     }
 
@@ -808,7 +824,7 @@ public class SituacionTactica extends JPanel {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b1.getNombre(), true);
-        dialog.setSize(300, 2000);
+        dialog.setSize(300, 200);
         dialog.setLocationRelativeTo(this);
 
         JPanel panelDialog = new JPanel(new GridBagLayout());
@@ -1079,6 +1095,35 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
     
+    public void actualizarBlanco(Blanco b) {
+        if (b == null) return;
+        
+        if (!listaDeBlancos.contains(b)) {
+            listaDeBlancos.add(b);
+        }
+        int idx = modeloListaBlancos.indexOf(b);
+        if (idx >= 0) {
+            modeloListaBlancos.set(idx, b);
+        } else {
+            modeloListaBlancos.addElement(b);
+        }
+        panelMapa.agregarBlanco(b);
+        listaUIBlancos.repaint();
+    }
+    
+    public void agregarBlanco(Blanco b) {
+        if (b == null) return;
+        
+        if (!listaDeBlancos.contains(b)) {
+            listaDeBlancos.add(b);
+        }
+        if (!modeloListaBlancos.contains(b)) {
+            modeloListaBlancos.addElement(b);
+        }
+        panelMapa.agregarBlanco(b);
+        listaUIBlancos.repaint();
+    }
+    
     private void actualizarBlancosEnMapa() {
     	
         for (Blanco b : listaDeBlancos) {
@@ -1090,7 +1135,6 @@ public class SituacionTactica extends JPanel {
     private void armarPIF(Blanco b) {
         panelPIF.getDatosDeBlancoPanel().setDatosBlanco(b);
 
-        // Buscar ObservadorAdelantado y pedirle que muestre el panel Pedido
         Container parent = this.getParent();
         while (parent != null && !(parent instanceof ObservadorAdelantado)) {
             parent = parent.getParent();
@@ -1148,5 +1192,9 @@ public class SituacionTactica extends JPanel {
                 }
             }
         });
+    }
+    
+    public LinkedList<Blanco> getListaDeBlancos(){
+    	return listaDeBlancos;
     }
 }
