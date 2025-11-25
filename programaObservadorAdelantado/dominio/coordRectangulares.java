@@ -17,17 +17,9 @@ public class coordRectangulares extends coordenadas {
     public double getCota() { return cotaXY; }
 
     @Override
-    public double distanciaA(coordenadas otro) {
-        coordRectangulares c2;
-        if (otro instanceof coordRectangulares) {
-            c2 = (coordRectangulares) otro;
-        } else if (otro instanceof coordPolares) {
-            c2 = ((coordPolares) otro).toRectangulares();
-        } else {
-            throw new IllegalArgumentException("Tipo de coordenada no soportado: " + otro.getClass().getSimpleName());
-        }
-        double dx = c2.getX() - this.coordX;
-        double dy = c2.getY() - this.coordY;
+    public double distanciaA(coordRectangulares otro) {
+        double dx = otro.getX() - this.coordX;
+        double dy = otro.getY() - this.coordY;
         return Math.hypot(dx, dy); // equivalente a sqrt(dx² + dy²) pero numéricamente más estable
     }
 }

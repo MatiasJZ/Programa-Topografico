@@ -36,19 +36,12 @@ public class coordPolares extends coordenadas {
     }
     
     @Override
-    public double distanciaA(coordenadas otro) {
+    public double distanciaA(coordRectangulares otro) {
+    	
         coordRectangulares p1 = this.toRectangulares();
-        coordRectangulares p2;
 
-        if (otro instanceof coordRectangulares) {
-            p2 = (coordRectangulares) otro;
-        } else if (otro instanceof coordPolares) {
-            p2 = ((coordPolares) otro).toRectangulares();
-        } else {
-            throw new IllegalArgumentException("Tipo de coordenada no soportado: " + otro.getClass().getSimpleName());
-        }
-        double dx = p2.getX() - p1.getX();
-        double dy = p2.getY() - p1.getY();
+        double dx = otro.getX() - p1.getX();
+        double dy = otro.getY() - p1.getY();
         return Math.hypot(dx, dy);
     }
     

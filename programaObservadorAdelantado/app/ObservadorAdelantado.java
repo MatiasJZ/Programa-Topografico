@@ -100,19 +100,15 @@ public class ObservadorAdelantado extends JPanel{
 	             JOptionPane.ERROR_MESSAGE
 	         );
 	     }
-	    ProcesadorMensajes procesador = new ProcesadorMensajes(
-	             pedidoDeFuego.getConsolaMensajes(),
-	             situacionTactica,
-	             situacionTactica.getListaDeBlancos()
-	     );
+	    ProcesadorMensajes procesador = new ProcesadorMensajes(pedidoDeFuego.getConsolaMensajes(),situacionTactica,situacionTactica.getListaDeBlancos());
 	
-	     // Lanzar cliente que escucha todo el tiempo el puerto
-	     ClienteMensajes cliente = new ClienteMensajes(gestorPuerto, procesador);
+	    // Lanzar cliente que escucha todo el tiempo el puerto
+	    ClienteMensajes cliente = new ClienteMensajes(gestorPuerto, procesador);
 	
-	     // Guardar referencias si querés usarlas después
-	     this.gestorPuerto = gestorPuerto;
-	     this.clienteMensajes = cliente;
-	     this.procesadorMensajes = procesador;
+	    // Guardar referencias si querés usarlas después
+	    this.gestorPuerto = gestorPuerto;
+	    this.clienteMensajes = cliente;
+	    this.procesadorMensajes = procesador;
         	
         // paneles con clases cardboard
         cards.add(situacionTactica,"SITUACION");

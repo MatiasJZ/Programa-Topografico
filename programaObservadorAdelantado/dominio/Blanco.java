@@ -1,13 +1,17 @@
 package dominio;
 public class Blanco {
     private String nombre;
-    private coordenadas coordenadas;
+    private coordRectangulares coordenadas;
     private String naturaleza;
     private String fecha;
     private String simID;
     private SituacionMovimiento situacionMovimiento;
     private String informacionAdicional;
     private double orientacion;
+    private String ultEntidad;
+    private String ultAfiliacion;
+    private String ultEchelon;
+    private String ultHQTF;
     
     public Blanco(String nombre, coordRectangulares c, String naturaleza, String fecha) {
         this.nombre = nombre;
@@ -19,14 +23,46 @@ public class Blanco {
         this.informacionAdicional = ""; 
         this.orientacion = 0;
     }
+    
+    public String getUltEntidad() {
+    	return ultEntidad;
+    }
+    
+    public String getUltAfiliacion() {
+    	return ultAfiliacion;
+    }
+    
+    public String getUltEchelon() {
+    	return ultEchelon;
+    }
+    
+    public String getUltHQTF() {
+    	return ultHQTF;
+    }
+    
+    public void setUltEntidad(String e) {
+    	ultEntidad = e;
+    }
+    
+    public void setUltAfiliacion(String e) {
+    	ultAfiliacion = e;
+    }
+    
+    public void setUltEchelon(String e) {
+    	ultEchelon = e;
+    }
+    
+    public void setUltHQTF(String e) {
+    	ultHQTF = e;
+    }
 
     public String getNombre() { return nombre; }
     
     public void setNombre(String n) { nombre = n; }
 
-    public coordenadas getCoordenadas() { return coordenadas; }
+    public coordRectangulares getCoordenadas() { return coordenadas; }
     
-    public void setCoordenadas(coordenadas c) { coordenadas = c; }
+    public void setCoordenadas(coordRectangulares c) { coordenadas = c; }
 
     public String NombretoString() {
         return nombre;

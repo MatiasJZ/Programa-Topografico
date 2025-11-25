@@ -60,38 +60,81 @@ import java.util.UUID;
 
 public class PanelMapa extends JPanel {
 
-	private static final long serialVersionUID = 1L;
 	private MapContent mapContent;
-	private JMapPane mapPane;
-	private SimpleFeatureType tipoBlancos;
-	private SimpleFeatureType tipoPuntos; 
-	private Map<String, ListFeatureCollection> coleccionesPorBucket = new HashMap<>();
-	private Map<String, FeatureLayer> capasPorBucket = new HashMap<>();
-	private final Map<String, Style> estilosPorSIDC = new HashMap<>();
+    private JMapPane mapPane;
+    private SimpleFeatureType tipoBlancos;
+    private SimpleFeatureType tipoPuntos;
+
+    private final Map<Punto, FeatureLayer> capaPorPunto = new HashMap<>();
+    private final Map<Punto, ListFeatureCollection> coleccionPorPunto = new HashMap<>();
+
+    private final Map<Blanco, FeatureLayer> capaPorBlanco = new HashMap<>();
+    private final Map<Blanco, ListFeatureCollection> coleccionPorBlanco = new HashMap<>();
 
     public PanelMapa(String rutaArchivo) {
-    	
+
         setLayout(new BorderLayout());
         mapContent = new MapContent();
         mapContent.setTitle("Mapa Táctico");
-        
+
         try {
             leerArchivo(rutaArchivo);
-        } catch (IllegalArgumentException | FactoryException | IOException e) {e.printStackTrace();}
-        
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         mapPane = new JMapPane(mapContent);
         add(mapPane, BorderLayout.CENTER);
-        
-        if (mapContent.getMaxBounds() != null) {
+
+        if (mapContent.getMaxBounds() != null)
             mapPane.setDisplayArea(mapContent.getMaxBounds());
-        }
-        
+
         mapPane.setCursorTool(new ZoomInTool());
         mapPane.setOpaque(true);
         mapPane.setBackground(Color.BLACK);
-        
-        crearLayerDeBlancos();
+
+        crearTypes();
         agregarControlesDeZoom();
+    }
+    
+    private void crearTypes() {
+
+        SimpleFeatureTypeBuilder b1 = new SimpleFeatureTypeBuilder();
+        b1.setName("Blanco");
+        b1.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
+        b1.add("nombre", String.class);
+        b1.add("naturaleza", String.class);
+        b1.add("fechaCreacion", String.class);
+        b1.add("x", Double.class);
+        b1.add("y", Double.class);
+        b1.setCRS(mapContent.getCoordinateReferenceSystem());
+        tipoBlancos = b1.buildFeatureType();
+
+        SimpleFeatureTypeBuilder b2 = new SimpleFeatureTypeBuilder();
+        b2.setName("Punto");
+        b2.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
+        b2.add("nombre", String.class);
+        b2.add("x", Double.class);
+        b2.add("y", Double.class);
+        b2.setCRS(mapContent.getCoordinateReferenceSystem());
+        tipoPuntos = b2.buildFeatureType();
+    }
+    
+    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException, IOException {
+
+        File file = new File(ruta);
+        GeoTiffFormat format = new GeoTiffFormat();
+        GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
+
+        CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
+        if (crs == null) crs = CRS.decode("EPSG:9265", true);
+
+        mapContent.getViewport().setCoordinateReferenceSystem(crs);
+
+        StyleBuilder sb = new StyleBuilder();
+        Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
+
+        mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
     }
 
     public JPanel crearVistaSoloObservacion() {
@@ -212,85 +255,38 @@ public class PanelMapa extends JPanel {
         return wrapper;
     }
     
-    private void crearLayerDeBlancos() {
-    	
-        // Tipo para blancos 
-        SimpleFeatureTypeBuilder b1 = new SimpleFeatureTypeBuilder();
-        b1.setName("Blanco");
-        b1.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
-        b1.add("nombre", String.class);
-        b1.add("naturaleza", String.class);
-        b1.add("fechaCreacion", String.class);
-        b1.add("x", Double.class);
-        b1.add("y", Double.class);
-        b1.setCRS(mapContent.getCoordinateReferenceSystem());
-        tipoBlancos = b1.buildFeatureType();
-
-        // Tipo para puntos 
-        SimpleFeatureTypeBuilder b2 = new SimpleFeatureTypeBuilder();
-        b2.setName("Punto");
-        b2.add("the_geom", Point.class, mapContent.getCoordinateReferenceSystem());
-        b2.add("nombre", String.class);
-        b2.add("x", Double.class);
-        b2.add("y", Double.class);
-        b2.setCRS(mapContent.getCoordinateReferenceSystem());
-        tipoPuntos = b2.buildFeatureType();
-    }
-    
-    private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException, IOException {
-        File file = new File(ruta);
-        if (!file.exists()) throw new IllegalArgumentException("No se encontró el archivo: " + ruta);
-        GeoTiffFormat format = new GeoTiffFormat();
-        GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
-        CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-        if (crs == null) crs = CRS.decode("EPSG:9265", true);
-        mapContent.getViewport().setCoordinateReferenceSystem(crs);
-
-        StyleBuilder sb = new StyleBuilder();
-        Style rasterStyle = sb.createStyle(sb.createRasterSymbolizer());
-        mapContent.addLayer(new GridReaderLayer((AbstractGridCoverage2DReader) reader, rasterStyle));
-
-        System.out.println("[TIFF] Archivo cargado: " + ruta);
-    }
-
     public JMapPane getMapPane() {
         return mapPane;
     }
 
     public void agregarPunto(Punto pto) {
-        if (pto == null) return;
+
         coordenadas base = pto.getCoord();
-        coordRectangulares c = (base instanceof coordRectangulares)? (coordRectangulares) base: ((coordPolares) base).toRectangulares();
+        coordRectangulares c = (base instanceof coordRectangulares) ?
+                (coordRectangulares) base : ((coordPolares) base).toRectangulares();
+
         GeometryFactory gf = new GeometryFactory();
         Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
-        String clave = "puntos";
-        ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
 
-        if (coleccion == null) {
-            coleccion = new ListFeatureCollection(tipoPuntos, new LinkedList<>());
-            coleccionesPorBucket.put(clave, coleccion);
-            // color negro con borde blanco
-            Style estilo = SLD.createPointStyle("circle", Color.WHITE, Color.BLACK, 1.0f, 12.0f);
-            FeatureLayer capa = new FeatureLayer(coleccion, estilo);
-            capa.setTitle("Puntos");
-            capasPorBucket.put(clave, capa);
-            mapContent.addLayer(capa);
-        }
-        Object[] attrs = new Object[]{ geom, pto.getNombre(), c.getX(), c.getY() };
-        String fid = "punto-" + UUID.randomUUID();
-        SimpleFeature feature = SimpleFeatureBuilder.build(tipoPuntos, attrs, fid);
-        coleccion.add(feature);
+        ListFeatureCollection col = new ListFeatureCollection(tipoPuntos, new LinkedList<>());
+        Object[] attrs = new Object[]{geom, pto.getNombre(), c.getX(), c.getY()};
+        SimpleFeature f = SimpleFeatureBuilder.build(tipoPuntos, attrs, "punto-" + UUID.randomUUID());
+        col.add(f);
 
-        refrescarCapas();
+        Style estilo = SLD.createPointStyle("circle", Color.WHITE, Color.BLACK, 1.0f, 12.0f);
+        FeatureLayer capa = new FeatureLayer(col, estilo);
+
+        mapContent.addLayer(capa);
+
+        capaPorPunto.put(pto, capa);
+        coleccionPorPunto.put(pto, col);
+
+        refrescar();
     }
 
     public void agregarBlanco(Blanco b) {
-        if (b == null) return;
 
-        coordenadas base = b.getCoordenadas();
-        coordRectangulares c = (base instanceof coordRectangulares)
-                ? (coordRectangulares) base
-                : ((coordPolares) base).toRectangulares();
+        coordRectangulares c = b.getCoordenadas();
 
         GeometryFactory gf = new GeometryFactory();
         Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
@@ -301,61 +297,7 @@ public class PanelMapa extends JPanel {
             b.setSimID(sidc);
         }
 
-        String clave = "blancos_" + sidc;
-        ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
-
-        if (coleccion == null) {
-            coleccion = new ListFeatureCollection(tipoBlancos, new LinkedList<>());
-            coleccionesPorBucket.put(clave, coleccion);
-
-            Style estiloSimbolo = null;
-
-            try {
-                proveedorMilSym prov = new proveedorMilSym(sidc, 75);
-                Field f = proveedorMilSym.class.getDeclaredField("simbolo");
-                f.setAccessible(true);
-                BufferedImage simbolo = (BufferedImage) f.get(prov);
-
-                if (simbolo != null) {
-                    File tempFile = File.createTempFile("milSym_" + sidc, ".png");
-                    ImageIO.write(simbolo, "png", tempFile);
-                    tempFile.deleteOnExit();
-                    URL imageURL = tempFile.toURI().toURL();
-
-                    StyleBuilder sb = new StyleBuilder();
-                    ExternalGraphic eg = sb.createExternalGraphic(imageURL, "image/png");
-
-                    double rotacionGrados = b.getOrientacion() * 0.05625;
-
-                    Graphic graphic = sb.createGraphic(new ExternalGraphic[]{eg}, null, null, 1.0, 0.0, rotacionGrados);
-
-                    PointSymbolizer ps = sb.createPointSymbolizer(graphic);
-
-                    TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", false, false, 18),"nombre");
-
-                    StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
-                    FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle();
-                    Rule rule = styleFactory.createRule();
-                    rule.symbolizers().add(ps);
-                    rule.symbolizers().add(ts);
-                    fts.rules().add(rule);
-
-                    estiloSimbolo = styleFactory.createStyle();
-                    estiloSimbolo.featureTypeStyles().add(fts);
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-            if (estiloSimbolo == null)
-                estiloSimbolo = SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
-
-            FeatureLayer capa = new FeatureLayer(coleccion, estiloSimbolo);
-            capa.setTitle("Blancos " + b.getNaturaleza());
-            capasPorBucket.put(clave, capa);
-
-            mapContent.addLayer(capa); // se añade luego del raster, visible
-        }
+        ListFeatureCollection col = new ListFeatureCollection(tipoBlancos, new LinkedList<>());
 
         Object[] attrs = new Object[]{
                 geom,
@@ -365,110 +307,99 @@ public class PanelMapa extends JPanel {
                 c.getX(),
                 c.getY()
         };
-        String fid = "blanco-" + UUID.randomUUID();
-        SimpleFeature feature = SimpleFeatureBuilder.build(tipoBlancos, attrs, fid);
-        coleccion.add(feature);
 
-        refrescarCapas();
+        SimpleFeature f = SimpleFeatureBuilder.build(tipoBlancos, attrs, "blanco-" + UUID.randomUUID());
+        col.add(f);
+
+        Style estilo = crearEstilo(sidc, b.getOrientacion());
+        FeatureLayer capa = new FeatureLayer(col, estilo);
+
+        mapContent.addLayer(capa);
+
+        capaPorBlanco.put(b, capa);
+        coleccionPorBlanco.put(b, col);
+
+        refrescar();
+    }
+    
+    private Style crearEstilo(String sidc, double orient) {
+
+        try {
+            proveedorMilSym prov = new proveedorMilSym(sidc, 75);
+            Field f = proveedorMilSym.class.getDeclaredField("simbolo");
+            f.setAccessible(true);
+            BufferedImage simbolo = (BufferedImage) f.get(prov);
+
+            if (simbolo != null) {
+
+                File tempFile = File.createTempFile("sym", ".png");
+                ImageIO.write(simbolo, "png", tempFile);
+                tempFile.deleteOnExit();
+                URL url = tempFile.toURI().toURL();
+
+                StyleBuilder sb = new StyleBuilder();
+                ExternalGraphic eg = sb.createExternalGraphic(url, "image/png");
+
+                double rot = orient * 0.05625;
+
+                Graphic g = sb.createGraphic(new ExternalGraphic[]{eg}, null, null, 1.0, 0.0, rot);
+                PointSymbolizer ps = sb.createPointSymbolizer(g);
+
+                TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,
+                        sb.createFont("Arial Black", false, false, 18), "nombre");
+
+                StyleFactory sf = CommonFactoryFinder.getStyleFactory();
+                FeatureTypeStyle fts = sf.createFeatureTypeStyle();
+                Rule r = sf.createRule();
+                r.symbolizers().add(ps);
+                r.symbolizers().add(ts);
+                fts.rules().add(r);
+
+                Style s = sf.createStyle();
+                s.featureTypeStyles().add(fts);
+                return s;
+            }
+
+        } catch (Exception ignored) {}
+
+        return SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
     }
 
     public void eliminarPunto(Punto p) {
-    	
-        if (p == null || p.getCoord() == null) return;
-        coordRectangulares c = (p.getCoord() instanceof coordRectangulares)
-                ? (coordRectangulares) p.getCoord()
-                : ((coordPolares) p.getCoord()).toRectangulares();
-        final double EPS = 1e-7;
-        ListFeatureCollection col = coleccionesPorBucket.get("puntos");
-        if (col == null) return;
 
-        LinkedList<SimpleFeature> borrar = new LinkedList<>();
-        try (var it = col.features()) {
-            while (it.hasNext()) {
-                SimpleFeature f = it.next();
-                Point geom = (Point) f.getAttribute("the_geom");
-                if (geom != null &&
-                    Math.abs(geom.getX() - c.getX()) < EPS &&
-                    Math.abs(geom.getY() - c.getY()) < EPS) {
-                    borrar.add(f);
-                }
-            }
-        } catch (Exception ignore) {}
+        FeatureLayer capa = capaPorPunto.remove(p);
+        coleccionPorPunto.remove(p);
 
-        for (SimpleFeature f : borrar) col.remove(f);
-        refrescarCapas();
+        if (capa != null) mapContent.removeLayer(capa);
+
+        refrescar();
+    }
+
+    public void eliminarBlanco(Blanco b) {
+
+        FeatureLayer capa = capaPorBlanco.remove(b);
+        coleccionPorBlanco.remove(b);
+
+        if (capa != null) mapContent.removeLayer(capa);
+
+        refrescar();
     }
     
-    public void eliminarBlanco(Blanco b) {   	
-        eliminarBlanco(b, b != null ? b.getSimID() : null);
-    }
+    private void refrescar() {
 
-    public void eliminarBlanco(Blanco b, String sidcReferencia) {
-        if (b == null || b.getCoordenadas() == null) return;
-        coordRectangulares c = (b.getCoordenadas() instanceof coordRectangulares)
-                ? (coordRectangulares) b.getCoordenadas()
-                : ((coordPolares) b.getCoordenadas()).toRectangulares();
-
-        // determinar la capa correspondiente 
-        String sidc = (sidcReferencia != null && !sidcReferencia.isEmpty())
-                ? sidcReferencia
-                : b.getSimID();
-
-        if (sidc == null || sidc.isEmpty()) {
-            sidc = CodigosMilitares.obtenerSIDC(b.getNaturaleza());
-            b.setSimID(sidc);
-        }
-
-        String clave = "blancos_" + sidc;
-        ListFeatureCollection coleccion = coleccionesPorBucket.get(clave);
-        if (coleccion == null) return;
-
-        final double EPS = 1e-6;
-        LinkedList<SimpleFeature> borrar = new LinkedList<>();
-
-        // buscar el feature por coordenadas 
-        try (var it = coleccion.features()) {
-            while (it.hasNext()) {
-                SimpleFeature f = it.next();
-                Point p = (Point) f.getAttribute("the_geom");
-                if (p != null &&
-                    Math.abs(p.getX() - c.getX()) < EPS &&
-                    Math.abs(p.getY() - c.getY()) < EPS) {
-                    borrar.add(f);
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        for (SimpleFeature f : borrar) {
-            coleccion.remove(f);
-        }
-        if (coleccion.isEmpty()) {
-            FeatureLayer capa = capasPorBucket.remove(clave);
-            coleccionesPorBucket.remove(clave);
-            if (capa != null) {
-                mapContent.removeLayer(capa);
-            }
-            estilosPorSIDC.remove(sidc);
-        }
-        
-        refrescarCapas();
-    }
-    
-    public void refrescarCapas() {
-    	
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(this::refrescarCapas);
+            SwingUtilities.invokeLater(this::refrescar);
             return;
         }
-        for (FeatureLayer capa : capasPorBucket.values()) {
-            if (!capa.isVisible()) capa.setVisible(true);
-        }
+
         mapPane.setDisplayArea(mapPane.getDisplayArea());
         mapPane.repaint();
     }
 
+    public void actualizar(){
+        mapPane.repaint();
+    }
+    
     public void dispose() {
         if (mapContent != null) mapContent.dispose();
     }
@@ -492,8 +423,8 @@ public class PanelMapa extends JPanel {
                 overlay.setBounds(0, 0, getWidth(), getHeight());
             }
         });
-        int size = 42;
-        int margin = 10;
+        int size = 50;
+        int margin = 12;
         
         JButton btnZoomIn = new JButton("+");
         JButton btnZoomOut = new JButton("-");

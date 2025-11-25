@@ -21,8 +21,6 @@ import interfaz.PanelMapa;
 
 public class SituacionTactica extends JPanel {
 
-	
-    private static final long serialVersionUID = 1L;
     private DefaultListModel<Blanco> modeloListaBlancos;
     private JList<Blanco> listaUIBlancos;
     protected LinkedList<Blanco> listaDeBlancos;
@@ -32,11 +30,6 @@ public class SituacionTactica extends JPanel {
     protected LinkedList<Punto> listaDePuntos;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
     protected PedidoDeFuego panelPIF;
-    
-    private static String ultimaEntidad = "INFANTERIA";
-    private static String ultimaAfiliacion = "ALIADO";
-    private static String ultimaHQTF = "Por Defecto";
-    private static String ultimaEchelon = "Por Defecto";
 
     public SituacionTactica(LinkedList<Blanco> listaDeBlancos, PedidoDeFuego pif) {
         setSize(900, 600);
@@ -98,23 +91,37 @@ public class SituacionTactica extends JPanel {
             }
         });
 
-        JLabel lblBlancos = new JLabel("BLANCOS", SwingConstants.CENTER);
+        JLabel lblBlancos = new JLabel("LISTA DE BLANCOS", SwingConstants.CENTER);
         lblBlancos.setForeground(Color.GRAY);
         lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
 
-        JLabel lblPuntos = new JLabel("PUNTOS", SwingConstants.CENTER);
+        JLabel lblPuntos = new JLabel("LISTA DE PUNTOS", SwingConstants.CENTER);
         lblPuntos.setForeground(Color.GRAY);
         lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
 
-        JPanel panelListas = new JPanel();
-        panelListas.setLayout(new BoxLayout(panelListas, BoxLayout.Y_AXIS));
+        JPanel panelListas = new JPanel(new GridBagLayout());
         panelListas.setBackground(Color.BLACK);
+        GridBagConstraints gbcList = new GridBagConstraints();
+        gbcList.fill = GridBagConstraints.BOTH;
+        gbcList.insets = new Insets(2, 0, 2, 0);
+        
+        gbcList.gridx = 0;
+        gbcList.gridy = 0;
+        gbcList.weightx = 1;
+        gbcList.weighty = 0;   
+        panelListas.add(lblBlancos, gbcList);
 
-        panelListas.add(lblBlancos);
-        panelListas.add(new JScrollPane(listaUIBlancos));
-        panelListas.add(Box.createVerticalStrut(1));
-        panelListas.add(lblPuntos);
-        panelListas.add(new JScrollPane(listaUIPuntos));
+        gbcList.gridy = 1;
+        gbcList.weighty = 0.66;
+        panelListas.add(new JScrollPane(listaUIBlancos), gbcList);
+
+        gbcList.gridy = 2;
+        gbcList.weighty = 0;
+        panelListas.add(lblPuntos, gbcList);
+
+        gbcList.gridy = 3;
+        gbcList.weighty = 0.33; 
+        panelListas.add(new JScrollPane(listaUIPuntos), gbcList);
 
         // uso este panel de listas dentro del panel izquierdo existente
         panelIzquierdo.add(panelListas, BorderLayout.CENTER);
@@ -124,13 +131,13 @@ public class SituacionTactica extends JPanel {
 
         JButton btnAgregar = new JButton("AGREGAR");
         JButton btnEliminar = new JButton("ELIMINAR");
-        JButton btnActualizar = new JButton("ACTUALIZAR");
-        JButton btnPIF = new JButton("PIF");
+        JButton btnActualizar = new JButton("REFRESCAR");
+        JButton btnPIF = new JButton("GENERAR PIF");
 
         btnAgregar.setBackground(new Color(0,120,255)); btnAgregar.setForeground(Color.WHITE);
-        btnEliminar.setBackground(Color.ORANGE);        btnEliminar.setForeground(Color.WHITE);
-        btnActualizar.setBackground(Color.RED);         btnActualizar.setForeground(Color.WHITE);
-        btnPIF.setBackground(Color.GREEN);              btnPIF.setForeground(Color.WHITE);
+        btnEliminar.setBackground(new Color(212,61,30)); btnEliminar.setForeground(Color.WHITE);
+        btnActualizar.setBackground(new Color(237,151,24)); btnActualizar.setForeground(Color.WHITE);
+        btnPIF.setBackground(new Color(141,214,47)); btnPIF.setForeground(Color.WHITE);
 
         Dimension compacto = new Dimension(110, 32);
         Font fuente = new Font("Arial", Font.BOLD, 12);
@@ -172,13 +179,13 @@ public class SituacionTactica extends JPanel {
                 coordRectangulares coord = new coordRectangulares(x, y, 0);
 
                 String[] opciones = {"Marcar Blanco", "Marcar Punto"};
-                int seleccion = JOptionPane.showOptionDialog(
-                        SituacionTactica.this,
-                        "Seleccione qué desea marcar:",
-                        "Marcación en mapa",
+                Image img = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+                Icon icono = new ImageIcon(img);
+                int seleccion = JOptionPane.showOptionDialog(SituacionTactica.this,
+                        "Seleccione qué desea marcar:",null,
                         JOptionPane.DEFAULT_OPTION,
                         JOptionPane.QUESTION_MESSAGE,
-                        null,
+                        icono,
                         opciones,
                         opciones[0]);
 
@@ -193,13 +200,15 @@ public class SituacionTactica extends JPanel {
         btnAgregar.addActionListener(e -> {
             coordRectangulares coord = new coordRectangulares(0,0,0);
             String[] opciones = {"Marcar Blanco", "Marcar Punto"};
+            Image img = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            Icon icono = new ImageIcon(img);
             int seleccion = JOptionPane.showOptionDialog(
                     this,
                     "Seleccione qué desea agregar:",
-                    "Nueva marcación",
+                    null,
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
-                    null,
+                    icono,
                     opciones,
                     opciones[0]);
 
@@ -565,21 +574,27 @@ public class SituacionTactica extends JPanel {
                 JOptionPane.showMessageDialog(dialog, "Ingrese un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            
             String entidad = (String) cbEntidad.getSelectedItem();
-            ultimaEntidad = entidad;
             String afiliacion = (String) cbAfiliacion.getSelectedItem();
-            ultimaAfiliacion = afiliacion;
             String hqtf = (String) cbHQTF.getSelectedItem();
-            ultimaHQTF = hqtf;
             String echelon = (String) cbEchelon.getSelectedItem();
-            ultimaEchelon = echelon;
             String naturaleza = entidad + "_" + afiliacion;
+            
             if (hqtf.contains("HQ")) naturaleza += "_HQ";
+            
             else if (hqtf.contains("TF")) naturaleza += "_TF";
+        
             if (!echelon.equals("Por Defecto")) naturaleza += "_" + echelon.toUpperCase();
 
             coordRectangulares coord = new coordRectangulares(coordInicial.getX(), coordInicial.getY(), 0);
             Blanco nuevo = new Blanco(nombre, coord, naturaleza, txtFecha.getText());
+            
+            nuevo.setUltAfiliacion(afiliacion);
+            nuevo.setUltHQTF(hqtf);
+            nuevo.setUltEchelon(echelon);
+            nuevo.setUltEntidad(entidad);
+            
             nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
             nuevo.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
             try {
@@ -820,10 +835,10 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
 
-    private void mostrarDialogoMedir(Blanco b1) {
+    private void mostrarDialogoMedir(Blanco b) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b1.getNombre(), true);
+        JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b.getNombre(), true);
         dialog.setSize(300, 200);
         dialog.setLocationRelativeTo(this);
 
@@ -860,8 +875,8 @@ public class SituacionTactica extends JPanel {
                 return this;
             }
         });
-        for (Blanco b : listaDeBlancos) {
-            if (b != b1) comboBlancos.addItem(b);
+        for (Blanco a : listaDeBlancos) {
+            if (a != b) comboBlancos.addItem(a);
         }
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
         panelDialog.add(comboBlancos, gbc);
@@ -886,8 +901,8 @@ public class SituacionTactica extends JPanel {
                 return;
             }
             try {
-                double distancia = b1.getCoordenadas().distanciaA(b2.getCoordenadas());
-                String mensaje = String.format("Distancia entre %s y %s:\n%.2f metros",b1.getNombre(), b2.getNombre(), distancia);
+                double distancia = b.getCoordenadas().distanciaA(b2.getCoordenadas());
+                String mensaje = String.format("Distancia entre %s y %s:\n%.2f metros",b.getNombre(), b2.getNombre(), distancia);
                 JOptionPane.showMessageDialog(dialog, mensaje, "Resultado", JOptionPane.INFORMATION_MESSAGE);
                 dialog.dispose();
             } catch (Exception ex) {
@@ -901,8 +916,6 @@ public class SituacionTactica extends JPanel {
         KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
         rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
-
-			private static final long serialVersionUID = 1L;
 
 			@Override
             public void actionPerformed(ActionEvent e) {
@@ -965,16 +978,16 @@ public class SituacionTactica extends JPanel {
         String[] escalafones = {"Por Defecto", "PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
-        cbEntidad.setSelectedItem(ultimaEntidad);
+        cbEntidad.setSelectedItem(b.getUltEntidad());
         
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
-        cbAfiliacion.setSelectedItem(ultimaAfiliacion);
+        cbAfiliacion.setSelectedItem(b.getUltAfiliacion());
         
         JComboBox<String> cbHQTF = new JComboBox<>(tipoHQTF);
-        cbHQTF.setSelectedItem(ultimaHQTF);
+        cbHQTF.setSelectedItem(b.getUltHQTF());
         
         JComboBox<String> cbEchelon = new JComboBox<>(escalafones);
-        cbEchelon.setSelectedItem(ultimaEchelon);
+        cbEchelon.setSelectedItem(b.getUltEchelon());
         
         for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbHQTF, cbEchelon}) {
             cb.setPreferredSize(new Dimension(220, 26));
@@ -1055,41 +1068,63 @@ public class SituacionTactica extends JPanel {
                 String afiliacion = (String) cbAfiliacion.getSelectedItem();
                 String hqtf = (String) cbHQTF.getSelectedItem();
                 String echelon = (String) cbEchelon.getSelectedItem();
+
                 String naturaleza = entidad + "_" + afiliacion;
                 if (hqtf.contains("HQ")) naturaleza += "_HQ";
                 else if (hqtf.contains("TF")) naturaleza += "_TF";
                 if (!echelon.equals("Por Defecto")) naturaleza += "_" + echelon.toUpperCase();
-                coordRectangulares coord = new coordRectangulares(b.getCoordenadas().getX(), b.getCoordenadas().getY(), 0);
-                Blanco nuevo = new Blanco(txtNombre.getText().trim(), coord, naturaleza, txtFechaAct.getText());
-                nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
-                nuevo.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
-                nuevo.setInformacionAdicional(txtInfo.getText().trim().equals("Información adicional necesaria") ? "" : txtInfo.getText().trim());
+
+                b.setNombre(txtNombre.getText().trim());
+                b.setNaturaleza(naturaleza);
+                b.setFecha(txtFechaAct.getText());
+                b.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
+
+                String info = txtInfo.getText().trim();
+                if (info.equals("Información adicional necesaria")) info = "";
+                b.setInformacionAdicional(info);
+
                 try {
-                    nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
+                    b.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
                 } catch (Exception ex) {
-                    nuevo.setOrientacion(0);
+                    b.setOrientacion(0);
                 }
 
-                panelMapa.eliminarBlanco(b);
-                int idx = listaDeBlancos.indexOf(b);
-                if (idx >= 0) listaDeBlancos.set(idx, nuevo);
-                int idxModelo = modeloListaBlancos.indexOf(b);
-                if (idxModelo >= 0) modeloListaBlancos.set(idxModelo, nuevo);
-                panelMapa.agregarBlanco(nuevo);
+                // Guardar selección del editor, si las usás después
+                b.setUltEntidad(entidad);
+                b.setUltAfiliacion(afiliacion);
+                b.setUltHQTF(hqtf);
+                b.setUltEchelon(echelon);
+                b.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
+
+                // ACTUALIZAR LISTA UI Y MAPA
                 listaUIBlancos.repaint();
+                panelMapa.eliminarBlanco(b);
                 
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(100);
-                        SwingUtilities.invokeLater(this::actualizarBlancosEnMapa);
-                    } catch (InterruptedException ignored) {}
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(100);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panelMapa.agregarBlanco(b);
+                                    panelMapa.repaint();
+                                }
+                            });
+                        } catch (InterruptedException e) {}
+                    }
                 }).start();
                 
+
                 dialog.dispose();
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Error al guardar cambios:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Error al guardar cambios:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+        
         btnCancelar.addActionListener(e -> dialog.dispose());
 
         dialog.setVisible(true);
@@ -1097,18 +1132,13 @@ public class SituacionTactica extends JPanel {
     
     public void actualizarBlanco(Blanco b) {
         if (b == null) return;
-        
-        if (!listaDeBlancos.contains(b)) {
-            listaDeBlancos.add(b);
-        }
+
         int idx = modeloListaBlancos.indexOf(b);
-        if (idx >= 0) {
-            modeloListaBlancos.set(idx, b);
-        } else {
-            modeloListaBlancos.addElement(b);
-        }
-        panelMapa.agregarBlanco(b);
+        if (idx >= 0) modeloListaBlancos.set(idx, b);
+
         listaUIBlancos.repaint();
+        panelMapa.eliminarBlanco(b);
+        panelMapa.agregarBlanco(b);
     }
     
     public void agregarBlanco(Blanco b) {
@@ -1125,11 +1155,7 @@ public class SituacionTactica extends JPanel {
     }
     
     private void actualizarBlancosEnMapa() {
-    	
-        for (Blanco b : listaDeBlancos) {
-            panelMapa.agregarBlanco(b);
-        }
-        listaUIBlancos.repaint();
+        panelMapa.repaint();
     }
     
     private void armarPIF(Blanco b) {

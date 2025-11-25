@@ -35,11 +35,21 @@ public class ProcesadorMensajes {
                 procesarAviso(mensaje);
                 break;
 
+            case "ESTADO":
+                procesarEstado(mensaje);
+                break;
+                
             default:
                 consola.agregarMensaje("[INFO] Mensaje desconocido: " + mensaje);
         }
     }
 
+    private void procesarEstado(String msg) {
+        String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
+        if (contenido == null) return;
+        consola.agregarMensaje("[RADIO] " + contenido);
+    }
+    
     private void procesarBlanco(String msg) {
 
         String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");

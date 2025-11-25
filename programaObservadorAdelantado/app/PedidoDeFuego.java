@@ -135,6 +135,45 @@ class PedidoDeFuego extends JPanel {
         listaHistorial.setBackground(new Color(25, 25, 25));
         listaHistorial.setForeground(Color.WHITE);
 
+        listaHistorial.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,boolean isSelected, boolean cellHasFocus) {
+
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                PIF pif = (PIF) value;
+                Blanco b = pif.getBlanco();
+
+                String naturaleza = b != null ? b.getNaturaleza().toUpperCase() : "";
+                String fecha = pif.getFechaHora().toString().replace('T', ' ');
+
+                String texto = String.format("<html>"+ "<div style='margin:2px 0; line-height:130%%;'>"+ "<span style='font-size:12px; color:white;'>%s</span><br>"
+                  + "<span style='font-size:11px;'>%s</span>"+ "</div></html>",fecha,naturaleza);
+                label.setText(texto);
+
+                Color colorTexto;
+
+                if (naturaleza.contains("HOSTIL")) colorTexto = new Color(255,128,128);
+                else if (naturaleza.contains("ASUMIDO ENEMIGO")) colorTexto = new Color(255,128,128);
+                else if (naturaleza.contains("ALIADO")) colorTexto = new Color(128,224,255);
+                else if (naturaleza.contains("ASUMIDO AMIGO")) colorTexto = new Color(128,224,255);
+                else if (naturaleza.contains("NEUTRO")) colorTexto = new Color(170,255,170);
+                else if (naturaleza.contains("DESCONOCIDO")) colorTexto = new Color(255,255,128);
+                else if (naturaleza.contains("PENDIENTE")) colorTexto = new Color(255,255,128);
+                else colorTexto = Color.LIGHT_GRAY;
+
+                label.setForeground(colorTexto);
+                label.setBackground(isSelected ? new Color(40, 80, 120) : new Color(20, 20, 20));
+                label.setOpaque(true);
+                label.setHorizontalAlignment(SwingConstants.LEFT);
+                label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(80, 80, 80)),
+                    BorderFactory.createEmptyBorder(4, 6, 4, 6)
+                ));
+
+                return label;
+            }
+        });
+        
         JScrollPane scroll = new JScrollPane(listaHistorial);
         panel.add(scroll, BorderLayout.CENTER);
 
@@ -291,9 +330,91 @@ class PedidoDeFuego extends JPanel {
     private void mostrarPIFSeleccionado() {
         PIF p = listaHistorial.getSelectedValue();
         if (p == null) return;
-        datosDeBlancoPanel.setDatosBlanco(p.getBlanco());
-        metodoYTiroPanel.mostrarPIF(p);
-        cardLayout.show(pifCardPanel, "datos");
+
+        Blanco b = p.getBlanco();
+
+        // ===== CUERPO DEL DIALOGO =====
+        JPanel contenido = new JPanel();
+        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
+        contenido.setBackground(Color.BLACK);
+        contenido.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
+
+        Font fTitulo = new Font("Arial", Font.BOLD, 18);
+        Font fTexto = new Font("Consolas", Font.PLAIN, 15);
+
+        // ---------- DATOS DEL BLANCO ----------
+        JPanel panelBlanco = new JPanel();
+        panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
+        panelBlanco.setBackground(Color.BLACK);
+        panelBlanco.setBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                "DATOS DEL BLANCO",
+                0, 0, fTitulo, Color.WHITE
+            )
+        );
+
+        panelBlanco.add(crearLinea("Nombre: ", b.getNombre(), fTexto));
+        panelBlanco.add(crearLinea("Naturaleza: ", b.getNaturaleza(), fTexto));
+        panelBlanco.add(crearLinea("Coordenadas: ", b.getCoordenadas().toString(), fTexto));
+        panelBlanco.add(crearLinea("Fecha: ", b.getFechaDeActualizacion(), fTexto));
+        panelBlanco.add(crearLinea("Situación: ", String.valueOf(b.getSituacionMovimiento()), fTexto));
+        panelBlanco.add(crearLinea("Orientación: ", b.getOrientacion() + "°", fTexto));
+        panelBlanco.add(crearLinea("Info adicional: ", b.getInformacionAdicional(), fTexto));
+        panelBlanco.add(crearLinea("SIM ID: ", b.getSimID(), fTexto));
+
+        contenido.add(panelBlanco);
+        contenido.add(Box.createVerticalStrut(15));
+
+        // ---------- DATOS DE MÉTODO Y TIRO ----------
+        JPanel panelMetodo = new JPanel();
+        panelMetodo.setLayout(new BoxLayout(panelMetodo, BoxLayout.Y_AXIS));
+        panelMetodo.setBackground(Color.BLACK);
+        panelMetodo.setBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                "MÉTODO DE ATAQUE / TIRO Y CONTROL",
+                0, 0, fTitulo, Color.WHITE
+            )
+        );
+
+        panelMetodo.add(crearLinea("Carga: ", p.getCarga(), fTexto));
+        panelMetodo.add(crearLinea("Espoleta: ", p.getEspoleta(), fTexto));
+        panelMetodo.add(crearLinea("Piezas: ", String.valueOf(p.getPiezas()), fTexto));
+        panelMetodo.add(crearLinea("Rondas: ", String.valueOf(p.getRondas()), fTexto));
+        panelMetodo.add(crearLinea("Sección: ", p.getSeccion(), fTexto));
+        panelMetodo.add(crearLinea("TOT: ", p.getTotSegundos(), fTexto));
+        panelMetodo.add(crearLinea("Modo fuego: ", p.getModoFuego(), fTexto));
+        panelMetodo.add(crearLinea("FGO continuo: ", p.isFuegoContinuo() ? "Sí" : "No", fTexto));
+        panelMetodo.add(crearLinea("TES: ", p.isTes() ? "Sí" : "No", fTexto));
+
+        contenido.add(panelMetodo);
+
+        JDialog dialogo = new JDialog(SwingUtilities.getWindowAncestor(this), "Detalle del PIF");
+        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogo.getContentPane().add(new JScrollPane(contenido));
+        dialogo.setSize(500, 650);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
+    }
+
+    // ===== FACTORY DE LÍNEAS =====
+    private JPanel crearLinea(String etiqueta, String valor, Font font) {
+        JPanel linea = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        linea.setBackground(Color.BLACK);
+
+        JLabel l1 = new JLabel(etiqueta);
+        l1.setForeground(Color.WHITE);
+        l1.setFont(font);
+
+        JLabel l2 = new JLabel(valor);
+        l2.setForeground(new Color(180, 255, 180));
+        l2.setFont(font);
+
+        linea.add(l1);
+        linea.add(l2);
+
+        return linea;
     }
 
     private void crearBotonesDeNavegacion() {
