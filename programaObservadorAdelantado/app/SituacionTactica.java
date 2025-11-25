@@ -434,7 +434,7 @@ public class SituacionTactica extends JPanel {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Nuevo Blanco", true);
-        dialog.setSize(640, 560);
+        dialog.setSize(660, 580);
         dialog.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -818,6 +818,10 @@ public class SituacionTactica extends JPanel {
                 nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
                 nuevo.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
                 nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
+                nuevo.setUltEntidad(entidad);
+                nuevo.setUltAfiliacion(afiliacion);
+                nuevo.setUltHQTF(hqtf);
+                nuevo.setUltEchelon(echelon);
 
                 String info = txtInfo.getText().trim();
                 if (info.equals("Información adicional necesaria")) info = "";
@@ -930,7 +934,7 @@ public class SituacionTactica extends JPanel {
         JDialog dialog = new JDialog(parentFrame, "Editar Blanco", true);
         dialog.setSize(660, 580);
         dialog.setLocationRelativeTo(this);
-
+        
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(new Color(50, 50, 50));
         dialog.setContentPane(panel);
@@ -996,12 +1000,17 @@ public class SituacionTactica extends JPanel {
         }
 
         ListCellRenderer<String> guionRenderer = (list, value, index, isSelected, cellHasFocus) -> {
-            JLabel label = new JLabel(value.replace("-", " "));
+            JLabel label = new JLabel(
+                value == null ? "" : value.replace("-", " ")
+            );
+
             label.setOpaque(true);
             label.setBackground(isSelected ? new Color(100, 100, 100) : new Color(70, 70, 70));
             label.setForeground(Color.WHITE);
+
             return label;
         };
+        
         cbEntidad.setRenderer(guionRenderer);
         cbAfiliacion.setRenderer(guionRenderer);
         
@@ -1104,7 +1113,7 @@ public class SituacionTactica extends JPanel {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(150);
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -1139,7 +1148,7 @@ public class SituacionTactica extends JPanel {
         listaUIBlancos.repaint();
         panelMapa.eliminarBlanco(b);
         panelMapa.agregarBlanco(b);
-    }
+    }	
     
     public void agregarBlanco(Blanco b) {
         if (b == null) return;
