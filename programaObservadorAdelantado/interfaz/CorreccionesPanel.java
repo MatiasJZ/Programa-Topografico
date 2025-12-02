@@ -4,7 +4,8 @@ import java.awt.*;
 
 public class CorreccionesPanel extends JPanel {
 
-    private JComboBox<String> cbDireccion;
+	private static final long serialVersionUID = -271089343555480088L;
+	private JComboBox<String> cbDireccion;
     private JComboBox<String> cbAlcance;
     private JComboBox<String> cbAltura;
 

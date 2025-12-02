@@ -9,7 +9,8 @@ import mensajes.EnviarListener;
 
 public class MetodoAtaqueYTiroPanel extends JPanel {
 
-    private JRadioButton rbCercanoSi, rbCercanoNo;
+	private static final long serialVersionUID = -3752662630854874010L;
+	private JRadioButton rbCercanoSi, rbCercanoNo;
     private JRadioButton rbGranAnguloSi, rbGranAnguloNo;
     private JComboBox<String> comboGranada;
     private JComboBox<String> comboEspoleta;

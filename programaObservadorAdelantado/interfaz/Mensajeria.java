@@ -5,7 +5,9 @@ import javax.swing.border.TitledBorder;
 
 public class Mensajeria extends JPanel {
 
-    public Mensajeria() {
+	private static final long serialVersionUID = 6622634837519332429L;
+
+	public Mensajeria() {
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 

@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.util.LinkedList;
 
 import javax.swing.*;
@@ -106,9 +105,9 @@ public class ObservadorAdelantado extends JPanel{
 	    ClienteMensajes cliente = new ClienteMensajes(gestorPuerto, procesador);
 	
 	    // Guardar referencias si querés usarlas después
-	    this.gestorPuerto = gestorPuerto;
-	    this.clienteMensajes = cliente;
-	    this.procesadorMensajes = procesador;
+	    this.setGestorPuerto(gestorPuerto);
+	    this.setClienteMensajes(cliente);
+	    this.setProcesadorMensajes(procesador);
         	
         // paneles con clases cardboard
         cards.add(situacionTactica,"SITUACION");
@@ -164,5 +163,29 @@ public class ObservadorAdelantado extends JPanel{
 
 	public void setIdOAA(String idOAA) {
 		this.idOAA = idOAA;
+	}
+
+	public GestorPuertoHarris getGestorPuerto() {
+		return gestorPuerto;
+	}
+
+	public void setGestorPuerto(GestorPuertoHarris gestorPuerto) {
+		this.gestorPuerto = gestorPuerto;
+	}
+
+	public ClienteMensajes getClienteMensajes() {
+		return clienteMensajes;
+	}
+
+	public void setClienteMensajes(ClienteMensajes clienteMensajes) {
+		this.clienteMensajes = clienteMensajes;
+	}
+
+	public ProcesadorMensajes getProcesadorMensajes() {
+		return procesadorMensajes;
+	}
+
+	public void setProcesadorMensajes(ProcesadorMensajes procesadorMensajes) {
+		this.procesadorMensajes = procesadorMensajes;
 	}
 }

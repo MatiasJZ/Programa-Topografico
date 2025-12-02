@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -21,7 +20,8 @@ import interfaz.PanelMapa;
 
 public class SituacionTactica extends JPanel {
 
-    private DefaultListModel<Blanco> modeloListaBlancos;
+	private static final long serialVersionUID = -789462013392544798L;
+	private DefaultListModel<Blanco> modeloListaBlancos;
     private JList<Blanco> listaUIBlancos;
     protected LinkedList<Blanco> listaDeBlancos;
     private PanelMapa panelMapa;
@@ -169,7 +169,6 @@ public class SituacionTactica extends JPanel {
         splitPane.setContinuousLayout(true);
         add(splitPane, BorderLayout.CENTER);
 
-        CodigosMilitares m = new CodigosMilitares(); 
         // click en mapa: Blanco o Punto
         panelMapa.getMapPane().setCursorTool(new CursorTool() {
             @Override
@@ -430,7 +429,8 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
 
-    private void mostrarDialogoAgregarBlanco(coordRectangulares coordInicial) {
+    @SuppressWarnings("serial")
+	private void mostrarDialogoAgregarBlanco(coordRectangulares coordInicial) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Nuevo Blanco", true);
@@ -672,7 +672,8 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
 
-    private void mostrarDialogoPolares(Blanco referencia) {
+    @SuppressWarnings("serial")
+	private void mostrarDialogoPolares(Blanco referencia) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Marcar en Polares desde: " + referencia.getNombre(), true);
@@ -839,7 +840,8 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
 
-    private void mostrarDialogoMedir(Blanco b) {
+    @SuppressWarnings("serial")
+	private void mostrarDialogoMedir(Blanco b) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b.getNombre(), true);
@@ -929,7 +931,8 @@ public class SituacionTactica extends JPanel {
         dialog.setVisible(true);
     }
     
-    private void mostrarDialogoEditar(Blanco b) {
+    @SuppressWarnings("serial")
+	private void mostrarDialogoEditar(Blanco b) {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Editar Blanco", true);
         dialog.setSize(660, 580);

@@ -60,6 +60,7 @@ import java.util.UUID;
 
 public class PanelMapa extends JPanel {
 
+	private static final long serialVersionUID = -6801957143279809848L;
 	private MapContent mapContent;
     private JMapPane mapPane;
     private SimpleFeatureType tipoBlancos;

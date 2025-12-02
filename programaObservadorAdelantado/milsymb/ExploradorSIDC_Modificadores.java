@@ -46,7 +46,6 @@ public class ExploradorSIDC_Modificadores {
     };
 
     public static void main(String[] args) {
-        MSLookup lookup = MSLookup.getInstance();
         String symbolSet = "10";
         String entity = "121100";
 

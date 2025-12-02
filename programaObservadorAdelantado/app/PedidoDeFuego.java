@@ -1,7 +1,5 @@
 package app;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -136,7 +134,12 @@ class PedidoDeFuego extends JPanel {
         listaHistorial.setForeground(Color.WHITE);
 
         listaHistorial.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = -6684167244292177832L;
+
+			@Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,boolean isSelected, boolean cellHasFocus) {
 
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

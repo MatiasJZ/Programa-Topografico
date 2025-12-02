@@ -11,7 +11,8 @@ import armyc2.c5isr.renderer.utilities.RendererSettings;
 
 public class proveedorMilSym extends JPanel {
 	
-    private BufferedImage simbolo;
+	private static final long serialVersionUID = 3682810635662561460L;
+	private BufferedImage simbolo;
 
     public proveedorMilSym(String sidc, int size) {
 
