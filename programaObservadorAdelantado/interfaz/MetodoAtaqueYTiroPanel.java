@@ -44,9 +44,9 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
         panelPrincipal.setBackground(Color.BLACK);
 
-        panelPrincipal.add(crearMetodoAtaque2Columnas());
+        panelPrincipal.add(crearMetodoAtaque());
         panelPrincipal.add(Box.createVerticalStrut(20));
-        panelPrincipal.add(crearTiroYControl2Columnas());
+        panelPrincipal.add(crearTiroYControl());
         panelPrincipal.add(Box.createVerticalStrut(20));
         panelPrincipal.add(crearBotonEnviar());
 
@@ -66,7 +66,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         );
     }
 
-    private JPanel crearMetodoAtaque2Columnas() {
+    private JPanel crearMetodoAtaque() {
 
         JPanel panel = crearBlindado("MÉTODO DE ATAQUE");
         JPanel grid = new JPanel(new GridLayout(4, 2, 15, 12));
@@ -124,7 +124,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         combo.setRenderer(renderer);
     }
 
-    private JPanel crearTiroYControl2Columnas() {
+    private JPanel crearTiroYControl() {
 
         JPanel panel = crearBlindado("TIRO Y CONTROL");
         JPanel grid = new JPanel(new GridLayout(4, 2, 15, 12));
@@ -189,7 +189,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JPanel crearBotonEnviar() {
 
         rbCuandoListo = crearRadio("CUANDO LISTO", null);
-        rbAMiOrden    = crearRadio("A MI ORDEN", null);
+        rbAMiOrden = crearRadio("A MI ORDEN", null);
         agrupar(rbCuandoListo, rbAMiOrden);
 
         JPanel radiosModo = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));

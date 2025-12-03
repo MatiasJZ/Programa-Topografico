@@ -134,9 +134,7 @@ class PedidoDeFuego extends JPanel {
         listaHistorial.setForeground(Color.WHITE);
 
         listaHistorial.setCellRenderer(new DefaultListCellRenderer() {
-            /**
-			 * 
-			 */
+ 
 			private static final long serialVersionUID = -6684167244292177832L;
 
 			@Override
@@ -263,10 +261,7 @@ class PedidoDeFuego extends JPanel {
 
         consolaMensajes.agregarMensaje("[TX] " + msg);
 
-        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " +
-                dir + " " + vDir + " / " +
-                alc + " " + vAlc + " / " +
-                alt + " " + vAlt);
+        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
     }
 
     private void volverASituacionTactica() {
@@ -336,7 +331,6 @@ class PedidoDeFuego extends JPanel {
 
         Blanco b = p.getBlanco();
 
-        // ===== CUERPO DEL DIALOGO =====
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setBackground(Color.BLACK);
@@ -345,7 +339,6 @@ class PedidoDeFuego extends JPanel {
         Font fTitulo = new Font("Arial", Font.BOLD, 18);
         Font fTexto = new Font("Consolas", Font.PLAIN, 15);
 
-        // ---------- DATOS DEL BLANCO ----------
         JPanel panelBlanco = new JPanel();
         panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
         panelBlanco.setBackground(Color.BLACK);
@@ -368,8 +361,7 @@ class PedidoDeFuego extends JPanel {
 
         contenido.add(panelBlanco);
         contenido.add(Box.createVerticalStrut(15));
-
-        // ---------- DATOS DE MÉTODO Y TIRO ----------
+    
         JPanel panelMetodo = new JPanel();
         panelMetodo.setLayout(new BoxLayout(panelMetodo, BoxLayout.Y_AXIS));
         panelMetodo.setBackground(Color.BLACK);
@@ -396,12 +388,11 @@ class PedidoDeFuego extends JPanel {
         JDialog dialogo = new JDialog(SwingUtilities.getWindowAncestor(this), "Detalle del PIF");
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialogo.getContentPane().add(new JScrollPane(contenido));
-        dialogo.setSize(500, 650);
+        dialogo.setSize(600, 700);
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
     }
 
-    // ===== FACTORY DE LÍNEAS =====
     private JPanel crearLinea(String etiqueta, String valor, Font font) {
         JPanel linea = new JPanel(new FlowLayout(FlowLayout.LEFT));
         linea.setBackground(Color.BLACK);

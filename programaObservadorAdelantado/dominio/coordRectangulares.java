@@ -22,4 +22,9 @@ public class coordRectangulares extends coordenadas {
         double dy = otro.getY() - this.coordY;
         return Math.hypot(dx, dy); // equivalente a sqrt(dx² + dy²) pero numéricamente más estable
     }
+    
+    @Override
+    public String toString() {
+    	return ("X: " +coordX + " ; "+"Y: "+ coordY);
+    }
 }

@@ -9,25 +9,28 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
+import org.locationtech.jts.geom.Coordinate;
 
 import dominio.Blanco;
 import dominio.CodigosMilitares;
+import dominio.Linea;
 import dominio.Punto;
 import dominio.SituacionMovimiento;
 import dominio.coordPolares;
 import dominio.coordRectangulares;
+import dominio.poligonal;
 import interfaz.PanelMapa;
 
 public class SituacionTactica extends JPanel {
 
-	private static final long serialVersionUID = -789462013392544798L;
+	private static final long serialVersionUID = 789462013392544798L;
 	private DefaultListModel<Blanco> modeloListaBlancos;
     private JList<Blanco> listaUIBlancos;
     protected LinkedList<Blanco> listaDeBlancos;
     private PanelMapa panelMapa;
-    private DefaultListModel<Punto> modeloListaPuntos;
-    private JList<Punto> listaUIPuntos;
-    protected LinkedList<Punto> listaDePuntos;
+    protected LinkedList<poligonal> listaDePoligonales;
+    private DefaultListModel<poligonal> modeloListaPoligonales;
+    private JList<poligonal> listaUIPoligonales;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
     protected PedidoDeFuego panelPIF;
 
@@ -68,34 +71,37 @@ public class SituacionTactica extends JPanel {
         panelIzquierdo.setBackground(Color.BLACK);
         panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 
-        listaDePuntos = new LinkedList<>();
-        modeloListaPuntos = new DefaultListModel<>();
-        listaUIPuntos = new JList<>(modeloListaPuntos);
-        listaUIPuntos.setFont(new Font("Arial", Font.BOLD, 20));
-        listaUIPuntos.setBackground(Color.BLACK);
+        listaDePoligonales = new LinkedList<>();
+        modeloListaPoligonales = new DefaultListModel<>();
+        listaUIPoligonales = new JList<>(modeloListaPoligonales);
+        listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20));
+        listaUIPoligonales.setBackground(Color.BLACK);
 
-        listaUIPuntos.setCellRenderer(new DefaultListCellRenderer() {
-		private static final long serialVersionUID = 1L;
-			@Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
+        listaUIPoligonales.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+
+                if (value instanceof Punto)
+                    label.setText(((Punto)value).getNombre());
+
+                else if (value instanceof Linea)
+                    label.setText(((Linea)value).getName() + " (" +
+                                   String.format("%.3f m", ((Linea)value).getDistancia()) + ")");
+
+                label.setForeground(Color.WHITE);
                 label.setHorizontalAlignment(SwingConstants.CENTER);
-                if (value instanceof Punto) {
-                    Punto p = (Punto) value;
-                    label.setText(p.getNombre());
-                    label.setForeground(new Color(200, 200, 200));
-                }
                 return label;
             }
         });
 
-        JLabel lblBlancos = new JLabel("LISTA DE BLANCOS", SwingConstants.CENTER);
+        JLabel lblBlancos = new JLabel("BLANCOS", SwingConstants.CENTER);
         lblBlancos.setForeground(Color.GRAY);
         lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
 
-        JLabel lblPuntos = new JLabel("LISTA DE PUNTOS", SwingConstants.CENTER);
+        JLabel lblPuntos = new JLabel("POLIGONALES", SwingConstants.CENTER);
         lblPuntos.setForeground(Color.GRAY);
         lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
 
@@ -121,7 +127,7 @@ public class SituacionTactica extends JPanel {
 
         gbcList.gridy = 3;
         gbcList.weighty = 0.33; 
-        panelListas.add(new JScrollPane(listaUIPuntos), gbcList);
+        panelListas.add(new JScrollPane(listaUIPoligonales), gbcList);
 
         // uso este panel de listas dentro del panel izquierdo existente
         panelIzquierdo.add(panelListas, BorderLayout.CENTER);
@@ -217,18 +223,67 @@ public class SituacionTactica extends JPanel {
 
         // eliminar
         btnEliminar.addActionListener(e -> {
+
             Blanco selecB = listaUIBlancos.getSelectedValue();
-            if (selecB != null) {
+            poligonal selecP = listaUIPoligonales.getSelectedValue();
+
+            // 1) Nada seleccionado
+            if (selecB == null && selecP == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Seleccione un elemento para eliminar.",
+                        "Nada seleccionado",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            // 2) Solo BLANCO seleccionado
+            if (selecB != null && selecP == null) {
+
                 listaDeBlancos.remove(selecB);
                 modeloListaBlancos.removeElement(selecB);
                 panelMapa.eliminarBlanco(selecB);
+                listaUIBlancos.clearSelection();
+                return;
             }
-            Punto selecP = listaUIPuntos.getSelectedValue();
-            if(selecP != null) {
-            	listaDePuntos.remove(selecP);
-            	modeloListaPuntos.removeElement(selecP);
-                panelMapa.eliminarPunto(selecP);
+
+            // 3) Solo POLIGONAL seleccionada
+            if (selecP != null && selecB == null) {
+
+                listaDePoligonales.remove(selecP);
+                modeloListaPoligonales.removeElement(selecP);
+                panelMapa.eliminarPoligonal(selecP);
+                listaUIPoligonales.clearSelection();
+                return;
             }
+
+            // 4) Ambas seleccionadas → Preguntar al usuario
+            String[] opciones = {"Eliminar Blanco", "Eliminar Poligonal", "Cancelar"};
+            int resp = JOptionPane.showOptionDialog(
+                    this,
+                    "Hay un blanco y una poligonal seleccionados.\n¿Qué desea eliminar?",
+                    "Confirme eliminación",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[2]
+            );
+
+            if (resp == 0 && selecB != null) {
+                listaDeBlancos.remove(selecB);
+                modeloListaBlancos.removeElement(selecB);
+                panelMapa.eliminarBlanco(selecB);
+            } 
+            else if (resp == 1 && selecP != null) {
+                listaDePoligonales.remove(selecP);
+                modeloListaPoligonales.removeElement(selecP);
+                panelMapa.eliminarPoligonal(selecP);
+            }
+
+            listaUIBlancos.clearSelection();
+            listaUIPoligonales.clearSelection();
         });
 
         // actualizar
@@ -285,6 +340,7 @@ public class SituacionTactica extends JPanel {
         dialog.setSize(650, 220);
         dialog.setLocationRelativeTo(this);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setIconImage(imgEscalada);
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(new Color(40, 40, 40));
@@ -328,7 +384,7 @@ public class SituacionTactica extends JPanel {
             }
         });
 
-        JButton btnExaminar = new JButton("Examinar...");
+        JButton btnExaminar = new JButton("Examinar");
         btnExaminar.setBackground(new Color(60, 60, 60));
         btnExaminar.setForeground(Color.WHITE);
         btnExaminar.setFocusPainted(false);
@@ -415,7 +471,7 @@ public class SituacionTactica extends JPanel {
             public void windowClosing(WindowEvent e) {
                 int resp = JOptionPane.showConfirmDialog(
                     dialog,
-                    "¿Desea salir del programa sin cargar un mapa?",
+                    "¿Desea salir del programa?",
                     "Confirmar salida",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE,
@@ -663,9 +719,9 @@ public class SituacionTactica extends JPanel {
                 return;
             }
             Punto nuevo = new Punto(coordInicial, nombre);
-            panelMapa.agregarPunto(nuevo);
-            listaDePuntos.add(nuevo);
-            modeloListaPuntos.addElement(nuevo);
+            panelMapa.agregarPoligonal(nuevo);
+            listaDePoligonales.add(nuevo);
+            modeloListaPoligonales.addElement(nuevo);
             dialog.dispose();
         });
         btnCancelar.addActionListener(e -> dialog.dispose());
@@ -906,13 +962,33 @@ public class SituacionTactica extends JPanel {
                 JOptionPane.showMessageDialog(dialog, "Seleccione un blanco destino válido.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
             try {
                 double distancia = b.getCoordenadas().distanciaA(b2.getCoordenadas());
-                String mensaje = String.format("Distancia entre %s y %s:\n%.2f metros",b.getNombre(), b2.getNombre(), distancia);
-                JOptionPane.showMessageDialog(dialog, mensaje, "Resultado", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        String.format("Distancia entre %s y %s:\n%.0f metros",
+                                b.getNombre(),
+                                b2.getNombre(),
+                                distancia),
+                        "Resultado",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
                 dialog.dispose();
+                Coordinate c1 = new Coordinate(b.getCoordenadas().getX(),b.getCoordenadas().getY());
+                Coordinate c2 = new Coordinate(b2.getCoordenadas().getX(),b2.getCoordenadas().getY());
+                String nombreLinea = "Medición: " + b.getNombre() + " → " + b2.getNombre();
+                Linea nuevaLinea = new Linea(nombreLinea, c1, c2, distancia);
+                listaDePoligonales.add(nuevaLinea);
+                modeloListaPoligonales.addElement(nuevaLinea);
+                panelMapa.agregarPoligonal(nuevaLinea);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog,"Error al calcular la distancia:\n" + ex.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Error al calcular la distancia:\n" + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
         btnCancelar.addActionListener(e -> dialog.dispose());

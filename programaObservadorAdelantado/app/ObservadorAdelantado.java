@@ -131,7 +131,7 @@ public class ObservadorAdelantado extends JPanel{
     
     private void pedirID() {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
-        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
+        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 90, Image.SCALE_SMOOTH);
         ImageIcon icono = new ImageIcon(imgEscalada);
         while (true) {
             String idIngresado = (String) JOptionPane.showInputDialog(null,"Ingresar ID de OAA:","Autenticación requerida",JOptionPane.PLAIN_MESSAGE, icono,null,null);
@@ -142,12 +142,7 @@ public class ObservadorAdelantado extends JPanel{
                     return;
                 }
             }
-            JOptionPane.showMessageDialog(
-                    null,
-                    "ID incorrecto. Intente de nuevo.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE,
-                    icono); 
+            JOptionPane.showMessageDialog(null,"ID incorrecto. Intente de nuevo.","Error",JOptionPane.ERROR_MESSAGE,icono); 
         }
     }
 

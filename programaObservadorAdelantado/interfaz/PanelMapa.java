@@ -4,8 +4,10 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.style.ExternalGraphic;
 import org.geotools.api.style.FeatureTypeStyle;
 import org.geotools.api.style.Graphic;
+import org.geotools.api.style.LineSymbolizer;
 import org.geotools.api.style.PointSymbolizer;
 import org.geotools.api.style.Rule;
+import org.geotools.api.style.Stroke;
 import org.geotools.api.style.Style;
 import org.geotools.api.style.StyleFactory;
 import org.geotools.api.style.TextSymbolizer;
@@ -31,20 +33,28 @@ import org.geotools.swing.tool.ZoomInTool;
 import org.geotools.swing.tool.CursorTool;
 import org.geotools.swing.tool.PanTool;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 import dominio.Blanco;
 import dominio.CodigosMilitares;
+import dominio.Linea;
 import dominio.Punto;
 import dominio.coordPolares;
 import dominio.coordRectangulares;
 import dominio.coordenadas;
+import dominio.poligonal;
 import milsymb.proveedorMilSym;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -63,11 +73,13 @@ public class PanelMapa extends JPanel {
 	private static final long serialVersionUID = -6801957143279809848L;
 	private MapContent mapContent;
     private JMapPane mapPane;
+    
     private SimpleFeatureType tipoBlancos;
     private SimpleFeatureType tipoPuntos;
+    private SimpleFeatureType tipoLineas;
 
-    private final Map<Punto, FeatureLayer> capaPorPunto = new HashMap<>();
-    private final Map<Punto, ListFeatureCollection> coleccionPorPunto = new HashMap<>();
+    private final Map<poligonal, FeatureLayer> capaPorPoligonal = new HashMap<>();
+    private final Map<poligonal, ListFeatureCollection> coleccionPorPoligonal = new HashMap<>();
 
     private final Map<Blanco, FeatureLayer> capaPorBlanco = new HashMap<>();
     private final Map<Blanco, ListFeatureCollection> coleccionPorBlanco = new HashMap<>();
@@ -119,6 +131,13 @@ public class PanelMapa extends JPanel {
         b2.add("y", Double.class);
         b2.setCRS(mapContent.getCoordinateReferenceSystem());
         tipoPuntos = b2.buildFeatureType();
+        
+        SimpleFeatureTypeBuilder b3 = new SimpleFeatureTypeBuilder();
+        b3.setName("Linea");
+        b3.add("the_geom", LineString.class, mapContent.getCoordinateReferenceSystem());
+        b3.add("nombre", String.class);
+        b3.add("distancia", String.class);
+        tipoLineas = b3.buildFeatureType();
     }
     
     private void leerArchivo(String ruta) throws IllegalArgumentException, NoSuchAuthorityCodeException, FactoryException, IOException {
@@ -260,29 +279,80 @@ public class PanelMapa extends JPanel {
         return mapPane;
     }
 
-    public void agregarPunto(Punto pto) {
+    public void agregarPoligonal(poligonal p) {
 
-        coordenadas base = pto.getCoord();
-        coordRectangulares c = (base instanceof coordRectangulares) ?
-                (coordRectangulares) base : ((coordPolares) base).toRectangulares();
+        Geometry geom = p.getGeometry();
+        SimpleFeatureType tipo;
+        Object[] attrs;
 
-        GeometryFactory gf = new GeometryFactory();
-        Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
+        if (geom instanceof Point pt) {
+            tipo = tipoPuntos;
+            attrs = new Object[]{
+                pt,
+                p.getName(),
+                pt.getX(),
+                pt.getY()
+            };
+        }
+        else if (geom instanceof LineString ls) {
+            Linea lm = (Linea)p;
+            tipo = tipoLineas;
+            attrs = new Object[]{
+                ls,
+                p.getName(),
+                String.format("%.0f m", lm.getDistancia())
+            };
+        }
+        else {
+            throw new IllegalArgumentException("Geometría no soportada.");
+        }
 
-        ListFeatureCollection col = new ListFeatureCollection(tipoPuntos, new LinkedList<>());
-        Object[] attrs = new Object[]{geom, pto.getNombre(), c.getX(), c.getY()};
-        SimpleFeature f = SimpleFeatureBuilder.build(tipoPuntos, attrs, "punto-" + UUID.randomUUID());
-        col.add(f);
+        ListFeatureCollection col = new ListFeatureCollection(tipo, new LinkedList<>());
+        SimpleFeature feature = SimpleFeatureBuilder.build(
+            tipo,
+            attrs,
+            p.getName() + "-" + UUID.randomUUID()
+        );
+        col.add(feature);
 
-        Style estilo = SLD.createPointStyle("circle", Color.WHITE, Color.BLACK, 1.0f, 12.0f);
+        Style estilo = (geom instanceof Point) ? estiloPunto() : estiloLinea();
+
         FeatureLayer capa = new FeatureLayer(col, estilo);
 
         mapContent.addLayer(capa);
 
-        capaPorPunto.put(pto, capa);
-        coleccionPorPunto.put(pto, col);
+        capaPorPoligonal.put(p, capa);
+        coleccionPorPoligonal.put(p, col);
 
         refrescar();
+    }
+    
+    private Style estiloPunto() {
+        return SLD.createPointStyle("circle", Color.WHITE, Color.BLACK, 1.0f, 12.0f);
+    }
+    
+    private Style estiloLinea() {
+
+        StyleBuilder sb = new StyleBuilder();
+        StyleFactory sf = CommonFactoryFinder.getStyleFactory();
+        Color azulOscuro = new Color(0, 45, 130);
+        Stroke stroke = sb.createStroke(azulOscuro, 3.0); 
+        LineSymbolizer ls = sb.createLineSymbolizer(stroke);
+        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial", false, false, 20),"distancia");
+
+        ts.setLabelPlacement(sb.createLinePlacement(0.5)); // CENTRADO EN LA LÍNEA
+
+        Rule rule = sf.createRule();
+        rule.symbolizers().add(ls);
+        rule.symbolizers().add(ts);
+
+        FeatureTypeStyle fts = sf.createFeatureTypeStyle();
+        fts.rules().add(rule);
+
+        Style s = sf.createStyle();
+        s.featureTypeStyles().add(fts);
+
+        return s;
     }
 
     public void agregarBlanco(Blanco b) {
@@ -366,12 +436,13 @@ public class PanelMapa extends JPanel {
         return SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
     }
 
-    public void eliminarPunto(Punto p) {
+    public void eliminarPoligonal(poligonal p) {
 
-        FeatureLayer capa = capaPorPunto.remove(p);
-        coleccionPorPunto.remove(p);
+        FeatureLayer capa = capaPorPoligonal.remove(p);
+        coleccionPorPoligonal.remove(p);
 
-        if (capa != null) mapContent.removeLayer(capa);
+        if (capa != null)
+            mapContent.removeLayer(capa);
 
         refrescar();
     }
