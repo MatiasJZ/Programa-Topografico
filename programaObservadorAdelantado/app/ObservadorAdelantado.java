@@ -14,6 +14,7 @@ import harris.GestorPuertoHarris;
 import interfaz.Mensajeria;
 import mensajes.ClienteMensajes;
 import mensajes.ProcesadorMensajes;
+import util.SoundManager;
 
 public class ObservadorAdelantado extends JPanel{
 
@@ -28,6 +29,7 @@ public class ObservadorAdelantado extends JPanel{
     private GestorPuertoHarris gestorPuerto;
     private ClienteMensajes clienteMensajes;
     private ProcesadorMensajes procesadorMensajes;
+    private SoundManager sonidos;
 	
     public static void main(String[] args) {
     	
@@ -133,6 +135,7 @@ public class ObservadorAdelantado extends JPanel{
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 90, Image.SCALE_SMOOTH);
         ImageIcon icono = new ImageIcon(imgEscalada);
+        sonidos = new SoundManager();
         while (true) {
             String idIngresado = (String) JOptionPane.showInputDialog(null,"Ingresar ID de OAA:","Autenticación requerida",JOptionPane.PLAIN_MESSAGE, icono,null,null);
             if (idIngresado == null) {System.exit(0);}
@@ -142,6 +145,7 @@ public class ObservadorAdelantado extends JPanel{
                     return;
                 }
             }
+            sonidos.ingresoError();
             JOptionPane.showMessageDialog(null,"ID incorrecto. Intente de nuevo.","Error",JOptionPane.ERROR_MESSAGE,icono); 
         }
     }

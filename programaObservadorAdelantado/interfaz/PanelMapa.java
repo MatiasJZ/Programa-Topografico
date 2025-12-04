@@ -41,10 +41,7 @@ import org.locationtech.jts.geom.Point;
 import dominio.Blanco;
 import dominio.CodigosMilitares;
 import dominio.Linea;
-import dominio.Punto;
-import dominio.coordPolares;
 import dominio.coordRectangulares;
-import dominio.coordenadas;
 import dominio.poligonal;
 import milsymb.proveedorMilSym;
 

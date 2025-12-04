@@ -20,6 +20,7 @@ import dominio.coordPolares;
 import dominio.coordRectangulares;
 import dominio.poligonal;
 import interfaz.PanelMapa;
+import util.SoundManager;
 
 public class SituacionTactica extends JPanel {
 
@@ -33,6 +34,7 @@ public class SituacionTactica extends JPanel {
     private JList<poligonal> listaUIPoligonales;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
     protected PedidoDeFuego panelPIF;
+    private SoundManager sonidos;
 
     public SituacionTactica(LinkedList<Blanco> listaDeBlancos, PedidoDeFuego pif) {
         setSize(900, 600);
@@ -46,6 +48,7 @@ public class SituacionTactica extends JPanel {
         listaUIBlancos.setBackground(Color.BLACK);
         
         panelPIF = pif;
+        sonidos = new SoundManager();
 
         listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
 		private static final long serialVersionUID = 1L;
@@ -78,7 +81,10 @@ public class SituacionTactica extends JPanel {
         listaUIPoligonales.setBackground(Color.BLACK);
 
         listaUIPoligonales.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
+
+			private static final long serialVersionUID = -3139532018963310447L;
+
+			@Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
                     int index, boolean isSelected, boolean cellHasFocus) {
 
@@ -203,6 +209,8 @@ public class SituacionTactica extends JPanel {
         });
 
         btnAgregar.addActionListener(e -> {
+        	
+        	sonidos.popUpSonido();
             coordRectangulares coord = new coordRectangulares(0,0,0);
             String[] opciones = {"Marcar Blanco", "Marcar Punto"};
             Image img = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
@@ -223,7 +231,8 @@ public class SituacionTactica extends JPanel {
 
         // eliminar
         btnEliminar.addActionListener(e -> {
-
+        	
+        	sonidos.popUpSonido();
             Blanco selecB = listaUIBlancos.getSelectedValue();
             poligonal selecP = listaUIPoligonales.getSelectedValue();
 
@@ -237,27 +246,22 @@ public class SituacionTactica extends JPanel {
                 );
                 return;
             }
-
             // 2) Solo BLANCO seleccionado
             if (selecB != null && selecP == null) {
-
                 listaDeBlancos.remove(selecB);
                 modeloListaBlancos.removeElement(selecB);
                 panelMapa.eliminarBlanco(selecB);
                 listaUIBlancos.clearSelection();
                 return;
             }
-
             // 3) Solo POLIGONAL seleccionada
             if (selecP != null && selecB == null) {
-
                 listaDePoligonales.remove(selecP);
                 modeloListaPoligonales.removeElement(selecP);
                 panelMapa.eliminarPoligonal(selecP);
                 listaUIPoligonales.clearSelection();
                 return;
             }
-
             // 4) Ambas seleccionadas → Preguntar al usuario
             String[] opciones = {"Eliminar Blanco", "Eliminar Poligonal", "Cancelar"};
             int resp = JOptionPane.showOptionDialog(
@@ -270,7 +274,6 @@ public class SituacionTactica extends JPanel {
                     opciones,
                     opciones[2]
             );
-
             if (resp == 0 && selecB != null) {
                 listaDeBlancos.remove(selecB);
                 modeloListaBlancos.removeElement(selecB);
@@ -281,35 +284,49 @@ public class SituacionTactica extends JPanel {
                 modeloListaPoligonales.removeElement(selecP);
                 panelMapa.eliminarPoligonal(selecP);
             }
-
             listaUIBlancos.clearSelection();
             listaUIPoligonales.clearSelection();
         });
 
         // actualizar
-        btnActualizar.addActionListener(e -> actualizarBlancosEnMapa());
+        btnActualizar.addActionListener(e -> {
+        sonidos.popUpSonido();	
+        actualizarBlancosEnMapa();
+        });
 
         // PIF
-        btnPIF.addActionListener(e -> armarPIF(listaUIBlancos.getSelectedValue()));
+        btnPIF.addActionListener(e -> {
+        sonidos.popUpSonido();
+        armarPIF(listaUIBlancos.getSelectedValue());
+        });
 
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem itemEditar = new JMenuItem("Editar Blanco");
-        JMenuItem itemMarcarPolares = new JMenuItem("Marcar en Polares");
-        JMenuItem itemMedir = new JMenuItem("Medir");
+        JMenuItem itemEditar = new JMenuItem("Editar Blanco Seleccionado");
+        itemEditar.setBackground(Color.BLACK);
+        itemEditar.setForeground(Color.WHITE);
+        JMenuItem itemMarcarPolares = new JMenuItem("Marcar Nuevo Blanco en Polares");
+        itemMarcarPolares.setBackground(Color.BLACK);
+        itemMarcarPolares.setForeground(Color.WHITE);
+        JMenuItem itemMedir = new JMenuItem("Marcar Medicion");
+        itemMedir.setBackground(Color.BLACK);
+        itemMedir.setForeground(Color.WHITE);
 
         popupMenu.add(itemEditar);
         popupMenu.add(itemMedir);
         popupMenu.add(itemMarcarPolares);
 
         itemMedir.addActionListener(e -> {
+        	sonidos.popUpSonido();
             Blanco bSel = listaUIBlancos.getSelectedValue();
             if (bSel != null) mostrarDialogoMedir(bSel);
         });
         itemEditar.addActionListener(e -> {
+        	sonidos.popUpSonido();
             Blanco bSel = listaUIBlancos.getSelectedValue();
             if (bSel != null) mostrarDialogoEditar(bSel);
         });
         itemMarcarPolares.addActionListener(e -> {
+        	sonidos.popUpSonido();
             Blanco bSel = listaUIBlancos.getSelectedValue();
             if (bSel != null) mostrarDialogoPolares(bSel);
         });
@@ -323,6 +340,7 @@ public class SituacionTactica extends JPanel {
                 int idx = listaUIBlancos.locationToIndex(e.getPoint());
                 if (idx >= 0) {
                 	listaUIBlancos.setSelectedIndex(idx);
+                	sonidos.popUpSonido();
                     popupMenu.show(listaUIBlancos, e.getX(), e.getY());
                 }
             }
@@ -439,6 +457,7 @@ public class SituacionTactica extends JPanel {
         btnAceptar.addActionListener(e -> {
             String rutaIngresada = txtRuta.getText().trim();
             if (rutaIngresada.isEmpty() || rutaIngresada.equals(placeholder)) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, 
                     "Debe ingresar una ruta válida.", 
                     "Error", 
@@ -448,6 +467,7 @@ public class SituacionTactica extends JPanel {
             }
             if (!rutaIngresada.toLowerCase().endsWith(".tif") && 
                 !rutaIngresada.toLowerCase().endsWith(".tiff")) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, 
                     "Solo se admiten archivos con extensión .TIF o .TIFF.", 
                     "Error", 
@@ -627,6 +647,7 @@ public class SituacionTactica extends JPanel {
         btnAceptar.addActionListener(e -> {
             String nombre = txtNombre.getText().trim();
             if (nombre.isEmpty() || nombre.equals("Nombre del Blanco")) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, "Ingrese un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -661,7 +682,9 @@ public class SituacionTactica extends JPanel {
             String info = txtInfo.getText().trim();
             if (info.equals("Información adicional necesaria")) info = "";
             nuevo.setInformacionAdicional(info);
-
+            
+            sonidos.blancoAgregado();
+            
             listaDeBlancos.add(nuevo);
             modeloListaBlancos.addElement(nuevo);
             panelMapa.agregarBlanco(nuevo);
@@ -715,10 +738,14 @@ public class SituacionTactica extends JPanel {
         btnAceptar.addActionListener(e -> {
             String nombre = txtNombre.getText().trim();
             if (nombre.isEmpty() || nombre.equals("Nombre del Punto")) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, "Ingrese un nombre para el punto.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             Punto nuevo = new Punto(coordInicial, nombre);
+            
+            sonidos.blancoAgregado();
+            
             panelMapa.agregarPoligonal(nuevo);
             listaDePoligonales.add(nuevo);
             modeloListaPoligonales.addElement(nuevo);
@@ -888,6 +915,7 @@ public class SituacionTactica extends JPanel {
                 panelMapa.agregarBlanco(nuevo);
                 dialog.dispose();
             } catch (Exception ex) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, "Datos inválidos.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -959,7 +987,8 @@ public class SituacionTactica extends JPanel {
         btnAceptar.addActionListener(e -> {
             Blanco b2 = (Blanco) comboBlancos.getSelectedItem();
             if (b2 == null) {
-                JOptionPane.showMessageDialog(dialog, "Seleccione un blanco destino válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            	sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Seleccione un blanco destino válido.", "Error", JOptionPane.ERROR_MESSAGE);               
                 return;
             }
 
@@ -989,6 +1018,7 @@ public class SituacionTactica extends JPanel {
                         "Error",
                         JOptionPane.ERROR_MESSAGE
                 );
+                sonidos.clickError();
             }
         });
         btnCancelar.addActionListener(e -> dialog.dispose());
@@ -1082,7 +1112,6 @@ public class SituacionTactica extends JPanel {
             JLabel label = new JLabel(
                 value == null ? "" : value.replace("-", " ")
             );
-
             label.setOpaque(true);
             label.setBackground(isSelected ? new Color(100, 100, 100) : new Color(70, 70, 70));
             label.setForeground(Color.WHITE);
@@ -1203,16 +1232,15 @@ public class SituacionTactica extends JPanel {
                         } catch (InterruptedException e) {}
                     }
                 }).start();
-                
 
                 dialog.dispose();
 
             } catch (Exception ex) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, "Error al guardar cambios:\n" + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-        
         btnCancelar.addActionListener(e -> dialog.dispose());
 
         dialog.setVisible(true);
