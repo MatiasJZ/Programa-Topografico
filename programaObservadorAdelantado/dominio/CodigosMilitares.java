@@ -6,22 +6,11 @@ public class CodigosMilitares {
 
     private static final Map<String, String> mapa = new HashMap<>();
 
-    private static String withHQorTF(String base, char pos17) {
-        StringBuilder sb = new StringBuilder(base);
-        sb.setCharAt(16, pos17);
-        return sb.toString();
-    }
-
     private static String withEchelon(String base, String echelon2d) {
         StringBuilder sb = new StringBuilder(base);
         sb.setCharAt(17, echelon2d.charAt(0));
         sb.setCharAt(18, echelon2d.charAt(1));
         return sb.toString();
-    }
-
-    private static void addHQTF(String keyBase, String sidcBase) {
-        mapa.put(keyBase + "_HQ", withHQorTF(sidcBase, '2'));
-        mapa.put(keyBase + "_TF", withHQorTF(sidcBase, '4'));
     }
 
     private static void addEchelon(String keyBase, String sidcBase, String echelonCode, String suffix) {
@@ -268,31 +257,10 @@ public class CodigosMilitares {
         mapa.put("GRUPO-LOGISTICO/APOYO_PENDIENTE", "10001000001402000000");
         mapa.put("GRUPO-LOGISTICO/APOYO_ASUMIDO-AMIGO", "10021000001402000000");
 
-        // HQ / TF (solo tácticos)
-        String[] hqtfSet = {
-            "DRON-TERRESTRE","INFANTERIA-RECONOCIMIENTO","INFANTERIA-REC-MOTORIZADA",
-            "INFANTERIA","INFANTERIA-FORTIFICADA","INFANTERIA-MOTORIZADA","INFANTERIA-ANFIBIA",
-            "INFANTERIA-MECANIZADA","ANTITANQUE","ANTITANQUE-BLINDADO","ANTITANQUE-MOTORIZADO",
-            "ARTILLERIA","ARTILLERIA-AUTOPROPULSADA","ARTILLERIA-ADQ-BLANCOS","OBSERVADOR",
-            "OBSERVADOR-ARTILLERIA","DEFENSA-AEREA","GUERRA-ELECTRONICA","COMANDO-Y-CONTROL",
-            "MORTERO","MORTERO-MOTORIZADO","MORTERO-ACORAZADO","INGENIEROS","COMUNICACIONES",
-            "INSTALACION-MEDICA","GRUPO-LOGISTICO/APOYO"
-        };
-
         String[] affix = {
             "_ALIADO","_HOSTIL","_NEUTRO","_DESCONOCIDO",
             "_ASUMIDO-ENEMIGO","_PENDIENTE","_ASUMIDO-AMIGO"
         };
-
-        for (String ent : hqtfSet) {
-            for (String af : affix) {
-                String key = ent + af;
-                String sidc = mapa.get(key);
-                if (sidc != null) {
-                    addHQTF(key, sidc);
-                }
-            }
-        }
 
         // ECHELON  
         String[] unidadesConEchelon = {

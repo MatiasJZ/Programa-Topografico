@@ -1,21 +1,29 @@
 package interfaz;
+
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+import comunicaciones.ComunicacionIP;
+
 public class Mensajeria extends JPanel {
 
-	private static final long serialVersionUID = 6622634837519332429L;
+    private static final long serialVersionUID = 6622634837519332429L;
 
-	public Mensajeria() {
+    private ComunicacionIP com;
+    private JTextArea txtMensaje;
+    private JTextArea txtLogChat;
+
+    public Mensajeria() {
+
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 
-        // panel formularios
+        // PANEL LATERAL IZQUIERDO (FORMULARIOS) — SE MANTIENE
         JPanel panelFormularios = new JPanel(new GridLayout(7, 1, 5, 5));
         panelFormularios.setBackground(Color.BLACK);
         panelFormularios.setBorder(crearBordeTitulo("FORMULARIOS"));
-        panelFormularios.setPreferredSize(new Dimension(180, 0)); 
+        panelFormularios.setPreferredSize(new Dimension(180, 0));
 
         String[] formularios = {"CHIMENTO", "GRANADA", "APOYO", "FIRECAP", "DISREP", "SHELLREP"};
 
@@ -25,69 +33,113 @@ public class Mensajeria extends JPanel {
             btn.setForeground(Color.WHITE);
             btn.setFocusPainted(false);
             btn.setFont(new Font("Arial", Font.BOLD, 14));
-            btn.setPreferredSize(new Dimension(160, 40)); 
-
+            btn.setPreferredSize(new Dimension(160, 40));
             btn.addActionListener(e -> abrirDialogo(nombre));
-
             panelFormularios.add(btn);
         }
 
-        // boton enviar
-        JButton btnEnviar = new JButton("ENVIAR");
-        btnEnviar.setBackground(new Color(242, 37, 37));
-        btnEnviar.setForeground(Color.BLACK);
-        btnEnviar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnEnviar.setPreferredSize(new Dimension(160, 40));
-        panelFormularios.add(btnEnviar);
+        JButton btnEnviarLateral = new JButton("ENVIAR");
+        btnEnviarLateral.setBackground(new Color(242, 37, 37));
+        btnEnviarLateral.setForeground(Color.BLACK);
+        btnEnviarLateral.setFont(new Font("Arial", Font.BOLD, 14));
+        btnEnviarLateral.setPreferredSize(new Dimension(160, 40));
+        // sin lógica por ahora
+        panelFormularios.add(btnEnviarLateral);
 
         add(panelFormularios, BorderLayout.WEST);
 
-        // panel tactical chat
-        JPanel panelChat = new JPanel(new BorderLayout());
-        panelChat.setBackground(Color.BLACK);
-        panelChat.setBorder(crearBordeTitulo("TACTICAL CHAT"));
+        // PANEL CENTRAL DIVIDIDO EN DOS
+        JPanel panelCentral = new JPanel(new GridLayout(2, 1));
+        panelCentral.setBackground(Color.BLACK);
+        add(panelCentral, BorderLayout.CENTER);
 
-        JPanel panelPara = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        panelPara.setBackground(Color.BLACK);
-        JLabel lblPara = new JLabel("PARA:");
-        lblPara.setForeground(Color.WHITE);
-        lblPara.setFont(new Font("Arial", Font.BOLD, 16));
+        // MITAD SUPERIOR — ESCRITURA
+        JPanel panelEscritura = new JPanel(new BorderLayout());
+        panelEscritura.setBorder(crearBordeTitulo("ESCRIBIR MENSAJE MANUAL"));
+        panelEscritura.setBackground(Color.BLACK);
 
-        JComboBox<String> comboPara = new JComboBox<>(new String[]{"CDF"});
-        comboPara.setPreferredSize(new Dimension(200, 28));
-
-        panelPara.add(lblPara);
-        panelPara.add(comboPara);
-        panelChat.add(panelPara, BorderLayout.NORTH);
-
-        // area de texto para mensajes 
-        JTextArea txtMensaje = new JTextArea();
+        txtMensaje = new JTextArea();
         txtMensaje.setLineWrap(true);
         txtMensaje.setWrapStyleWord(true);
-        txtMensaje.setBackground(new Color(143,140,140));
-        txtMensaje.setFont(new Font("Arial", Font.PLAIN, 30));
+        txtMensaje.setBackground(new Color(143, 140, 140));
+        txtMensaje.setFont(new Font("Arial", Font.PLAIN, 24));
 
-        JScrollPane scroll = new JScrollPane(txtMensaje);
-        panelChat.add(scroll, BorderLayout.CENTER);
+        JScrollPane scrollEscritura = new JScrollPane(txtMensaje);
 
-        add(panelChat, BorderLayout.CENTER);
+        JButton btnEnviarChat = new JButton("ENVIAR");
+        btnEnviarChat.setBackground(new Color(60, 130, 255));
+        btnEnviarChat.setForeground(Color.WHITE);
+        btnEnviarChat.setFont(new Font("Arial", Font.BOLD, 16));
+        btnEnviarChat.addActionListener(e -> enviarChat());
+
+        panelEscritura.add(scrollEscritura, BorderLayout.CENTER);
+        panelEscritura.add(btnEnviarChat, BorderLayout.EAST);
+
+        panelCentral.add(panelEscritura);
+
+        // MITAD INFERIOR — LOG MANUAL
+        JPanel panelLog = new JPanel(new BorderLayout());
+        panelLog.setBorder(crearBordeTitulo("LOG COMUNICACIONES MANUALES"));
+        panelLog.setBackground(Color.BLACK);
+
+        txtLogChat = new JTextArea();
+        txtLogChat.setEditable(false);
+        txtLogChat.setBackground(new Color(20, 20, 20));
+        txtLogChat.setForeground(Color.GREEN);
+        txtLogChat.setFont(new Font("Consolas", Font.PLAIN, 14));
+
+        JScrollPane scrollLog = new JScrollPane(txtLogChat);
+        panelLog.add(scrollLog, BorderLayout.CENTER);
+
+        panelCentral.add(panelLog);
     }
 
-    // metodo para abrir un JDialog de cada formulario
-    private void abrirDialogo(String nombreFormulario) {
-        JDialog dialog = new JDialog((Frame) null, nombreFormulario, true);
-        dialog.setSize(400, 300);
-        dialog.setLocationRelativeTo(this);
-        dialog.add(new JLabel("Formulario: " + nombreFormulario, SwingConstants.CENTER));
-        dialog.setVisible(true);
+    // ==========================================
+    // INTEGRACIÓN COMUNICACIÓN IP
+    // ==========================================
+    public void setComunicacion(ComunicacionIP c) {
+        this.com = c;
     }
 
-    // metodo para crear bordes con títulos grandes y blancos
+    private void enviarChat() {
+        if (com == null) {
+            agregarLog("[ERROR] Comunicacion IP no configurada.");
+            return;
+        }
+
+        String msg = txtMensaje.getText().trim();
+        if (msg.isEmpty()) return;
+
+        com.enviarATodos("CHAT|" + msg);
+        agregarLog("[TX] " + msg);
+        txtMensaje.setText("");
+    }
+
+    public void recibirChat(String msg) {
+        agregarLog("[RX] " + msg);
+    }
+
+    private void agregarLog(String texto) {
+        txtLogChat.append(texto + "\n");
+        txtLogChat.setCaretPosition(txtLogChat.getDocument().getLength());
+    }
+
+    // ==========================================
+    // AUXILIARES
+    // ==========================================
     private TitledBorder crearBordeTitulo(String titulo) {
         Font fuente = new Font("Arial", Font.BOLD, 18);
         TitledBorder borde = BorderFactory.createTitledBorder(titulo);
         borde.setTitleColor(Color.WHITE);
         borde.setTitleFont(fuente);
         return borde;
+    }
+
+    private void abrirDialogo(String nombreFormulario) {
+        JDialog dialog = new JDialog((Frame) null, nombreFormulario, true);
+        dialog.setSize(400, 300);
+        dialog.setLocationRelativeTo(this);
+        dialog.add(new JLabel("Formulario: " + nombreFormulario, SwingConstants.CENTER));
+        dialog.setVisible(true);
     }
 }

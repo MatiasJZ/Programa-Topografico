@@ -1,4 +1,5 @@
 package app;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -6,8 +7,8 @@ import java.awt.event.MouseEvent;
 
 public class ConsolaMensajes extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	private boolean abierta = false;
+    private static final long serialVersionUID = 1L;
+    private boolean abierta = false;
     private JPanel header;
     private JTextArea area;
     private JScrollPane scroll;
@@ -39,7 +40,7 @@ public class ConsolaMensajes extends JPanel {
 
         add(header, BorderLayout.NORTH);
 
-        // area de texto con scroll¿
+        // area de texto con scroll
         area = new JTextArea();
         area.setEditable(false);
         area.setBackground(new Color(15, 15, 15));
@@ -51,9 +52,6 @@ public class ConsolaMensajes extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    /**
-     * Alterna entre la consola abierta o cerrada.
-     */
     private void toggle() {
         abierta = !abierta;
 
@@ -75,12 +73,22 @@ public class ConsolaMensajes extends JPanel {
         Window win = SwingUtilities.getWindowAncestor(this);
         if (win != null) win.pack();
     }
-    
-    /**
-     * Agrega un mensaje a la consola.
-     */
+
     public void agregarMensaje(String mensaje) {
         area.append(mensaje + "\n");
         area.setCaretPosition(area.getDocument().getLength());
+    }
+
+    // Helpers
+    public void mostrarEstado(String estado) {
+        agregarMensaje("[ESTADO] " + estado);
+    }
+
+    public void mostrarTx(String msg) {
+        agregarMensaje("[TX] " + msg);
+    }
+
+    public void mostrarRx(String msg) {
+        agregarMensaje("[RX] " + msg);
     }
 }

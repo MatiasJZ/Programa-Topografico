@@ -11,7 +11,6 @@ public class Blanco {
     private String ultEntidad;
     private String ultAfiliacion;
     private String ultEchelon;
-    private String ultHQTF;
     
     public Blanco(String nombre, coordRectangulares c, String naturaleza, String fecha) {
         this.nombre = nombre;
@@ -36,10 +35,6 @@ public class Blanco {
     	return ultEchelon;
     }
     
-    public String getUltHQTF() {
-    	return ultHQTF;
-    }
-    
     public void setUltEntidad(String e) {
     	ultEntidad = e;
     }
@@ -50,10 +45,6 @@ public class Blanco {
     
     public void setUltEchelon(String e) {
     	ultEchelon = e;
-    }
-    
-    public void setUltHQTF(String e) {
-    	ultHQTF = e;
     }
 
     public String getNombre() { return nombre; }

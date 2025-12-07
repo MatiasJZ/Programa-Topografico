@@ -1,12 +1,13 @@
 package app;
+
 import java.awt.*;
 import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+import comunicaciones.ComunicacionIP;
 import dominio.Blanco;
 import dominio.PIF;
-import harris.GestorPuertoHarris;
 import interfaz.DatosBlanco;
 import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.CorreccionesPanel;
@@ -28,7 +29,8 @@ class PedidoDeFuego extends JPanel {
     private JList<PIF> listaHistorial;
     private ConsolaMensajes consolaMensajes;
 
-    private GestorPuertoHarris gestorPuerto;
+    // Nueva comunicación IP
+    private ComunicacionIP comunicacionIP;
 
     private JButton btnDatos;
     private JButton btnMetodo;
@@ -39,8 +41,8 @@ class PedidoDeFuego extends JPanel {
 
     private String idOAA;
 
-    public void setGestorPuerto(GestorPuertoHarris gp) {
-        this.gestorPuerto = gp;
+    public void setComunicacionIP(ComunicacionIP com) {
+        this.comunicacionIP = com;
     }
 
     public PedidoDeFuego(LinkedList<Blanco> listaDeBlancos, String idOAA) {
@@ -134,11 +136,12 @@ class PedidoDeFuego extends JPanel {
         listaHistorial.setForeground(Color.WHITE);
 
         listaHistorial.setCellRenderer(new DefaultListCellRenderer() {
- 
-			private static final long serialVersionUID = -6684167244292177832L;
 
-			@Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,boolean isSelected, boolean cellHasFocus) {
+            private static final long serialVersionUID = -6684167244292177832L;
+
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 PIF pif = (PIF) value;
@@ -147,19 +150,24 @@ class PedidoDeFuego extends JPanel {
                 String naturaleza = b != null ? b.getNaturaleza().toUpperCase() : "";
                 String fecha = pif.getFechaHora().toString().replace('T', ' ');
 
-                String texto = String.format("<html>"+ "<div style='margin:2px 0; line-height:130%%;'>"+ "<span style='font-size:12px; color:white;'>%s</span><br>"
-                  + "<span style='font-size:11px;'>%s</span>"+ "</div></html>",fecha,naturaleza);
+                String texto = String.format(
+                        "<html><div style='margin:2px 0; line-height:130%%;'>"
+                                + "<span style='font-size:12px; color:white;'>%s</span><br>"
+                                + "<span style='font-size:11px;'>%s</span>"
+                                + "</div></html>",
+                        fecha, naturaleza
+                );
                 label.setText(texto);
 
                 Color colorTexto;
 
-                if (naturaleza.contains("HOSTIL")) colorTexto = new Color(255,128,128);
-                else if (naturaleza.contains("ASUMIDO ENEMIGO")) colorTexto = new Color(255,128,128);
-                else if (naturaleza.contains("ALIADO")) colorTexto = new Color(128,224,255);
-                else if (naturaleza.contains("ASUMIDO AMIGO")) colorTexto = new Color(128,224,255);
-                else if (naturaleza.contains("NEUTRO")) colorTexto = new Color(170,255,170);
-                else if (naturaleza.contains("DESCONOCIDO")) colorTexto = new Color(255,255,128);
-                else if (naturaleza.contains("PENDIENTE")) colorTexto = new Color(255,255,128);
+                if (naturaleza.contains("HOSTIL")) colorTexto = new Color(255, 128, 128);
+                else if (naturaleza.contains("ASUMIDO ENEMIGO")) colorTexto = new Color(255, 128, 128);
+                else if (naturaleza.contains("ALIADO")) colorTexto = new Color(128, 224, 255);
+                else if (naturaleza.contains("ASUMIDO AMIGO")) colorTexto = new Color(128, 224, 255);
+                else if (naturaleza.contains("NEUTRO")) colorTexto = new Color(170, 255, 170);
+                else if (naturaleza.contains("DESCONOCIDO")) colorTexto = new Color(255, 255, 128);
+                else if (naturaleza.contains("PENDIENTE")) colorTexto = new Color(255, 255, 128);
                 else colorTexto = Color.LIGHT_GRAY;
 
                 label.setForeground(colorTexto);
@@ -167,14 +175,14 @@ class PedidoDeFuego extends JPanel {
                 label.setOpaque(true);
                 label.setHorizontalAlignment(SwingConstants.LEFT);
                 label.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(80, 80, 80)),
-                    BorderFactory.createEmptyBorder(4, 6, 4, 6)
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(80, 80, 80)),
+                        BorderFactory.createEmptyBorder(4, 6, 4, 6)
                 ));
 
                 return label;
             }
         });
-        
+
         JScrollPane scroll = new JScrollPane(listaHistorial);
         panel.add(scroll, BorderLayout.CENTER);
 
@@ -207,7 +215,8 @@ class PedidoDeFuego extends JPanel {
             cardLayout.show(pifCardPanel, "metodoTiro");
         });
 
-        metodoYTiroPanel.setEnviarListener(() -> registrarNuevoPIF());
+        metodoYTiroPanel.addPropertyChangeListener("ENVIAR_PIF",
+                evt -> registrarNuevoPIF());
     }
 
     private void inicializarAccionesCorrecciones() {
@@ -227,10 +236,11 @@ class PedidoDeFuego extends JPanel {
             String msg = "FIN_MISION|BLANCO=" +
                     datosDeBlancoPanel.getBlancoActual().getNombre();
 
-            if (gestorPuerto != null && gestorPuerto.estaAbierto())
-                gestorPuerto.enviar(msg);
+            if (comunicacionIP != null) {
+                comunicacionIP.enviarATodos(msg);
+            }
 
-            consolaMensajes.agregarMensaje("[TX] " + msg);
+            consolaMensajes.mostrarTx(msg);
         });
 
         corr.getBtnEnviar().addActionListener(e -> enviarCorreccion());
@@ -256,12 +266,14 @@ class PedidoDeFuego extends JPanel {
                 + "|ALC=" + alc + ":" + vAlc
                 + "|ALT=" + alt + ":" + vAlt;
 
-        if (gestorPuerto != null && gestorPuerto.estaAbierto())
-            gestorPuerto.enviar(msg);
+        if (comunicacionIP != null) {
+            comunicacionIP.enviarATodos(msg);
+        }
 
-        consolaMensajes.agregarMensaje("[TX] " + msg);
+        consolaMensajes.mostrarTx(msg);
 
-        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
+        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir
+                + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
     }
 
     private void volverASituacionTactica() {
@@ -278,7 +290,7 @@ class PedidoDeFuego extends JPanel {
 
         Blanco b = datosDeBlancoPanel.getBlancoActual();
         if (b == null) {
-            JOptionPane.showMessageDialog(this,"Seleccione un blanco.","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Seleccione un blanco.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -306,8 +318,7 @@ class PedidoDeFuego extends JPanel {
 
         modeloHistorial.addElement(nuevo);
 
-        if (gestorPuerto != null && gestorPuerto.estaAbierto()) {
-
+        if (comunicacionIP != null) {
             String msg = "PIF"
                     + "|BLANCO=" + b.getNombre()
                     + "|NAT=" + b.getNaturaleza()
@@ -318,11 +329,11 @@ class PedidoDeFuego extends JPanel {
                     + "|TOT=" + nuevo.getTotSegundos()
                     + "|SECCION=" + nuevo.getSeccion();
 
-            gestorPuerto.enviar(msg);
-            consolaMensajes.agregarMensaje("[TX] " + msg);
+            comunicacionIP.enviarATodos(msg);
+            consolaMensajes.mostrarTx(msg);
         }
 
-        JOptionPane.showMessageDialog(this,"PIF registrado correctamente.","Confirmado", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void mostrarPIFSeleccionado() {
@@ -334,7 +345,7 @@ class PedidoDeFuego extends JPanel {
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setBackground(Color.BLACK);
-        contenido.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
+        contenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         Font fTitulo = new Font("Arial", Font.BOLD, 18);
         Font fTexto = new Font("Consolas", Font.PLAIN, 15);
@@ -343,11 +354,11 @@ class PedidoDeFuego extends JPanel {
         panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
         panelBlanco.setBackground(Color.BLACK);
         panelBlanco.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY),
-                "DATOS DEL BLANCO",
-                0, 0, fTitulo, Color.WHITE
-            )
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "DATOS DEL BLANCO",
+                        0, 0, fTitulo, Color.WHITE
+                )
         );
 
         panelBlanco.add(crearLinea("Nombre: ", b.getNombre(), fTexto));
@@ -361,16 +372,16 @@ class PedidoDeFuego extends JPanel {
 
         contenido.add(panelBlanco);
         contenido.add(Box.createVerticalStrut(15));
-    
+
         JPanel panelMetodo = new JPanel();
         panelMetodo.setLayout(new BoxLayout(panelMetodo, BoxLayout.Y_AXIS));
         panelMetodo.setBackground(Color.BLACK);
         panelMetodo.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY),
-                "MÉTODO DE ATAQUE / TIRO Y CONTROL",
-                0, 0, fTitulo, Color.WHITE
-            )
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "MÉTODO DE ATAQUE / TIRO Y CONTROL",
+                        0, 0, fTitulo, Color.WHITE
+                )
         );
 
         panelMetodo.add(crearLinea("Carga: ", p.getCarga(), fTexto));
@@ -414,11 +425,11 @@ class PedidoDeFuego extends JPanel {
     private void crearBotonesDeNavegacion() {
 
         JButton prev = new JButton("<");
-        prev.setBackground(new Color(28,122,33));
+        prev.setBackground(new Color(28, 122, 33));
         prev.setForeground(Color.WHITE);
 
         JButton next = new JButton(">");
-        next.setBackground(new Color(28,122,33));
+        next.setBackground(new Color(28, 122, 33));
         next.setForeground(Color.WHITE);
 
         prev.addActionListener(e -> moverSeguro(-1));
@@ -431,7 +442,6 @@ class PedidoDeFuego extends JPanel {
         navegacion.add(pifCardPanel, BorderLayout.CENTER);
         navegacion.add(next, BorderLayout.EAST);
 
-        // AGREGARLO SOLO UNA VEZ
         pifPanel.add(navegacion, BorderLayout.CENTER);
     }
 

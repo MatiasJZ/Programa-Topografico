@@ -50,6 +50,10 @@ public class ProcesadorMensajes {
         consola.agregarMensaje("[RADIO] " + contenido);
     }
     
+    public void procesarCrudo(String msg) {
+        consola.agregarMensaje("[RX RAW] " + msg);
+    }
+    
     private void procesarBlanco(String msg) {
 
         String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");

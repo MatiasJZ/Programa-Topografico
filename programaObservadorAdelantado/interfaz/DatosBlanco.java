@@ -38,7 +38,7 @@ public class DatosBlanco extends JPanel {
         
         int fila = 0;
 
-        agregarLabel("Nombre:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("Designacion:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
         txtNombre = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtNombre, fila++, 1, gbc);
 

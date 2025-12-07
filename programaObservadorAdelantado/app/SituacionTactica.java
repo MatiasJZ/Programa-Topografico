@@ -35,151 +35,172 @@ public class SituacionTactica extends JPanel {
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
     protected PedidoDeFuego panelPIF;
     private SoundManager sonidos;
+    private ObservadorAdelantado observador;
 
-    public SituacionTactica(LinkedList<Blanco> listaDeBlancos, PedidoDeFuego pif) {
-        setSize(900, 600);
-        setLayout(new BorderLayout());
-        setBackground(Color.BLACK);
+    public SituacionTactica(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ObservadorAdelantado obs) { 
 
-        this.listaDeBlancos = listaDeBlancos;
-        modeloListaBlancos = new DefaultListModel<>();
-        listaUIBlancos = new JList<>(modeloListaBlancos);
-        listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20));
-        listaUIBlancos.setBackground(Color.BLACK);
-        
-        panelPIF = pif;
-        sonidos = new SoundManager();
-
-        listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
+		this.observador = obs;
+		
+		setSize(900, 600);
+		setLayout(new BorderLayout());
+		setBackground(Color.BLACK);
+		
+		this.listaDeBlancos = listaDeBlancos;
+		modeloListaBlancos = new DefaultListModel<>();
+		listaUIBlancos = new JList<>(modeloListaBlancos);
+		listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20));
+		listaUIBlancos.setBackground(Color.BLACK);
+		
+		panelPIF = pif;
+		sonidos = new SoundManager();
+		
+		listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
 		private static final long serialVersionUID = 1L;
-			@Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-                label.setHorizontalAlignment(SwingConstants.CENTER);
-                if (value instanceof Blanco) {
-                    Blanco b = (Blanco) value;
-                    label.setText(b.getNombre());
-                    label.setForeground(Color.WHITE);
-                }
-                return label;
-            }
-        });
-
-        JScrollPane scrollLista = new JScrollPane(listaUIBlancos);
-        scrollLista.setPreferredSize(new Dimension(250, 0));
-        scrollLista.getViewport().setBackground(Color.BLACK);
-
-        JPanel panelIzquierdo = new JPanel(new BorderLayout());
-        panelIzquierdo.setBackground(Color.BLACK);
-        panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
-
-        listaDePoligonales = new LinkedList<>();
-        modeloListaPoligonales = new DefaultListModel<>();
-        listaUIPoligonales = new JList<>(modeloListaPoligonales);
-        listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20));
-        listaUIPoligonales.setBackground(Color.BLACK);
-
-        listaUIPoligonales.setCellRenderer(new DefaultListCellRenderer() {
-
-			private static final long serialVersionUID = -3139532018963310447L;
-
-			@Override
-            public Component getListCellRendererComponent(JList<?> list, Object value,
-                    int index, boolean isSelected, boolean cellHasFocus) {
-
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-                if (value instanceof Punto)
-                    label.setText(((Punto)value).getNombre());
-
-                else if (value instanceof Linea)
-                    label.setText(((Linea)value).getName() + " (" +
-                                   String.format("%.3f m", ((Linea)value).getDistancia()) + ")");
-
-                label.setForeground(Color.WHITE);
-                label.setHorizontalAlignment(SwingConstants.CENTER);
-                return label;
-            }
-        });
-
-        JLabel lblBlancos = new JLabel("BLANCOS", SwingConstants.CENTER);
-        lblBlancos.setForeground(Color.GRAY);
-        lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
-
-        JLabel lblPuntos = new JLabel("POLIGONALES", SwingConstants.CENTER);
-        lblPuntos.setForeground(Color.GRAY);
-        lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
-
-        JPanel panelListas = new JPanel(new GridBagLayout());
-        panelListas.setBackground(Color.BLACK);
-        GridBagConstraints gbcList = new GridBagConstraints();
-        gbcList.fill = GridBagConstraints.BOTH;
-        gbcList.insets = new Insets(2, 0, 2, 0);
-        
-        gbcList.gridx = 0;
-        gbcList.gridy = 0;
-        gbcList.weightx = 1;
-        gbcList.weighty = 0;   
-        panelListas.add(lblBlancos, gbcList);
-
-        gbcList.gridy = 1;
-        gbcList.weighty = 0.66;
-        panelListas.add(new JScrollPane(listaUIBlancos), gbcList);
-
-        gbcList.gridy = 2;
-        gbcList.weighty = 0;
-        panelListas.add(lblPuntos, gbcList);
-
-        gbcList.gridy = 3;
-        gbcList.weighty = 0.33; 
-        panelListas.add(new JScrollPane(listaUIPoligonales), gbcList);
-
-        // uso este panel de listas dentro del panel izquierdo existente
-        panelIzquierdo.add(panelListas, BorderLayout.CENTER);
-        
-        JPanel panelBotones = new JPanel(new GridBagLayout());
-        panelBotones.setBackground(Color.BLACK);
-
-        JButton btnAgregar = new JButton("AGREGAR");
-        JButton btnEliminar = new JButton("ELIMINAR");
-        JButton btnActualizar = new JButton("REFRESCAR");
-        JButton btnPIF = new JButton("GENERAR PIF");
-
-        btnAgregar.setBackground(new Color(0,120,255)); btnAgregar.setForeground(Color.WHITE);
-        btnEliminar.setBackground(new Color(212,61,30)); btnEliminar.setForeground(Color.WHITE);
-        btnActualizar.setBackground(new Color(237,151,24)); btnActualizar.setForeground(Color.WHITE);
-        btnPIF.setBackground(new Color(141,214,47)); btnPIF.setForeground(Color.WHITE);
-
-        Dimension compacto = new Dimension(110, 32);
-        Font fuente = new Font("Arial", Font.BOLD, 12);
-        Insets padding = new Insets(4, 10, 4, 10);
-
-        for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
-            b.setFont(fuente);
-            b.setMargin(padding);
-            b.setPreferredSize(compacto);
-            b.setFocusPainted(false);
-        }
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
-        gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
-        gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc);
-        gbc.gridx = 1; panelBotones.add(btnPIF, gbc);
-        panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
-
-        // mapa
-        pedirArchivoAMostrar();
-        panelMapa = new PanelMapa(rutaArchivoMapa);
-
-        panelPIF.setMapaObservacion(panelMapa);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
-        splitPane.setDividerLocation(250);
-        splitPane.setContinuousLayout(true);
-        add(splitPane, BorderLayout.CENTER);
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+		                                          boolean isSelected, boolean cellHasFocus) {
+		
+		JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index,
+		                                                           isSelected, cellHasFocus);
+		label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		if (value instanceof Blanco b) {
+		    label.setText(b.getNombre());
+		    label.setForeground(Color.WHITE);
+		}
+		
+		return label;
+		}
+		});
+		
+		JScrollPane scrollLista = new JScrollPane(listaUIBlancos);
+		scrollLista.setPreferredSize(new Dimension(250, 0));
+		scrollLista.getViewport().setBackground(Color.BLACK);
+		
+		JPanel panelIzquierdo = new JPanel(new BorderLayout());
+		panelIzquierdo.setBackground(Color.BLACK);
+		panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
+		
+		listaDePoligonales = new LinkedList<>();
+		modeloListaPoligonales = new DefaultListModel<>();
+		listaUIPoligonales = new JList<>(modeloListaPoligonales);
+		listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20));
+		listaUIPoligonales.setBackground(Color.BLACK);
+		
+		listaUIPoligonales.setCellRenderer(new DefaultListCellRenderer() {
+		private static final long serialVersionUID = -3139532018963310447L;
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value,
+		                                          int index, boolean isSelected, boolean cellHasFocus) {
+		
+		JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index,
+		                                                           isSelected, cellHasFocus);
+		
+		if (value instanceof Punto pt)
+		    label.setText(pt.getNombre());
+		else if (value instanceof Linea ln)
+		    label.setText(ln.getName() + " (" + String.format("%.3f m", ln.getDistancia()) + ")");
+		
+		label.setForeground(Color.WHITE);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		return label;
+		}
+		});
+		
+		JLabel lblBlancos = new JLabel("BLANCOS", SwingConstants.CENTER);
+		lblBlancos.setForeground(Color.GRAY);
+		lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
+		
+		JLabel lblPuntos = new JLabel("POLIGONALES", SwingConstants.CENTER);
+		lblPuntos.setForeground(Color.GRAY);
+		lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
+		
+		JPanel panelListas = new JPanel(new GridBagLayout());
+		panelListas.setBackground(Color.BLACK);
+		
+		GridBagConstraints gbcList = new GridBagConstraints();
+		gbcList.fill = GridBagConstraints.BOTH;
+		gbcList.insets = new Insets(2, 0, 2, 0);
+		
+		gbcList.gridx = 0;
+		gbcList.gridy = 0;
+		gbcList.weightx = 1;
+		gbcList.weighty = 0;
+		panelListas.add(lblBlancos, gbcList);
+		
+		gbcList.gridy = 1;
+		gbcList.weighty = 0.66;
+		panelListas.add(new JScrollPane(listaUIBlancos), gbcList);
+		
+		gbcList.gridy = 2;
+		gbcList.weighty = 0;
+		panelListas.add(lblPuntos, gbcList);
+		
+		gbcList.gridy = 3;
+		gbcList.weighty = 0.33;
+		panelListas.add(new JScrollPane(listaUIPoligonales), gbcList);
+		
+		panelIzquierdo.add(panelListas, BorderLayout.CENTER);
+		
+		// ---------------------------
+		// BOTONERA IZQUIERDA
+		// ---------------------------
+		JPanel panelBotones = new JPanel(new GridBagLayout());
+		panelBotones.setBackground(Color.BLACK);
+		
+		JButton btnAgregar = new JButton("AGREGAR");
+		JButton btnEliminar = new JButton("ELIMINAR");
+		JButton btnActualizar = new JButton("REFRESCAR");
+		JButton btnPIF = new JButton("GENERAR PIF");
+		
+		JButton btnConfigIP = new JButton("CONFIGURAR IP");  // <-- NUEVO BOTÓN
+		btnConfigIP.setBackground(new Color(60, 60, 120));
+		btnConfigIP.setForeground(Color.WHITE);
+		btnConfigIP.setFont(new Font("Arial", Font.BOLD, 12));
+		btnConfigIP.setPreferredSize(new Dimension(110, 32));
+		btnConfigIP.setFocusPainted(false);
+		
+		// Acción: abrir el diálogo
+		btnConfigIP.addActionListener(e -> {
+		DialogoConfigRed dlg =
+		new DialogoConfigRed(SwingUtilities.getWindowAncestor(this),
+		                     observador.getComunicacionIP());
+		dlg.setVisible(true);
+		});
+		
+		Dimension compacto = new Dimension(110, 32);
+		Font fuente = new Font("Arial", Font.BOLD, 12);
+		Insets padding = new Insets(4, 10, 4, 10);
+		
+		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
+		b.setFont(fuente);
+		b.setMargin(padding);
+		b.setPreferredSize(compacto);
+		b.setFocusPainted(false);
+		}
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(5, 5, 5, 5);
+		
+		gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
+		gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
+		gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc);
+		gbc.gridx = 1; panelBotones.add(btnPIF, gbc);
+		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; panelBotones.add(btnConfigIP, gbc); // <-- NUEVO
+		
+		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
+		
+		// MAPA
+		pedirArchivoAMostrar();
+		panelMapa = new PanelMapa(rutaArchivoMapa);
+		panelPIF.setMapaObservacion(panelMapa);
+		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
+		splitPane.setDividerLocation(250);
+		splitPane.setContinuousLayout(true);
+		add(splitPane, BorderLayout.CENTER);
 
         // click en mapa: Blanco o Punto
         panelMapa.getMapPane().setCursorTool(new CursorTool() {
@@ -557,15 +578,13 @@ public class SituacionTactica extends JPanel {
 
         String[] entidades = {"INFANTERIA", "INFANTERIA-MOTORIZADA", "INFANTERIA-ANFIBIA", "INFANTERIA-MECANIZADA", "INFANTERIA-FORTIFICADA", "INFANTERIA-RECONOCIMIENTO", "INFANTERIA-REC-MOTORIZADA", "ANTITANQUE", "ANTITANQUE-BLINDADO", "ANTITANQUE-MOTORIZADO", "ARTILLERIA", "ARTILLERIA-AUTOPROPULSADA", "ARTILLERIA-ADQ-BLANCOS", "DEFENSA-AEREA", "MORTERO", "MORTERO-MOTORIZADO", "MORTERO-ACORAZADO", "INGENIEROS", "COMUNICACIONES", "GUERRA-ELECTRONICA", "COMANDO-Y-CONTROL", "GRUPO-LOGISTICO/APOYO", "OBSERVADOR", "OBSERVADOR-ARTILLERIA", "DRON-TERRESTRE", "INSTALACION-MEDICA"};
         String[] afiliaciones = {"ALIADO", "HOSTIL", "NEUTRO", "DESCONOCIDO", "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"};
-        String[] tipoHQTF = {"Por Defecto", "Cuartel General (HQ)", "Fuerza Operativa (TF)"};
         String[] escalafones = {"Por Defecto", "PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
-        JComboBox<String> cbHQTF = new JComboBox<>(tipoHQTF);
         JComboBox<String> cbEchelon = new JComboBox<>(escalafones);
 
-        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbHQTF, cbEchelon}) {
+        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbEchelon}) {
             cb.setPreferredSize(new Dimension(220, 26));
             cb.setBackground(new Color(70, 70, 70));
             cb.setForeground(Color.WHITE);
@@ -587,17 +606,14 @@ public class SituacionTactica extends JPanel {
         g2.insets = new Insets(2, 4, 2, 4);
         g2.anchor = GridBagConstraints.WEST;
 
-        JLabel lblEnt = new JLabel("Entidad:"); lblEnt.setForeground(Color.WHITE);
+        JLabel lblEnt = new JLabel("Tipo:"); lblEnt.setForeground(Color.WHITE);
         JLabel lblAfi = new JLabel("Afiliación:"); lblAfi.setForeground(Color.WHITE);
-        JLabel lblHQ = new JLabel("HQ / TF:"); lblHQ.setForeground(Color.WHITE);
-        JLabel lblEsc = new JLabel("Escalafón:"); lblEsc.setForeground(Color.WHITE);
+        JLabel lblEsc = new JLabel("Magnitud:"); lblEsc.setForeground(Color.WHITE);
 
         g2.gridx = 0; g2.gridy = 0; panelNaturaleza.add(lblEnt, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEntidad, g2);
         g2.gridx = 0; g2.gridy++; panelNaturaleza.add(lblAfi, g2);
         g2.gridx = 1; panelNaturaleza.add(cbAfiliacion, g2);
-        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(lblHQ, g2);
-        g2.gridx = 1; panelNaturaleza.add(cbHQTF, g2);
         g2.gridx = 0; g2.gridy++; panelNaturaleza.add(lblEsc, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEchelon, g2);
 
@@ -626,9 +642,9 @@ public class SituacionTactica extends JPanel {
         gbc.gridx = 1; panel.add(panelNaturaleza, gbc);
         gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Fecha de creación:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtFecha, gbc);
-        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Coordenada X:") {{ setForeground(Color.WHITE); }}, gbc);
+        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("DERECHAS:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtX, gbc);
-        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Coordenada Y:") {{ setForeground(Color.WHITE); }}, gbc);
+        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("ARRIBAS:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtY, gbc);
         gbc.gridx = 0; gbc.gridy++; panel.add(lblSituacion, gbc);
         gbc.gridx = 1; panel.add(cbSituacion, gbc);
@@ -654,13 +670,8 @@ public class SituacionTactica extends JPanel {
             
             String entidad = (String) cbEntidad.getSelectedItem();
             String afiliacion = (String) cbAfiliacion.getSelectedItem();
-            String hqtf = (String) cbHQTF.getSelectedItem();
             String echelon = (String) cbEchelon.getSelectedItem();
             String naturaleza = entidad + "_" + afiliacion;
-            
-            if (hqtf.contains("HQ")) naturaleza += "_HQ";
-            
-            else if (hqtf.contains("TF")) naturaleza += "_TF";
         
             if (!echelon.equals("Por Defecto")) naturaleza += "_" + echelon.toUpperCase();
 
@@ -668,7 +679,6 @@ public class SituacionTactica extends JPanel {
             Blanco nuevo = new Blanco(nombre, coord, naturaleza, txtFecha.getText());
             
             nuevo.setUltAfiliacion(afiliacion);
-            nuevo.setUltHQTF(hqtf);
             nuevo.setUltEchelon(echelon);
             nuevo.setUltEntidad(entidad);
             
@@ -713,8 +723,8 @@ public class SituacionTactica extends JPanel {
         JTextField txtNombre = new JTextField(); addPlaceholder(txtNombre, "Nombre del Punto");
         txtNombre.setBackground(new Color(70,70,70)); txtNombre.setForeground(Color.WHITE);
 
-        JLabel lblX = new JLabel("X:"); lblX.setForeground(Color.WHITE);
-        JLabel lblY = new JLabel("Y:"); lblY.setForeground(Color.WHITE);
+        JLabel lblX = new JLabel("DERECHAS:"); lblX.setForeground(Color.WHITE);
+        JLabel lblY = new JLabel("ARRIBAS:"); lblY.setForeground(Color.WHITE);
         JTextField txtX = new JTextField(String.valueOf(coordInicial.getX()));
         JTextField txtY = new JTextField(String.valueOf(coordInicial.getY()));
         txtX.setEditable(false); txtY.setEditable(false);
@@ -796,7 +806,7 @@ public class SituacionTactica extends JPanel {
         
         JLabel lblDir = new JLabel("Dirección (milésimos):");
         JLabel lblDist = new JLabel("Distancia (m):");
-        JLabel lblAng = new JLabel("Ángulo vertical (milésimos):");
+        JLabel lblAng = new JLabel("Cota (milésimos):");
         for (JLabel l : new JLabel[]{lblDir, lblDist, lblAng}) l.setForeground(Color.WHITE);
         JTextField txtDir = new JTextField();
         JTextField txtDist = new JTextField();
@@ -809,14 +819,12 @@ public class SituacionTactica extends JPanel {
 
         String[] entidades = {"INFANTERIA", "INFANTERIA-MOTORIZADA", "INFANTERIA-ANFIBIA", "INFANTERIA-MECANIZADA", "INFANTERIA-FORTIFICADA", "INFANTERIA-RECONOCIMIENTO", "INFANTERIA-REC-MOTORIZADA", "ANTITANQUE", "ANTITANQUE-BLINDADO", "ANTITANQUE-MOTORIZADO", "ARTILLERIA", "ARTILLERIA-AUTOPROPULSADA", "ARTILLERIA-ADQ-BLANCOS", "DEFENSA-AEREA", "MORTERO", "MORTERO-MOTORIZADO", "MORTERO-ACORAZADO", "INGENIEROS", "COMUNICACIONES", "GUERRA-ELECTRONICA", "COMANDO-Y-CONTROL", "GRUPO-LOGISTICO/APOYO", "OBSERVADOR", "OBSERVADOR-ARTILLERIA", "DRON-TERRESTRE", "INSTALACION-MEDICA"};
         String[] afiliaciones = {"ALIADO", "HOSTIL", "NEUTRO", "DESCONOCIDO", "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"};
-        String[] tipoHQTF = {"Por Defecto", "Cuartel General (HQ)", "Fuerza Operativa (TF)"};
         String[] escalafones = {"Por Defecto", "PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
-        JComboBox<String> cbHQTF = new JComboBox<>(tipoHQTF);
         JComboBox<String> cbEchelon = new JComboBox<>(escalafones);
-        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbHQTF, cbEchelon}) {
+        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbEchelon}) {
             cb.setPreferredSize(new Dimension(220, 26));
             cb.setBackground(new Color(70, 70, 70));
             cb.setForeground(Color.WHITE);
@@ -827,13 +835,11 @@ public class SituacionTactica extends JPanel {
         GridBagConstraints g2 = new GridBagConstraints();
         g2.insets = new Insets(2, 4, 2, 4);
         g2.anchor = GridBagConstraints.WEST;
-        g2.gridx = 0; g2.gridy = 0; panelNaturaleza.add(new JLabel("Entidad:") {{ setForeground(Color.WHITE); }}, g2);
+        g2.gridx = 0; g2.gridy = 0; panelNaturaleza.add(new JLabel("Tipo:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEntidad, g2);
         g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Afiliación:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbAfiliacion, g2);
-        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("HQ / TF:") {{ setForeground(Color.WHITE); }}, g2);
-        g2.gridx = 1; panelNaturaleza.add(cbHQTF, g2);
-        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Escalafón:") {{ setForeground(Color.WHITE); }}, g2);
+        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Magnitud:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEchelon, g2);
         
         JLabel lblSituacion = new JLabel("Situación de movimiento:");
@@ -891,11 +897,9 @@ public class SituacionTactica extends JPanel {
                 String nombre = txtNombre.getText().trim();
                 String entidad = (String) cbEntidad.getSelectedItem();
                 String afiliacion = (String) cbAfiliacion.getSelectedItem();
-                String hqtf = (String) cbHQTF.getSelectedItem();
                 String echelon = (String) cbEchelon.getSelectedItem();
                 String naturaleza = entidad + "_" + afiliacion;
-                if (hqtf.contains("HQ")) naturaleza += "_HQ";
-                else if (hqtf.contains("TF")) naturaleza += "_TF";
+               
                 if (!echelon.equals("Por Defecto")) naturaleza += "_" + echelon.toUpperCase();
 
                 Blanco nuevo = new Blanco(nombre, nuevas, naturaleza, LocalDateTime.now().toString());
@@ -904,7 +908,6 @@ public class SituacionTactica extends JPanel {
                 nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
                 nuevo.setUltEntidad(entidad);
                 nuevo.setUltAfiliacion(afiliacion);
-                nuevo.setUltHQTF(hqtf);
                 nuevo.setUltEchelon(echelon);
 
                 String info = txtInfo.getText().trim();
@@ -1087,7 +1090,6 @@ public class SituacionTactica extends JPanel {
         
         String[] entidades = {"INFANTERIA", "INFANTERIA-MOTORIZADA", "INFANTERIA-ANFIBIA", "INFANTERIA-MECANIZADA", "INFANTERIA-FORTIFICADA", "INFANTERIA-RECONOCIMIENTO", "INFANTERIA-REC-MOTORIZADA", "ANTITANQUE", "ANTITANQUE-BLINDADO", "ANTITANQUE-MOTORIZADO", "ARTILLERIA", "ARTILLERIA-AUTOPROPULSADA", "ARTILLERIA-ADQ-BLANCOS", "DEFENSA-AEREA", "MORTERO", "MORTERO-MOTORIZADO", "MORTERO-ACORAZADO", "INGENIEROS", "COMUNICACIONES", "GUERRA-ELECTRONICA", "COMANDO-Y-CONTROL", "GRUPO-LOGISTICO/APOYO", "OBSERVADOR", "OBSERVADOR-ARTILLERIA", "DRON-TERRESTRE", "INSTALACION-MEDICA"};
         String[] afiliaciones = {"ALIADO", "HOSTIL", "NEUTRO", "DESCONOCIDO", "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"};
-        String[] tipoHQTF = {"Por Defecto", "Cuartel General (HQ)", "Fuerza Operativa (TF)"};
         String[] escalafones = {"Por Defecto", "PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
@@ -1096,13 +1098,10 @@ public class SituacionTactica extends JPanel {
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
         cbAfiliacion.setSelectedItem(b.getUltAfiliacion());
         
-        JComboBox<String> cbHQTF = new JComboBox<>(tipoHQTF);
-        cbHQTF.setSelectedItem(b.getUltHQTF());
-        
         JComboBox<String> cbEchelon = new JComboBox<>(escalafones);
         cbEchelon.setSelectedItem(b.getUltEchelon());
         
-        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbHQTF, cbEchelon}) {
+        for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbEchelon}) {
             cb.setPreferredSize(new Dimension(220, 26));
             cb.setBackground(new Color(70, 70, 70));
             cb.setForeground(Color.WHITE);
@@ -1128,13 +1127,11 @@ public class SituacionTactica extends JPanel {
         g2.insets = new Insets(2, 4, 2, 4);
         g2.anchor = GridBagConstraints.WEST;
         
-        g2.gridx = 0; g2.gridy = 0; panelNaturaleza.add(new JLabel("Entidad:") {{ setForeground(Color.WHITE); }}, g2);
+        g2.gridx = 0; g2.gridy = 0; panelNaturaleza.add(new JLabel("Tipo:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEntidad, g2);
         g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Afiliación:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbAfiliacion, g2);
-        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("HQ / TF:") {{ setForeground(Color.WHITE); }}, g2);
-        g2.gridx = 1; panelNaturaleza.add(cbHQTF, g2);
-        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Escalafón:") {{ setForeground(Color.WHITE); }}, g2);
+        g2.gridx = 0; g2.gridy++; panelNaturaleza.add(new JLabel("Magnitud:") {{ setForeground(Color.WHITE); }}, g2);
         g2.gridx = 1; panelNaturaleza.add(cbEchelon, g2);
         
         JLabel lblSituacion = new JLabel("Situación de movimiento:");
@@ -1159,9 +1156,9 @@ public class SituacionTactica extends JPanel {
         gbc.gridx = 1; panel.add(panelNombre, gbc);
         gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Naturaleza:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(panelNaturaleza, gbc);
-        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Coordenada X:") {{ setForeground(Color.WHITE); }}, gbc);
+        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("DERECHAS:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtX, gbc);
-        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Coordenada Y:") {{ setForeground(Color.WHITE); }}, gbc);
+        gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("ARRIBAS:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtY, gbc);
         gbc.gridx = 0; gbc.gridy++; panel.add(new JLabel("Fecha actualización:") {{ setForeground(Color.WHITE); }}, gbc);
         gbc.gridx = 1; panel.add(txtFechaAct, gbc);
@@ -1183,12 +1180,9 @@ public class SituacionTactica extends JPanel {
             try {
                 String entidad = (String) cbEntidad.getSelectedItem();
                 String afiliacion = (String) cbAfiliacion.getSelectedItem();
-                String hqtf = (String) cbHQTF.getSelectedItem();
                 String echelon = (String) cbEchelon.getSelectedItem();
 
                 String naturaleza = entidad + "_" + afiliacion;
-                if (hqtf.contains("HQ")) naturaleza += "_HQ";
-                else if (hqtf.contains("TF")) naturaleza += "_TF";
                 if (!echelon.equals("Por Defecto")) naturaleza += "_" + echelon.toUpperCase();
 
                 b.setNombre(txtNombre.getText().trim());
@@ -1209,7 +1203,6 @@ public class SituacionTactica extends JPanel {
                 // Guardar selección del editor, si las usás después
                 b.setUltEntidad(entidad);
                 b.setUltAfiliacion(afiliacion);
-                b.setUltHQTF(hqtf);
                 b.setUltEchelon(echelon);
                 b.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
 
