@@ -155,14 +155,14 @@ public class SituacionTactica extends JPanel {
 		JButton btnActualizar = new JButton("REFRESCAR");
 		JButton btnPIF = new JButton("GENERAR PIF");
 		
-		JButton btnConfigIP = new JButton("CONFIGURAR IP");  // <-- NUEVO BOTÓN
+		JButton btnConfigIP = new JButton("CONFIGURAR IP");  
 		btnConfigIP.setBackground(new Color(60, 60, 120));
 		btnConfigIP.setForeground(Color.WHITE);
 		btnConfigIP.setFont(new Font("Arial", Font.BOLD, 12));
 		btnConfigIP.setPreferredSize(new Dimension(110, 32));
 		btnConfigIP.setFocusPainted(false);
 		
-		// Acción: abrir el diálogo
+		// abre el diálogo
 		btnConfigIP.addActionListener(e -> {
 		DialogoConfigRed dlg =
 		new DialogoConfigRed(SwingUtilities.getWindowAncestor(this),
@@ -200,7 +200,54 @@ public class SituacionTactica extends JPanel {
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
 		splitPane.setDividerLocation(250);
 		splitPane.setContinuousLayout(true);
-		add(splitPane, BorderLayout.CENTER);
+
+		JLayeredPane layered = new JLayeredPane();
+		layered.setLayout(null);
+
+		// El split ocupa todo el panel
+		splitPane.setBounds(0, 0, getWidth(), getHeight());
+		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
+
+		// HUD flotante inferior derecha
+		JPanel hud = new JPanel(new GridBagLayout());
+		hud.setBackground(new Color(0, 0, 0, 170));  
+		hud.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+		hud.setSize(260, 160);
+
+		GridBagConstraints h = new GridBagConstraints();
+		h.insets = new Insets(5, 5, 5, 5);
+
+		h.gridx = 0; h.gridy = 0; hud.add(btnAgregar, h);
+		h.gridx = 1; hud.add(btnEliminar, h);
+
+		h.gridx = 0; h.gridy = 1; hud.add(btnActualizar, h);
+		h.gridx = 1; hud.add(btnPIF, h);
+
+		h.gridx = 0; h.gridy = 2; h.gridwidth = 2;
+		hud.add(btnConfigIP, h);
+
+		// Posicion inicial abajo derecha
+		hud.setLocation(
+		        getWidth() - hud.getWidth() - 20,
+		        getHeight() - hud.getHeight() - 20
+		);
+
+		layered.add(hud, JLayeredPane.PALETTE_LAYER);
+
+		this.addComponentListener(new ComponentAdapter() {
+		    @Override
+		    public void componentResized(ComponentEvent e) {
+
+		        splitPane.setBounds(0, 0, getWidth(), getHeight());
+
+		        hud.setLocation(
+		                getWidth() - hud.getWidth() - 20,
+		                getHeight() - hud.getHeight() - 20
+		        );
+		    }
+		});
+
+		add(layered, BorderLayout.CENTER);
 
         // click en mapa: Blanco o Punto
         panelMapa.getMapPane().setCursorTool(new CursorTool() {

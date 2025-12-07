@@ -1,7 +1,6 @@
 package app;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -16,7 +15,8 @@ import comunicaciones.ComunicacionIP;
 
 public class DialogoConfigRed extends JDialog {
 
-    private JComboBox<NetworkInterfaceWrapper> cbInterfaces;
+	private static final long serialVersionUID = 1218128306633571285L;
+	private JComboBox<NetworkInterfaceWrapper> cbInterfaces;
     private JTextField txtPuerto;
     private DefaultListModel<String> modeloDestinos;
     private JList<String> listaDestinos;
@@ -39,9 +39,7 @@ public class DialogoConfigRed extends JDialog {
         gbc.insets = new Insets(6, 6, 6, 6);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // --------------------------------------------------
-        // INTERFAZ LOCAL
-        // --------------------------------------------------
+        // ENTRADA ETHERNET LOCAL
         gbc.gridx = 0; gbc.gridy = 0;
         JLabel lblInterfaz = crearEtiqueta("Interfaz local:");
         panelForm.add(lblInterfaz, gbc);
@@ -52,9 +50,7 @@ public class DialogoConfigRed extends JDialog {
         gbc.gridx = 1; gbc.gridy = 0;
         panelForm.add(cbInterfaces, gbc);
 
-        // --------------------------------------------------
         // PUERTO TCP
-        // --------------------------------------------------
         gbc.gridx = 0; gbc.gridy = 1;
         JLabel lblPuerto = crearEtiqueta("Puerto TCP:");
         panelForm.add(lblPuerto, gbc);
@@ -73,18 +69,18 @@ public class DialogoConfigRed extends JDialog {
             txtPuerto.setText("5056");
         }
 
-        // --------------------------------------------------
-        // LISTA DE DESTINOS
-        // --------------------------------------------------
+        // LISTA DE DESTINATARIOS
         modeloDestinos = new DefaultListModel<>();
         listaDestinos = new JList<>(modeloDestinos);
         listaDestinos.setBackground(new Color(20, 20, 20));
         listaDestinos.setForeground(Color.WHITE);
 
-        // centrado + fuente más grande
         listaDestinos.setFont(new Font("Consolas", Font.BOLD, 18));
         listaDestinos.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
+
+			private static final long serialVersionUID = -294481990100120184L;
+
+			@Override
             public Component getListCellRendererComponent(
                     JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
@@ -125,9 +121,6 @@ public class DialogoConfigRed extends JDialog {
             }
         }
 
-        // --------------------------------------------------
-        // AGREGAR / QUITAR DESTINO
-        // --------------------------------------------------
         JPanel panelDestinos = new JPanel(new BorderLayout(5, 5));
         panelDestinos.setBackground(new Color(30, 30, 30));
         panelDestinos.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -154,9 +147,6 @@ public class DialogoConfigRed extends JDialog {
 
         add(panelForm, BorderLayout.CENTER);
 
-        // --------------------------------------------------
-        // BOTONES INFERIORES
-        // --------------------------------------------------
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         panelInferior.setBackground(new Color(30, 30, 30));
 
@@ -165,7 +155,7 @@ public class DialogoConfigRed extends JDialog {
         JButton btnCancelar = crearBotonRojo("Cancelar");
         btnCancelar.setPreferredSize(tamBotonPrincipal);
         btnCancelar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnCancelar.addActionListener(e -> dispose());   // <- ahora sí cierra seguro
+        btnCancelar.addActionListener(e -> dispose());   
 
         JButton btnAplicar = crearBotonAzul("Aplicar");
         btnAplicar.setPreferredSize(tamBotonPrincipal);
@@ -176,7 +166,6 @@ public class DialogoConfigRed extends JDialog {
 
         add(panelInferior, BorderLayout.SOUTH);
 
-        // ESC para cerrar como Cancelar
         JRootPane rp = getRootPane();
         rp.registerKeyboardAction(
                 e -> dispose(),
@@ -184,11 +173,9 @@ public class DialogoConfigRed extends JDialog {
                 JComponent.WHEN_IN_FOCUSED_WINDOW
         );
 
-        // tamaño compacto según contenido
         pack();
         setLocationRelativeTo(owner);
 
-        // si ya hay interfaz guardada, seleccionarla en el combo
         if (comunicacion != null && comunicacion.getInterfazLocal() != null) {
             InetAddress actual = comunicacion.getInterfazLocal();
             for (int i = 0; i < cbInterfaces.getItemCount(); i++) {
@@ -201,9 +188,6 @@ public class DialogoConfigRed extends JDialog {
         }
     }
 
-    // --------------------------------------------------
-    // ESTILO
-    // --------------------------------------------------
     private JLabel crearEtiqueta(String texto) {
         JLabel lbl = new JLabel(texto);
         lbl.setForeground(Color.WHITE);
@@ -237,9 +221,6 @@ public class DialogoConfigRed extends JDialog {
         return b;
     }
 
-    // --------------------------------------------------
-    // LÓGICA
-    // --------------------------------------------------
     private void cargarInterfaces() {
         try {
             Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
@@ -314,9 +295,6 @@ public class DialogoConfigRed extends JDialog {
         }
     }
 
-    // --------------------------------------------------
-    // Wrapper para mostrar interface + IP
-    // --------------------------------------------------
     private static class NetworkInterfaceWrapper {
         private final NetworkInterface ni;
         private final InetAddress addr;
