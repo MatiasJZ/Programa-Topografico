@@ -14,10 +14,8 @@ public class SoundManager {
     }
 
     private void cargarSonidos() {
-        sonidos.put("blancoAgregado", cargar("blancoAgregado.wav"));
         sonidos.put("clickError", cargar("clickError.wav"));
         sonidos.put("ingresoError", cargar("ingresoError.wav"));
-        sonidos.put("popUpSonido", cargar("popUpSonido.wav")); 
     }
 
     private Clip cargar(String archivo) {
@@ -47,11 +45,7 @@ public class SoundManager {
             clip.start();
         }
     }
-
-    public void blancoAgregado() {
-        reproducir("blancoAgregado");
-    }
-
+    
     public void clickError() {
         reproducir("clickError");
     }
@@ -60,7 +54,4 @@ public class SoundManager {
         reproducir("ingresoError");
     }
 
-    public void popUpSonido() {
-        reproducir("popUpSonido");
-    }
 }

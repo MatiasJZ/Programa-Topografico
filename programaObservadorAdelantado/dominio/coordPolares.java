@@ -2,13 +2,13 @@ package dominio;
 public class coordPolares extends coordenadas {
     private double direccion;   // milésimos (0–6399)
     private double distancia;   // metros
-    private double angVertical; // milésimos
+    private double cota; // milésimos
     private coordRectangulares referencia;
 
     public coordPolares(double direccion, double distancia, double angVertical, coordRectangulares referencia) {
         this.direccion = direccion;
         this.distancia = distancia;
-        this.angVertical = angVertical;
+        this.cota = angVertical;
         this.referencia = referencia;
     }
     
@@ -16,8 +16,8 @@ public class coordPolares extends coordenadas {
     
     public double getDistancia() { return distancia; }       // en metros
     
-    public double getAnguloVertical() { return angVertical; }// en mils
-    
+    public double getCota() { return cota; }// en mils
+
     // Convertir coordenadas polares a rectangulares (en metros)
     public coordRectangulares toRectangulares() {
         if (referencia == null) {
@@ -50,4 +50,9 @@ public class coordPolares extends coordenadas {
     
     @Override
     public double getY() { return this.toRectangulares().getY(); }
+
+	@Override
+	public void setCota(double c) {
+		cota = c; 
+	}
 }

@@ -18,7 +18,7 @@ public class Blanco {
         this.naturaleza = naturaleza;
         this.fecha = fecha;
         this.simID = "";
-        this.situacionMovimiento = SituacionMovimiento.DESCONOCIDO; 
+        this.situacionMovimiento = SituacionMovimiento.FIJO; 
         this.informacionAdicional = ""; 
         this.orientacion = 0;
     }

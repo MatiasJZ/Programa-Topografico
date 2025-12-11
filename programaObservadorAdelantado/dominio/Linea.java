@@ -10,9 +10,11 @@ public class Linea implements poligonal {
     private Coordinate inicio;
     private Coordinate fin;
     private double distancia;
+    private double azimut;
 
-    public Linea(String nombre, Coordinate inicio, Coordinate fin, double distancia) {
+    public Linea(String nombre, Coordinate inicio, Coordinate fin, double distancia, double azimut) {
         this.nombre = nombre;
+        this.azimut = azimut;
         this.inicio = inicio;
         this.fin = fin;
         this.distancia = distancia;
@@ -23,6 +25,14 @@ public class Linea implements poligonal {
         return nombre;
     }
 
+    public double getAzimut() {
+    	return azimut;
+    }
+    
+    public void setAzimut(double a) {
+    	azimut = a;
+    }
+    
     @Override
     public String toString() {
     	return nombre;

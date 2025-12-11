@@ -38,33 +38,33 @@ public class DatosBlanco extends JPanel {
         
         int fila = 0;
 
-        agregarLabel("Designacion:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("DESIGNACION:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
         txtNombre = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtNombre, fila++, 1, gbc);
 
-        agregarLabel("Naturaleza:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("NATURALEZA:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
         txtNaturaleza = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtNaturaleza, fila++, 1, gbc);
 
-        agregarLabel("Fecha:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("FECHA:", fila, 0, fuenteLabel, colorEtiqueta, gbc);
         txtFecha = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtFecha, fila++, 1, gbc);
 
-        agregarLabel("Orientación (mils):", fila, 0, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("ORIENTACION (mils):", fila, 0, fuenteLabel, colorEtiqueta, gbc);
         txtOrientacion = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtOrientacion, fila++, 1, gbc);
 
         fila = 0;
 
-        agregarLabel("Coord. X:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("DERECHAS:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
         txtX = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtX, fila++, 3, gbc);
 
-        agregarLabel("Coord. Y:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("ARRIBAS:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
         txtY = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtY, fila++, 3, gbc);
 
-        agregarLabel("Situación:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
+        agregarLabel("ESTADO:", fila, 2, fuenteLabel, colorEtiqueta, gbc);
         txtSituacion = crearCampo(fuenteCampo, colorCampo);
         agregarCampo(txtSituacion, fila++, 3, gbc);
 

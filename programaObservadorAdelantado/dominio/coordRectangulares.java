@@ -27,4 +27,9 @@ public class coordRectangulares extends coordenadas {
     public String toString() {
     	return ("X: " +coordX + " ; "+"Y: "+ coordY);
     }
+
+	@Override
+	public void setCota(double c) {
+		cotaXY = c;
+	}
 }

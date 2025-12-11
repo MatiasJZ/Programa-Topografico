@@ -37,7 +37,6 @@ public class PanelConfigRed extends JPanel {
         );
         setBorder(b);
 
-        // ================== PARTE SUPERIOR: interfaz + puerto ==================
         JPanel panelSup = new JPanel(new GridLayout(2, 2, 5, 5));
         panelSup.setBackground(Color.BLACK);
 
@@ -58,7 +57,6 @@ public class PanelConfigRed extends JPanel {
 
         add(panelSup, BorderLayout.NORTH);
 
-        // ================== PARTE CENTRAL: lista de destinos ===================
         JPanel panelCentro = new JPanel(new BorderLayout(5, 5));
         panelCentro.setBackground(Color.BLACK);
 
@@ -70,7 +68,6 @@ public class PanelConfigRed extends JPanel {
 
         panelCentro.add(new JScrollPane(listaDestinos), BorderLayout.CENTER);
 
-        // ================== PARTE INFERIOR: agregar / quitar ==================
         JPanel panelIP = new JPanel(new BorderLayout(5, 5));
         panelIP.setBackground(Color.BLACK);
 
@@ -96,7 +93,6 @@ public class PanelConfigRed extends JPanel {
 
         add(panelCentro, BorderLayout.CENTER);
 
-        // ================== BOTÓN APLICAR ==================
         btnAplicar = new JButton("APLICAR CONFIGURACIÓN");
         btnAplicar.setBackground(new Color(30, 60, 130));
         btnAplicar.setForeground(Color.WHITE);
@@ -104,7 +100,6 @@ public class PanelConfigRed extends JPanel {
 
         add(btnAplicar, BorderLayout.SOUTH);
 
-        // ================== LÓGICA BOTONES ==================
         btnAgregarIP.addActionListener(e -> {
             String ip = txtNuevaIP.getText().trim();
             if (!ip.isEmpty() && !modeloDestinos.contains(ip)) {
@@ -120,7 +115,7 @@ public class PanelConfigRed extends JPanel {
 
     private InetAddress[] cargarInterfaces() {
 
-        java.util.List<InetAddress> ips = new ArrayList<>();
+        List<InetAddress> ips = new ArrayList<>();
 
         try {
             Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();

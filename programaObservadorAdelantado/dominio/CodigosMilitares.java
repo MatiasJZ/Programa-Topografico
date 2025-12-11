@@ -273,8 +273,8 @@ public class CodigosMilitares {
             "OBSERVADOR","OBSERVADOR-ARTILLERIA"
         };
 
-        String[] echelones = {"14", "15", "18", "21"};
-        String[] nombresEchelon = {"PELOTON", "COMPANIA", "BRIGADA", "DIVISION"};
+        String[] echelones = {"14", "15", "17", "13", "16"};
+        String[] nombresEchelon = {"PELOTON", "COMPANIA", "GRUPO", "SECCION", "BATALLON"};
 
         for (String ent : unidadesConEchelon) {
             for (String af : affix) {

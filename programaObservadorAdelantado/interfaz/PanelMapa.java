@@ -294,11 +294,19 @@ public class PanelMapa extends JPanel {
         else if (geom instanceof LineString ls) {
             Linea lm = (Linea)p;
             tipo = tipoLineas;
+            
+            String textoMedicion = String.format(
+                "%.0f m%nAD: %.0f mils",
+                lm.getDistancia(), 
+                lm.getAzimut()
+            );
+            
             attrs = new Object[]{
                 ls,
                 p.getName(),
-                String.format("%.0f m", lm.getDistancia())
+                textoMedicion
             };
+            
         }
         else {
             throw new IllegalArgumentException("Geometría no soportada.");

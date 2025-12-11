@@ -1,42 +1,38 @@
 package app;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 public class ConsolaMensajes extends JPanel {
 
     private static final long serialVersionUID = 1L;
-    private boolean abierta = false;
     private JPanel header;
     private JTextArea area;
     private JScrollPane scroll;
-    private final int ALTURA_CERRADA = 28;
     private final int ALTURA_ABIERTA = 200;
 
     public ConsolaMensajes() {
         setLayout(new BorderLayout());
         setBackground(new Color(20, 20, 20));
-        setPreferredSize(new Dimension(300, ALTURA_CERRADA));
+        
+        setPreferredSize(new Dimension(300, ALTURA_ABIERTA));
 
-        // barra superior (pestaña)
         header = new JPanel(new BorderLayout());
         header.setPreferredSize(new Dimension(300, 28));
         header.setBackground(new Color(40, 40, 40));
 
-        JLabel lblTitulo = new JLabel(" - MENSAJES", SwingConstants.LEFT);
+        JLabel lblTitulo = new JLabel(" - MENSAJES", SwingConstants.LEFT); 
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Consolas", Font.BOLD, 12));
         header.add(lblTitulo, BorderLayout.WEST);
-
-        // click para desplegar o colapsar
-        header.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                toggle();
-            }
-        });
 
         add(header, BorderLayout.NORTH);
 
@@ -48,38 +44,15 @@ public class ConsolaMensajes extends JPanel {
         area.setFont(new Font("Consolas", Font.PLAIN, 12));
 
         scroll = new JScrollPane(area);
-        scroll.setVisible(false);
+        scroll.setVisible(true); 
         add(scroll, BorderLayout.CENTER);
-    }
-
-    private void toggle() {
-        abierta = !abierta;
-
-        header.removeAll();
-        JLabel lbl = new JLabel(
-                abierta ? " - OCULTAR" : " - MENSAJES",
-                SwingConstants.LEFT
-        );
-        lbl.setForeground(Color.WHITE);
-        lbl.setFont(new Font("Consolas", Font.BOLD, 12));
-        header.add(lbl, BorderLayout.WEST);
-
-        scroll.setVisible(abierta);
-        setPreferredSize(new Dimension(getWidth(), abierta ? ALTURA_ABIERTA : ALTURA_CERRADA));
-
-        revalidate();
-        repaint();
-
-        Window win = SwingUtilities.getWindowAncestor(this);
-        if (win != null) win.pack();
     }
 
     public void agregarMensaje(String mensaje) {
         area.append(mensaje + "\n");
         area.setCaretPosition(area.getDocument().getLength());
     }
-
-    // Helpers
+    
     public void mostrarEstado(String estado) {
         agregarMensaje("[ESTADO] " + estado);
     }

@@ -10,7 +10,7 @@ import java.util.List;
 public class ComunicacionIP {
 
     // Configuración
-    private InetAddress interfazlocal = null;      // Interfaz local (Harris)
+    private InetAddress interfazlocal = null;  // Interfaz local (Harris)
     private int puerto = 5056;
     private final List<String> destinos = new ArrayList<>();
     
@@ -21,9 +21,6 @@ public class ComunicacionIP {
     // Callback a la lógica de la app
     private ProtocoloCallback callback;
 
-    // ==========================================================
-    // SETUP
-    // ==========================================================
     public void setCallback(ProtocoloCallback cb) {
         this.callback = cb;
     }
@@ -55,19 +52,10 @@ public class ComunicacionIP {
         }
     }
 
-    // ==========================================================
     // SERVIDOR TCP
-    // ==========================================================
     public void iniciarServidor() {
-
-        // --------------------------------------------------------
-        // 1) DETENER SERVIDOR ANTERIOR SI EXISTE
-        // --------------------------------------------------------
-        detenerServidor();   // <--- ESTA ES LA LÍNEA CLAVE
-
-        // --------------------------------------------------------
-        // 2) VALIDACIONES
-        // --------------------------------------------------------
+        detenerServidor();
+        
         if (interfazlocal == null) {
             if (callback != null) callback.log("[ERROR] No se seleccionó interfaz local.");
             return;
@@ -77,9 +65,6 @@ public class ComunicacionIP {
             throw new IllegalStateException("ComunicacionIP: callback no seteado.");
         }
 
-        // --------------------------------------------------------
-        // 3) ARRANCAR SERVIDOR NUEVO
-        // --------------------------------------------------------
         new Thread(() -> {
             try {
 
@@ -113,10 +98,6 @@ public class ComunicacionIP {
         }, "ServidorTCP-Harris").start();
     }
 
-
-    // ==========================================================
-    // CLIENTE TCP - ENVIAR A UNA IP
-    // ==========================================================
     public void enviar(String ipDestino, String mensaje) {
 
         if (interfazlocal == null) {
@@ -158,17 +139,14 @@ public class ComunicacionIP {
             }
         }, "ClienteTCP-Harris").start();
     }
-
-    // ==========================================================
-    // CLIENTE TCP - ENVIAR A TODOS
-    // ==========================================================
+    
     public void enviarATodos(String mensaje) {
         List<String> copia;
         synchronized (destinos) {
             copia = new ArrayList<>(destinos);
         }
         if (copia.isEmpty() && callback != null) {
-            callback.log("[WARN] No hay destinos configurados.");
+            callback.log("[ADVERTENCIA] No hay destinos configurados.");
         }
         for (String ip : copia) {
             enviar(ip, mensaje);

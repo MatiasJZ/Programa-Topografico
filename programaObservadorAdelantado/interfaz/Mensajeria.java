@@ -19,7 +19,6 @@ public class Mensajeria extends JPanel {
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 
-        // PANEL LATERAL IZQUIERDO (FORMULARIOS) — SE MANTIENE
         JPanel panelFormularios = new JPanel(new GridLayout(7, 1, 5, 5));
         panelFormularios.setBackground(Color.BLACK);
         panelFormularios.setBorder(crearBordeTitulo("FORMULARIOS"));
@@ -94,9 +93,6 @@ public class Mensajeria extends JPanel {
         panelCentral.add(panelLog);
     }
 
-    // ==========================================
-    // INTEGRACIÓN COMUNICACIÓN IP
-    // ==========================================
     public void setComunicacion(ComunicacionIP c) {
         this.com = c;
     }
@@ -123,10 +119,7 @@ public class Mensajeria extends JPanel {
         txtLogChat.append(texto + "\n");
         txtLogChat.setCaretPosition(txtLogChat.getDocument().getLength());
     }
-
-    // ==========================================
-    // AUXILIARES
-    // ==========================================
+    
     private TitledBorder crearBordeTitulo(String titulo) {
         Font fuente = new Font("Arial", Font.BOLD, 18);
         TitledBorder borde = BorderFactory.createTitledBorder(titulo);

@@ -1,10 +1,7 @@
 package app;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.LinkedList;
-import java.util.List;
-
 import javax.swing.*;
 
 import comunicaciones.ComunicacionIP;
@@ -93,7 +90,7 @@ public class ObservadorAdelantado extends JPanel {
         cards = new JPanel(cardLayout);
 
         pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
-        situacionTactica = new SituacionTactica(listaDeBlancos, pedidoDeFuego, this); // <- OBSERVADOR PASADO AQUÍ
+        situacionTactica = new SituacionTactica(listaDeBlancos, pedidoDeFuego, this); 
         mensajeriaPanel = new Mensajeria();
 
         cards.add(situacionTactica, "SITUACION");
