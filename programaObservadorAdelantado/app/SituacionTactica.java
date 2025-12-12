@@ -528,6 +528,7 @@ public class SituacionTactica extends JPanel {
             b.setForeground(Color.WHITE);
             b.setPreferredSize(new Dimension(180, 32));
         }
+        
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         panelBotones.setBackground(new Color(40, 40, 40));
         panelBotones.add(btnAceptar);

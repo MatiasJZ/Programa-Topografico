@@ -48,7 +48,7 @@ public class Mensajeria extends JPanel {
         add(panelFormularios, BorderLayout.WEST);
 
         // PANEL CENTRAL DIVIDIDO EN DOS
-        JPanel panelCentral = new JPanel(new GridLayout(2, 1));
+        JPanel panelCentral = new JPanel(new GridLayout(4, 1));
         panelCentral.setBackground(Color.BLACK);
         add(panelCentral, BorderLayout.CENTER);
 
@@ -85,7 +85,7 @@ public class Mensajeria extends JPanel {
         txtLogChat.setEditable(false);
         txtLogChat.setBackground(new Color(20, 20, 20));
         txtLogChat.setForeground(Color.GREEN);
-        txtLogChat.setFont(new Font("Consolas", Font.PLAIN, 14));
+        txtLogChat.setFont(new Font("Consolas", Font.PLAIN, 25));
 
         JScrollPane scrollLog = new JScrollPane(txtLogChat);
         panelLog.add(scrollLog, BorderLayout.CENTER);

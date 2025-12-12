@@ -28,9 +28,12 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JRadioButton rbFgoSi, rbFgoNo;
     private JRadioButton rbTesSi, rbTesNo;
     private JRadioButton rbCuandoListo, rbAMiOrden;
+    private JRadioButton rbMetodo;
+    private JRadioButton rbTiro;
     private JRadioButton rbEficacia, rbReglare, rbSupresion, rbSupresionInmediata;
     private JTextField txtRegistroSobre, txtBarreraInclinacion, txtBarreraFrente;
-
+    private final Icon iconoRB = new RadioButtonGrande(22);
+    	
     // Correcciones
     private CardLayout cardCorrecciones;
     private JPanel panelCard;
@@ -49,10 +52,9 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JPanel panelAlternable;
     private JPanel panelMetodoAtaque;
     private JPanel panelTiroControl;
-    private JRadioButton rbMetodo;
-    private JRadioButton rbTiro;
     private Blanco blancoSeleccionado;
     private DatosBlanco datos;
+    
     public MetodoAtaqueYTiroPanel(DatosBlanco datos) {
 
     	this.datos = datos;
@@ -135,7 +137,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         lblTitulo.setForeground(Color.WHITE);
         
         JSplitPane splitMision = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitMision.setResizeWeight(0.7); 
+        splitMision.setResizeWeight(0.62); 
         splitMision.setBorder(null);
         splitMision.setBackground(Color.BLACK);
         
@@ -152,16 +154,14 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         gbcSwitch.insets = new Insets(5, 5, 5, 5);
         gbcSwitch.anchor = GridBagConstraints.WEST;
         
-        Icon icon = null; 
-        
         // Crear Radios y agruparlos
         ButtonGroup grupoMision = new ButtonGroup();
         Font fSwitch = new Font("Arial", Font.BOLD, 14);
 
-        rbEficacia = crearRadio("EFICACIA", icon);
-        rbReglare = crearRadio("REGLARE", icon);
-        rbSupresion = crearRadio("SUPRESIÓN", icon);
-        rbSupresionInmediata = crearRadio("SUPRESIÓN INMEDIATA", icon);
+        rbEficacia = crearRadio("EFICACIA", iconoRB);
+        rbReglare = crearRadio("REGLARE", iconoRB);
+        rbSupresion = crearRadio("SUPRESIÓN", iconoRB);
+        rbSupresionInmediata = crearRadio("SUPRESIÓN INMEDIATA", iconoRB);
         
         // Configuramos fuente y grupo
         JRadioButton[] radios = {rbEficacia, rbReglare, rbSupresion, rbSupresionInmediata};
@@ -272,12 +272,12 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 5));
         p.setBackground(Color.BLACK);
 
-        rbMetodo = new JRadioButton("MÉTODO DE ATAQUE");
+        rbMetodo = crearRadio("METODO DE ATAQUE", iconoRB);
         rbMetodo.setForeground(Color.WHITE);
         rbMetodo.setBackground(Color.BLACK);
         rbMetodo.setFont(new Font("Arial", Font.BOLD, 15));
 
-        rbTiro = new JRadioButton("TIRO Y CONTROL");
+        rbTiro = crearRadio("TIRO Y CONTROL", iconoRB);
         rbTiro.setForeground(Color.WHITE);
         rbTiro.setBackground(Color.BLACK);
         rbTiro.setFont(new Font("Arial", Font.BOLD, 15));
@@ -317,8 +317,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         comboEfectoDeseado = crearCombo(efectos, comboSize);
         grid.add(crearItem("EFECTO DESEADO:", comboEfectoDeseado));
         
-        rbDisparos = crearRadio("DISPAROS", null);
-        rbRafaga = crearRadio("RÁFAGA", null);
+        rbDisparos = crearRadio("DISPAROS", iconoRB);
+        rbRafaga = crearRadio("RÁFAGA", iconoRB);
         agrupar(rbDisparos, rbRafaga);
 
         Icon icon = null;
@@ -330,8 +330,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         // CERCANO 
         grid.add(crearGrupoRadio("CERCANO:", rb -> {
-            rbCercanoSi = crearRadio("Sí", icon);
-            rbCercanoNo = crearRadio("No", icon);
+            rbCercanoSi = crearRadio("Sí", iconoRB);
+            rbCercanoNo = crearRadio("No", iconoRB);
             agrupar(rbCercanoSi, rbCercanoNo);
             rb.add(rbCercanoSi);
             rb.add(rbCercanoNo);
@@ -339,8 +339,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         // GRAN ÁNGULO
         grid.add(crearGrupoRadio("GRAN ÁNGULO:", rb -> {
-            rbGranAnguloSi = crearRadio("Sí", icon);
-            rbGranAnguloNo = crearRadio("No", icon);
+            rbGranAnguloSi = crearRadio("Sí", iconoRB);
+            rbGranAnguloNo = crearRadio("No", iconoRB);
             agrupar(rbGranAnguloSi, rbGranAnguloNo);
             rb.add(rbGranAnguloSi);
             rb.add(rbGranAnguloNo);
@@ -386,8 +386,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         // FGO CONTINUO
         grid.add(crearGrupoRadio("FGO CONT:", rb -> {
-            rbFgoSi = crearRadio("Sí", icon);
-            rbFgoNo = crearRadio("No", icon);
+            rbFgoSi = crearRadio("Sí", iconoRB);
+            rbFgoNo = crearRadio("No", iconoRB);
             agrupar(rbFgoSi, rbFgoNo);
             rb.add(rbFgoSi);
             rb.add(rbFgoNo);
@@ -395,8 +395,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         // TES
         grid.add(crearGrupoRadio("TES:", rb -> {
-            rbTesSi = crearRadio("Sí", icon);
-            rbTesNo = crearRadio("No", icon);
+            rbTesSi = crearRadio("Sí", iconoRB);
+            rbTesNo = crearRadio("No", iconoRB);
             agrupar(rbTesSi, rbTesNo);
             rb.add(rbTesSi);
             rb.add(rbTesNo);
@@ -410,8 +410,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         JPanel total = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 10));
         total.setBackground(Color.BLACK);
-        rbCuandoListo = crearRadio("CUANDO LISTO", null);
-        rbAMiOrden = crearRadio("A MI ORDEN", null);
+        rbCuandoListo = crearRadio("CUANDO LISTO", iconoRB);
+        rbAMiOrden = crearRadio("A MI ORDEN", iconoRB);
         agrupar(rbCuandoListo, rbAMiOrden);
 
         JPanel radiosModo = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -451,6 +451,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
             notificarEnvioPIF();
             
             btnFuego.setVisible(false); 
+            panelCorrecciones.reiniciarCuadricula();
             
             if (rbAMiOrden.isSelected()) {
                 btnFuego.setVisible(true);
@@ -464,7 +465,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
                 cardCorrecciones.show(panelCard, "correcciones");
                 panelMisionDeFuego.setVisible(false);
             }
-            
+          
             total.revalidate();
             total.repaint();
         });
@@ -497,12 +498,12 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         p.setBackground(Color.BLACK);
 
         TitledBorder b = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 2),
-                titulo,
-                TitledBorder.LEFT,
-                TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 17),
-                Color.WHITE
+	        BorderFactory.createLineBorder(Color.GRAY, 2),
+	        titulo,
+	        TitledBorder.LEFT,
+	        TitledBorder.TOP,
+	        new Font("Arial", Font.BOLD, 17),
+	        Color.WHITE
         );
         p.setBorder(b);
         return p;
@@ -510,7 +511,8 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
     private JPanel crearFila() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        p.setBackground(new Color(60, 60, 60));
+        p.setOpaque(false); // fondo transparente
+        p.setBorder(BorderFactory.createLineBorder(new Color(120, 120, 120), 1)); // marco rectangular
         return p;
     }
 

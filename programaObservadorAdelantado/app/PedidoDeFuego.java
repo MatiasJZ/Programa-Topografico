@@ -1,6 +1,8 @@
 package app;
 	
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
@@ -374,7 +376,7 @@ class PedidoDeFuego extends JPanel {
         }
     }
     
-    private void agregarFilaPDF(String titulo, String valor,com.itextpdf.text.pdf.PdfPTable tabla) {
+    private void agregarFilaPDF(String titulo, String valor,PdfPTable tabla) {
 
 		PdfPCell c1 =
 		new PdfPCell(new Phrase(titulo));
@@ -398,20 +400,25 @@ class PedidoDeFuego extends JPanel {
                 Dialog.ModalityType.APPLICATION_MODAL
         );
 
-        dlg.setSize(500, 520);
+        dlg.setSize(540, 560);
         dlg.setLocationRelativeTo(this);
 
+        // Panel principal con estética mejorada
         JPanel p = new JPanel(new GridBagLayout());
-        p.setBackground(Color.BLACK);
-        p.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
+        p.setBackground(new Color(20, 20, 20));
+        p.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(70, 130, 70), 2),
+                BorderFactory.createEmptyBorder(16, 16, 16, 16)
+        ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6,6,6,6);
+        gbc.insets = new Insets(10, 8, 10, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
 
         int y = 0;
 
+        // COMBOS Y CAMPOS
         JComboBox<String> cbEfecto = crearCombo(new String[]{
                 "Sin efecto", "Efecto ligero", "Efecto moderado",
                 "Efecto intenso", "Neutralizado", "Suprimido", "Destruido"
@@ -435,27 +442,73 @@ class PedidoDeFuego extends JPanel {
                 "Nuevo PIF recomendado"
         });
 
-        JTextArea txtObs = new JTextArea(4,20);
+        JTextArea txtObs = new JTextArea(4, 20);
         configurarArea(txtObs);
+        
+        UIManager.put("Label.foreground", new Color(120, 220, 120));
+        UIManager.put("Label.font", new Font("Segoe UI", Font.BOLD, 14));
 
-        // --- Agregar filas ---
+        // Fila con línea divisoria superior
+        JLabel tituloSec = new JLabel("INFORME FINAL");
+        tituloSec.setForeground(new Color(160, 255, 160));
+        tituloSec.setFont(new Font("Segoe UI", Font.BOLD, 18));
+
+        gbc.gridx = 0;
+        gbc.gridy = y++;
+        gbc.gridwidth = 2;
+        p.add(tituloSec, gbc);
+
+        gbc.gridwidth = 1; // volver a normal
+
         agregarFila(p, "Efecto Observado:", cbEfecto, gbc, y++);
         agregarFila(p, "Dispersión:", cbDispersion, gbc, y++);
         agregarFila(p, "Daños Observados:", cbDanos, gbc, y++);
         agregarFila(p, "Movimiento del blanco:", txtMovimiento, gbc, y++);
         agregarFila(p, "Recomendación:", cbRecomendacion, gbc, y++);
+
         agregarArea(p, "Observaciones:", txtObs, gbc, y++);
 
-        // --- Botones ---
         JButton ok = new JButton("Confirmar");
         JButton cancel = new JButton("Cancelar");
-        ok.setBackground(new Color(0,140,0));
+
+        ok.setBackground(new Color(40, 160, 40));
         ok.setForeground(Color.WHITE);
-        cancel.setBackground(new Color(140,0,0));
+        ok.setFocusPainted(false);
+        ok.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(90, 220, 90)),
+                BorderFactory.createEmptyBorder(8, 20, 8, 20)
+        ));
+
+        cancel.setBackground(new Color(140, 40, 40));
         cancel.setForeground(Color.WHITE);
+        cancel.setFocusPainted(false);
+        cancel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 90, 90)),
+                BorderFactory.createEmptyBorder(8, 20, 8, 20)
+        ));
+
+        // Hover
+        ok.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                ok.setBackground(new Color(55, 190, 55));
+            }
+            public void mouseExited(MouseEvent evt) {
+                ok.setBackground(new Color(40, 160, 40));
+            }
+        });
+
+        cancel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                cancel.setBackground(new Color(190, 50, 50));
+            }
+            public void mouseExited(MouseEvent evt) {
+                cancel.setBackground(new Color(140, 40, 40));
+            }
+        });
 
         JPanel pb = new JPanel();
-        pb.setBackground(Color.BLACK);
+        pb.setBackground(new Color(20, 20, 20));
+        pb.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         pb.add(ok);
         pb.add(cancel);
 

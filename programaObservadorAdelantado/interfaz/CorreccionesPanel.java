@@ -1,5 +1,7 @@
 package interfaz;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,7 +32,12 @@ public class CorreccionesPanel extends JPanel {
 
     public CorreccionesPanel(Blanco blanco) {	
     	
-    	this.setBorder(BorderFactory.createTitledBorder("CORRECCIONES"));    	
+    	TitledBorder borde = BorderFactory.createTitledBorder("CORRECCIONES");
+    	borde.setTitleColor(Color.WHITE);
+    	borde.setTitleFont(new Font("Arial", Font.BOLD, 18));
+
+    	this.setBorder(borde);
+    	
         setLayout(null);
         setBackground(new Color(0,0,0));
 
@@ -212,8 +219,10 @@ public class CorreccionesPanel extends JPanel {
     public JLabel getLblUltima() { return lblUltima; }
     
     private class PanelCuadricula extends JPanel {
-        
-        private class CorrectionData {
+
+		private static final long serialVersionUID = 7531765244066433113L;
+
+		private class CorrectionData {
             Point pixelLocation;
             String label;
 
