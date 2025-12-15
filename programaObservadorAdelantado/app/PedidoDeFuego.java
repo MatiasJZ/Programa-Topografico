@@ -247,10 +247,19 @@ class PedidoDeFuego extends JPanel {
     	});
 
         metodoYTiroPanel.addPropertyChangeListener("ENVIAR_PIF",
-                evt1z -> registrarNuevoPIF());
+                evt1 -> registrarNuevoPIF());
         
         metodoYTiroPanel.addPropertyChangeListener("ENVIAR_FUEGO", 
         		evt2 -> {
+			        if (comunicacionIP != null) {
+			            String msg = "FUEGO";
+			            comunicacionIP.enviarATodos(msg);
+			            consolaMensajes.mostrarTx(msg);
+			        }
+		       });
+        
+        metodoYTiroPanel.getCorreccionesPanel().addPropertyChangeListener("ENVIAR_FUEGO", 
+        		evt3 -> {
 			        if (comunicacionIP != null) {
 			            String msg = "FUEGO";
 			            comunicacionIP.enviarATodos(msg);
@@ -277,7 +286,6 @@ class PedidoDeFuego extends JPanel {
 
         corr.getBtnFin().addActionListener(e -> {
 
-            // Mostrar diálogo para cargar el reporte
             ReporteFinMision reporte = mostrarDialogoFinMision();
 
             if (reporte == null) {
@@ -352,7 +360,6 @@ class PedidoDeFuego extends JPanel {
             agregarFilaPDF("Dispersión", rep.getDispersion(), tabla);
             agregarFilaPDF("Daños Observados", rep.getDanos(), tabla);
             agregarFilaPDF("Movimiento", rep.getMovimiento(), tabla);
-            agregarFilaPDF("Recomendación", rep.getRecomendacion(), tabla);
             agregarFilaPDF("Observaciones", rep.getObservaciones(), tabla);
 
             doc.add(tabla);
@@ -419,28 +426,17 @@ class PedidoDeFuego extends JPanel {
         int y = 0;
 
         // COMBOS Y CAMPOS
-        JComboBox<String> cbEfecto = crearCombo(new String[]{
-                "Sin efecto", "Efecto ligero", "Efecto moderado",
-                "Efecto intenso", "Neutralizado", "Suprimido", "Destruido"
-        });
+        JComboBox<String> cbEfecto = crearCombo(new String[]{"Neutralizado", "Suprimido", "Destruido"});
 
         JComboBox<String> cbDispersion = crearCombo(new String[]{
                 "Ajustado", "Dispersión baja", "Dispersión alta",
                 "Corto", "Largo", "Izquierda", "Derecha"
         });
 
-        JComboBox<String> cbDanos = crearCombo(new String[]{
-                "Sin daño", "Daño ligero", "Daño moderado",
-                "Daño severo", "Destrucción parcial", "Destrucción total"
-        });
-
+        JComboBox<String> cbDanos = crearCombo(new String[]{"Destrucción parcial", "Destrucción total"});
+        
         JTextField txtMovimiento = new JTextField();
         configurarCampo(txtMovimiento);
-
-        JComboBox<String> cbRecomendacion = crearCombo(new String[]{
-                "Cese fuego", "Continuar fuego", "Cambiar munición",
-                "Nuevo PIF recomendado"
-        });
 
         JTextArea txtObs = new JTextArea(4, 20);
         configurarArea(txtObs);
@@ -464,7 +460,6 @@ class PedidoDeFuego extends JPanel {
         agregarFila(p, "Dispersión:", cbDispersion, gbc, y++);
         agregarFila(p, "Daños Observados:", cbDanos, gbc, y++);
         agregarFila(p, "Movimiento del blanco:", txtMovimiento, gbc, y++);
-        agregarFila(p, "Recomendación:", cbRecomendacion, gbc, y++);
 
         agregarArea(p, "Observaciones:", txtObs, gbc, y++);
 
@@ -528,7 +523,6 @@ class PedidoDeFuego extends JPanel {
                 cbDispersion.getSelectedItem().toString(),
                 cbDanos.getSelectedItem().toString(),
                 txtMovimiento.getText(),
-                cbRecomendacion.getSelectedItem().toString(),
                 txtObs.getText()
         );
     }
@@ -558,9 +552,8 @@ class PedidoDeFuego extends JPanel {
         }
 
         consolaMensajes.mostrarTx(msg);
-
-        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir
-                + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
+        
+        corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
     }
 
     private void volverASituacionTactica() {
@@ -587,20 +580,18 @@ class PedidoDeFuego extends JPanel {
         		mt.getRegistroSobre(), mt.getBarreraFrente(), mt.getBarreraInclinacion(),
         		mt.getEfectoDeseado(), mt.getModoFuego(), mt.isCercano(), 
         		mt.isGranAngulo(), mt.getGranada(), mt.getEspoleta(), mt.getVolumen(), mt.getHaz(),
-        		mt.getPiezas(), mt.getSeccion(), mt.isFgoSi(), mt.isTesSi());
+        		mt.getPiezas(), mt.getSeccion(), mt.isFgoSi(), mt.isTesSi(), mt.orden());
 
         modeloHistorial.addElement(nuevo);
         
         if (comunicacionIP != null) {
             String msg = "PIF"
                     + "|BLANCO=" + b.getNombre()
-                    + "|NAT=" + b.getNaturaleza()    
-                 
+                    + "|NAT=" + b.getNaturaleza()                     
                     + "|MISION=" + nuevo.getModoMision()
                     + "|REGSOBRE=" + nuevo.getRegistroSobre()
                     + "|BARRFRENTE=" + nuevo.getBarreraFrente()
-                    + "|BARRINC=" + nuevo.getBarreraInclinacion()
-            
+                    + "|BARRINC=" + nuevo.getBarreraInclinacion()           
                     + "|EFECTO=" + nuevo.getEfectoDeseado()
                     + "|MODO DE FUEGO=" + nuevo.getModoFuego()
                     + "|CERCANO=" + (nuevo.isCercano() ? "SI" : "NO")
@@ -611,8 +602,9 @@ class PedidoDeFuego extends JPanel {
                     + "|HAZ=" + nuevo.getHaz()
                     + "|PIEZAS=" + nuevo.getPiezas()
                     + "|SECCION=" + nuevo.getSeccion()
-                    + "|FGOCONT=" + nuevo.isFgoCont()
-                    + "|FGOCONT=" + nuevo.isTes();
+                    + "|FGOCONT=" + (nuevo.isFgoCont() ? "SI" : "NO")
+                    + "|TES=" + (nuevo.isTes() ? "SI" : "NO")
+            		+ "|ORDEN=" + nuevo.getOrden();
 
             comunicacionIP.enviarATodos(msg);
             consolaMensajes.mostrarTx(msg);
@@ -625,7 +617,6 @@ class PedidoDeFuego extends JPanel {
         PIF p = listaHistorial.getSelectedValue();
         if (p == null) return;
 
-        // NOTA: Se asume que 'Blanco' tiene los getters requeridos.
         Blanco b = p.getBlanco();
 
         JPanel contenido = new JPanel();
@@ -636,7 +627,6 @@ class PedidoDeFuego extends JPanel {
         Font fTitulo = new Font("Arial", Font.BOLD, 18);
         Font fTexto = new Font("Consolas", Font.PLAIN, 15);
 
-        // --- PANEL BLANCO (Datos del Blanco) ---
         JPanel panelBlanco = new JPanel();
         panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
         panelBlanco.setBackground(Color.BLACK);
@@ -691,23 +681,17 @@ class PedidoDeFuego extends JPanel {
         panelMetodo.add(crearLinea("Gran Ángulo: ", p.isGranAngulo() ? "Sí" : "No", fTexto));
         panelMetodo.add(Box.createVerticalStrut(8));
 
-        // --- TIRO Y CONTROL ---
         panelMetodo.add(crearLinea("--- Tiro y Control ---", "", fTitulo));
         panelMetodo.add(crearLinea("Piezas: ", p.getPiezas(), fTexto));
         
-        // *** AJUSTE NECESARIO: getRondas() NO EXISTE. Usamos getVolumen() como valor proxy/texto. ***
         panelMetodo.add(crearLinea("Rondas (Vol.): ", p.getVolumen(), fTexto)); 
         
         panelMetodo.add(crearLinea("Sección: ", p.getSeccion(), fTexto));
-        
-        // *** AJUSTE NECESARIO: La lógica de Disparo/Ráfaga debe basarse en una variable existente (getVolumen o getPiezas).
-        // Asumo que 'getPiezas()' o 'getVolumen()' tienen un formato numérico o de texto que implica el modo.
-        // Si getPiezas() es "1", es Disparos. Si es "2", "3", etc., es Ráfaga.
+
         int piezas = 0; 
         try {
             piezas = Integer.parseInt(p.getPiezas().trim());
         } catch (NumberFormatException ignored) {
-            // Si no es un número, asumimos Disparos
         }
         
         panelMetodo.add(crearLinea("Modo Disparo: ", (piezas > 1 ? "RÁFAGA" : "DISPAROS"), fTexto));

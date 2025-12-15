@@ -343,7 +343,7 @@ public class PanelMapa extends JPanel {
         Color azulOscuro = new Color(0, 45, 130);
         Stroke stroke = sb.createStroke(azulOscuro, 3.0); 
         LineSymbolizer ls = sb.createLineSymbolizer(stroke);
-        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial", false, false, 20),"distancia");
+        TextSymbolizer ts = sb.createTextSymbolizer(Color.WHITE,sb.createFont("Arial", false, false, 20),"distancia");
 
         ts.setLabelPlacement(sb.createLinePlacement(0.5)); // CENTRADO EN LA LÍNEA
 

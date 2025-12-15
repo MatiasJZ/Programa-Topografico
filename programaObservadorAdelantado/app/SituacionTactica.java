@@ -892,7 +892,7 @@ public class SituacionTactica extends JPanel {
         };
 
         String[] afiliaciones = {
-            "ALIADO", "HOSTIL", "NEUTRO", "DESCONOCIDO",
+            "HOSTIL", "ALIADO", "NEUTRO", "DESCONOCIDO",
             "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"
         };
 
@@ -1212,7 +1212,7 @@ public class SituacionTactica extends JPanel {
         };
 
         String[] afiliaciones = {
-            "ALIADO", "HOSTIL", "NEUTRO", "DESCONOCIDO",
+            "HOSTIL", "ALIADO", "NEUTRO", "DESCONOCIDO",
             "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"
         };
 

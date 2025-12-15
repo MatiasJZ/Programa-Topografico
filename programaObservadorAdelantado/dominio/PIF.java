@@ -22,11 +22,12 @@ public class PIF {
     private String seccion;
     private boolean fgoCont;
     private boolean tes;
+    private String orden;
     private ReporteFinMision reporteFin;
     
     public PIF(String id, LocalDateTime fechaHora, Blanco blanco, String mision, String registroSobre, String barreraFrente, String barreraInclinacion,
     		   String efectoDeseado,String modoFuego, boolean cercano, boolean granAngulo, String granada,
-    		   String espoleta, String volumen, String haz, String piezas, String seccion, boolean fgoCont, boolean tes) {
+    		   String espoleta, String volumen, String haz, String piezas, String seccion, boolean fgoCont, boolean tes, String orden) {
     	this.id = id;
     	this.fechaHora = fechaHora;
         this.blanco = blanco;
@@ -46,7 +47,11 @@ public class PIF {
         this.seccion = seccion;
         this.fgoCont = fgoCont;
         this.tes = tes;
-        
+        this.orden = orden;
+    }
+    
+    public String getOrden() {
+    	return orden;
     }
     
     public String mostrarDatosDePIF() {

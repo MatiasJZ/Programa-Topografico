@@ -8,12 +8,10 @@ public class ProtocoloMensajesPIF {
         return "PIF"
         		+ "|BLANCO=" + p.getBlanco().getNombre()
                 + "|NAT=" + p.getBlanco().getNaturaleza()    
-             
                 + "|MISION=" + p.getModoMision()
                 + "|REGSOBRE=" + p.getRegistroSobre()
                 + "|BARRFRENTE=" + p.getBarreraFrente()
-                + "|BARRINC=" + p.getBarreraInclinacion()
-        
+                + "|BARRINC=" + p.getBarreraInclinacion()        
                 + "|EFECTO=" + p.getEfectoDeseado()
                 + "|MODO DE FUEGO=" + p.getModoFuego()
                 + "|CERCANO=" + (p.isCercano() ? "SI" : "NO")
@@ -25,6 +23,7 @@ public class ProtocoloMensajesPIF {
                 + "|PIEZAS=" + p.getPiezas()
                 + "|SECCION=" + p.getSeccion()
                 + "|FGOCONT=" + p.isFgoCont()
-                + "|FGOCONT=" + p.isTes();
+                + "|FGOCONT=" + p.isTes()
+        		+ "|ORDEN=" + p.getOrden();
     }
 }

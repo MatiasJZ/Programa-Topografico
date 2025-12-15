@@ -15,6 +15,8 @@ public class CorreccionesPanel extends JPanel {
 	private JComboBox<String> cbDireccion;
     private JComboBox<String> cbAlcance;
     private JComboBox<String> cbAltura;
+    
+    private MetodoAtaqueYTiroPanel metAtaqueYTiroPanel;
 
     private JTextField txtDirValor;
     private JTextField txtAlcValor;
@@ -24,13 +26,19 @@ public class CorreccionesPanel extends JPanel {
     private JButton btnFinMision;
     private JButton btnEnviar;	
     private JButton btnVolver;
+    private JButton btnFuego;
+    
+    private Timer timerFuego;
+    private boolean fuegoEstado = false;
 
     private JLabel lblUltima;
     
     private PanelCuadricula panelCuadricula;
     private final int ESCALA_METROS_POR_CUADRICULA = 200;
 
-    public CorreccionesPanel(Blanco blanco) {	
+    public CorreccionesPanel(Blanco blanco, MetodoAtaqueYTiroPanel m) {	
+    	
+    	metAtaqueYTiroPanel = m;
     	
     	TitledBorder borde = BorderFactory.createTitledBorder("CORRECCIONES");
     	borde.setTitleColor(Color.WHITE);
@@ -103,7 +111,15 @@ public class CorreccionesPanel extends JPanel {
         btnFinMision.setBackground(Color.GRAY);
         btnEnviar.setBackground(Color.RED);
         
+        timerFuego = new Timer(500, e -> {
+            fuegoEstado = !fuegoEstado;
 
+            if (fuegoEstado) {
+                btnFuego.setBackground(new Color(255, 60, 60)); // Rojo más brillante
+            } else 
+                btnFuego.setBackground(new Color(180, 0, 0));   // Rojo más oscuro
+        });
+        
         for (JButton b : bs) {
             b.setForeground(Color.BLACK);
             b.setFont(new Font("Arial", Font.BOLD, 18));
@@ -148,11 +164,34 @@ public class CorreccionesPanel extends JPanel {
         btnVolver.setFocusPainted(false);
         add(btnVolver);
         
+        btnFuego = new JButton("FUEGO"); 
+        btnFuego.setBounds(240, 400, 180, 40);
+        btnFuego.setBackground(new Color(200, 0, 0)); 
+        btnFuego.setForeground(Color.WHITE);
+        btnFuego.setFont(new Font("Arial", Font.BOLD, 18));
+        btnFuego.setFocusPainted(false);
+        btnFuego.setVisible(false); 
+        add(btnFuego);
+        
+        btnFuego.addActionListener(a -> {
+            firePropertyChange("ENVIAR_FUEGO", false, true);
+            btnFuego.setVisible(false);
+            timerFuego.stop();
+        });
+        
         btnEnviar.addActionListener(e -> {
             int xMetros = 0; 
             int yMetros = 0; 
             
             try {
+            	
+            	if(m.orden().equals("A-MI-ORDEN")) {
+	            	btnFuego.setVisible(true);
+	                timerFuego.start();
+	            	CorreccionesPanel.this.revalidate();
+	                CorreccionesPanel.this.repaint();
+            	}
+            	
                 int valorDir = Integer.parseInt(txtDirValor.getText().trim());
                 int valorAlc = Integer.parseInt(txtAlcValor.getText().trim());
 
