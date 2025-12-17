@@ -50,7 +50,7 @@ public class ObservadorAdelantado extends JPanel {
 
     public ObservadorAdelantado(LinkedList<Blanco> listaDeBlancos) {
 
-        pedirID();
+        //pedirID();
 
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
@@ -153,19 +153,29 @@ public class ObservadorAdelantado extends JPanel {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 90, Image.SCALE_SMOOTH);
         ImageIcon icono = new ImageIcon(imgEscalada);
+
         sonidos = new SoundManager();
 
         while (true) {
-            String idIngresado = (String) JOptionPane.showInputDialog(
+
+            JPasswordField passwordField = new JPasswordField(15);
+            passwordField.setEchoChar('*');
+            passwordField.setFont(new Font("Arial", Font.BOLD, 15));           
+
+            int opcion = JOptionPane.showConfirmDialog(
                     null,
-                    "Ingresar ID de OAA:",
+                    passwordField,
                     "Autenticación requerida",
+                    JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
-                    icono,
-                    null,
-                    null
+                    icono
             );
-            if (idIngresado == null) System.exit(0);
+
+            if (opcion != JOptionPane.OK_OPTION) {
+                System.exit(0);
+            }
+
+            String idIngresado = new String(passwordField.getPassword());
 
             for (String valido : IDS_VALIDOS) {
                 if (idIngresado.equals(valido)) {
@@ -189,6 +199,10 @@ public class ObservadorAdelantado extends JPanel {
         for (int i = 0; i < botonesMenu.length; i++) {
             botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
+    }
+    
+    public PedidoDeFuego getPedidoDeFuego() {
+    	return pedidoDeFuego;
     }
 
     public String getIdOAA() {

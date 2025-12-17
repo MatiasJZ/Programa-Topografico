@@ -586,9 +586,10 @@ class PedidoDeFuego extends JPanel {
         
         if (comunicacionIP != null) {
             String msg = "PIF"
-                    + "|BLANCO=" + b.getNombre()
-                    + "|NAT=" + b.getNaturaleza()                     
                     + "|MISION=" + nuevo.getModoMision()
+                    + "|BLANCO=" + nuevo.getBlanco().getNombre()
+                    + "|NAT=" + nuevo.getBlanco().getNaturaleza()  
+                    + "|FASE REGLAJE="+mt.getFaseReglaje()
                     + "|REGSOBRE=" + nuevo.getRegistroSobre()
                     + "|BARRFRENTE=" + nuevo.getBarreraFrente()
                     + "|BARRINC=" + nuevo.getBarreraInclinacion()           

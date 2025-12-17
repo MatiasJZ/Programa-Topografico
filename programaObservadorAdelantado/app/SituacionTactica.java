@@ -19,6 +19,7 @@ import dominio.SituacionMovimiento;
 import dominio.coordPolares;
 import dominio.coordRectangulares;
 import dominio.poligonal;
+import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.PanelMapa;
 import util.SoundManager;
 
@@ -1920,4 +1921,8 @@ public class SituacionTactica extends JPanel {
     public LinkedList<Blanco> getListaDeBlancos(){
     	return listaDeBlancos;
     }
+
+	public MetodoAtaqueYTiroPanel getMetodoAtaqueYTiroPanel() {
+		return observador.getPedidoDeFuego().getMetodoYTiroPanel();
+	}
 }

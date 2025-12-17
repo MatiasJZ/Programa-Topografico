@@ -119,8 +119,6 @@ public class ComunicacionIP {
             try {
                 Socket socket = new Socket();
 
-                // Forzar uso de la interfaz del Harris
-                socket.bind(new InetSocketAddress(interfazlocal, 0));
                 socket.connect(new InetSocketAddress(ipDestino, puerto), 3000);
 
                 PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);

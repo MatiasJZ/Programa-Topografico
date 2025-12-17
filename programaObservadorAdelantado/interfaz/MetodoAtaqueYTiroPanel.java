@@ -6,6 +6,8 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import dominio.Blanco;
 import dominio.PIF;
@@ -21,7 +23,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JComboBox<String> comboEspoleta;
     private JComboBox<String> comboHaz;
     private JTextField txtVolumen;
-    private JRadioButton rbDisparos, rbRafaga;
+    private JRadioButton rbDisparosAtaque, rbRafagaAtaque, rbDisparosReglaje, rbRafagaReglaje;
     private JComboBox<String> comboPiezas;
     private JComboBox<String> comboSeccion;
     private JComboBox<String> comboEfectoDeseado;
@@ -49,10 +51,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
     private JButton btnCorrecciones;
     private JButton btnEnviar;
-    private JButton btnFuego;
-
-    private Timer timerFuego;
-    private boolean fuegoEstado = false;
     
     private CardLayout cardAlternable;
     private JPanel panelAlternable;
@@ -112,13 +110,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         panelCorrecciones.getBtnVolver().addActionListener(
             e -> cardCorrecciones.show(panelCard, "principal")
         );
-
-        timerFuego = new Timer(500, e -> {
-            fuegoEstado = !fuegoEstado;
-            btnFuego.setBackground(
-                fuegoEstado ? new Color(255,60,60) : new Color(180,0,0)
-            );
-        });
     }
 
     public void actualizar() {
@@ -136,11 +127,15 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         grid.setBackground(Color.BLACK);
 
         Dimension comboSize = new Dimension(220, 30);
+        
+        rbDisparosReglaje = crearRadio("DISPAROS", iconoRB);
+        rbRafagaReglaje  = crearRadio("RÁFAGA", iconoRB);
+        agrupar(rbDisparosReglaje, rbRafagaReglaje);
 
         // MODO DE FUEGO
         JPanel modoPanel = crearFila();
-        modoPanel.add(rbDisparos);
-        modoPanel.add(rbRafaga);
+        modoPanel.add(rbDisparosReglaje);
+        modoPanel.add(rbRafagaReglaje);
         grid.add(crearItem("MODO DE FUEGO:", modoPanel));
 
         // VOLUMEN
@@ -152,10 +147,10 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         volumenReglaje.setBackground(new Color(60,60,60));
 
         // sincroniza con el volumen principal
-        volumenReglaje.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { txtVolumen.setText(volumenReglaje.getText()); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { txtVolumen.setText(volumenReglaje.getText()); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {}
+        volumenReglaje.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { txtVolumen.setText(volumenReglaje.getText()); }
+            public void removeUpdate(DocumentEvent e) { txtVolumen.setText(volumenReglaje.getText()); }
+            public void changedUpdate(DocumentEvent e) {}
         });
 
         grid.add(crearItem("VOLUMEN:", volumenReglaje));
@@ -222,8 +217,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         rbSupresion = crearRadio("SUPRESIÓN", iconoRB);
         rbSupresionInmediata = crearRadio("SUPRESIÓN INMEDIATA", iconoRB);
 
-        for (JRadioButton rb : new JRadioButton[]{
-                rbEficacia, rbReglare, rbSupresion, rbSupresionInmediata }) {
+        for (JRadioButton rb : new JRadioButton[]{ rbEficacia, rbReglare, rbSupresion, rbSupresionInmediata }) {
             rb.setFont(new Font("Arial", Font.BOLD, 14));
             rb.setBackground(Color.BLACK);
             grupo.add(rb);
@@ -267,7 +261,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
         for (JToggleButton b : fases) {
             b.setFont(new Font("Arial", Font.BOLD, 13));
-            b.setForeground(Color.WHITE);
+            b.setForeground(Color.GRAY);
             b.setBackground(colorNormal);
             b.setPreferredSize(new Dimension(140,30));
             b.setOpaque(true);
@@ -299,11 +293,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         panelSwitches.add(panelFases, gbc);
 
         // LÓGICA DE VISIBILIDAD 
-
-        rbReglare.addActionListener(e -> {
-            panelFases.setVisible(true);
-            rbReglajeSelector.setEnabled(true);
-        });
 
         ActionListener ocultarReglaje = e -> {
             panelFases.setVisible(false);
@@ -402,10 +391,31 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
             rbReglajeSelector.setEnabled(true);
             rbReglajeSelector.setSelected(true);
             cardAlternable.show(panelAlternable, "reglaje");
+            panelCorrecciones.registrarLabelDeModoDeMision("REGLARE");
+            panelCorrecciones.getPanelCuadricula().setMetrosPorPunto(200);
+            panelCorrecciones.reiniciarCuadricula();
+            panelCorrecciones.setZoomHabilitado(true);
         });
         
         rbEficacia.addActionListener(a-> { 
-        	
+        	panelCorrecciones.registrarLabelDeModoDeMision("EFICACIA");
+            panelCorrecciones.getPanelCuadricula().setMetrosPorPunto(30);
+            panelCorrecciones.reiniciarCuadricula();
+            panelCorrecciones.setZoomHabilitado(true);
+        });
+        
+        rbSupresion.addActionListener(a-> { 
+        	panelCorrecciones.registrarLabelDeModoDeMision("SUPRESION");
+            panelCorrecciones.getPanelCuadricula().setMetrosPorPunto(30);
+            panelCorrecciones.reiniciarCuadricula();
+            panelCorrecciones.setZoomHabilitado(true);
+        });
+        
+        rbSupresionInmediata.addActionListener(a-> { 
+        	panelCorrecciones.registrarLabelDeModoDeMision("SUPRESION I.");
+            panelCorrecciones.getPanelCuadricula().setMetrosPorPunto(30);
+            panelCorrecciones.reiniciarCuadricula();
+            panelCorrecciones.setZoomHabilitado(true);
         });
         
         txtBarreraFrente.addActionListener( e -> { 
@@ -480,7 +490,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     private JPanel crearMetodoAtaque() {
         JPanel panel = crearBlindado("MÉTODO DE ATAQUE");
         
-        JPanel grid = new JPanel(new GridLayout(5, 2, 15, 12)); 
+        JPanel grid = new JPanel(new GridLayout(0, 2, 15, 12));
         grid.setBackground(Color.BLACK);
         
         Dimension comboSize = new Dimension(220, 30);
@@ -488,13 +498,13 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         comboEfectoDeseado = crearCombo(efectos, comboSize);
         grid.add(crearItem("EFECTO DESEADO:", comboEfectoDeseado));
         
-        rbDisparos = crearRadio("DISPAROS", iconoRB);
-        rbRafaga = crearRadio("RÁFAGA", iconoRB);
-        agrupar(rbDisparos, rbRafaga);
+        rbDisparosAtaque = crearRadio("DISPAROS", iconoRB);
+        rbRafagaAtaque = crearRadio("RÁFAGA", iconoRB);
+        agrupar(rbDisparosAtaque, rbRafagaAtaque);
         
         JPanel modoPanel = crearFila();
-        modoPanel.add(rbDisparos);
-        modoPanel.add(rbRafaga);
+        modoPanel.add(rbDisparosAtaque);
+        modoPanel.add(rbRafagaAtaque);
         grid.add(crearItem("MODO:", modoPanel)); 
 
         // CERCANO 
@@ -595,39 +605,19 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         btnEnviar.setForeground(Color.WHITE);
         btnEnviar.setFont(new Font("Arial", Font.BOLD, 16));
         btnEnviar.setFocusPainted(false);
-
-        btnFuego = new JButton("FUEGO"); 
-        btnFuego.setPreferredSize(new Dimension(180, 40));
-        btnFuego.setBackground(new Color(200, 0, 0)); 
-        btnFuego.setForeground(Color.WHITE);
-        btnFuego.setFont(new Font("Arial", Font.BOLD, 18));
-        btnFuego.setFocusPainted(false);
-        btnFuego.setVisible(false); 
-        btnFuego.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        btnFuego.addActionListener(a -> {
-            timerFuego.stop(); 
-            btnFuego.setVisible(false);
-            btnFuego.setBackground(new Color(200,0,0));
-            cardCorrecciones.show(panelCard, "correcciones");
-            panelMisionDeFuego.setVisible(false);
-            firePropertyChange("ENVIAR_FUEGO", false, true);
-            MetodoAtaqueYTiroPanel.this.revalidate();
-            MetodoAtaqueYTiroPanel.this.repaint();
-        });
         
         btnEnviar.addActionListener(e -> {
             notificarEnvioPIF();
             
-            btnFuego.setVisible(false); 
             panelCorrecciones.reiniciarCuadricula();
             
             if (rbAMiOrden.isSelected()) {
-                btnFuego.setVisible(true);
-                timerFuego.start();      
+                panelCorrecciones.getBtnFuego().setVisible(true);
+                panelCorrecciones.getTimerFuego().start();
+                cardCorrecciones.show(panelCard, "correcciones");
+                panelMisionDeFuego.setVisible(false);
             } else {
-                timerFuego.stop();       
-                btnFuego.setBackground(new Color(200,0,0)); 
+                panelCorrecciones.getBtnFuego().setBackground(new Color(200,0,0)); 
             }
             
             if (rbCuandoListo.isSelected()) {
@@ -657,7 +647,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         total.add(radiosModo);
         total.add(btnEnviar);
         total.add(btnCorrecciones);
-        total.add(btnFuego);
 
         return total;
     }
@@ -755,6 +744,17 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     public void setRegistroSobre(String s) {
     	txtRegistroSobre.setText(s);
     }
+    
+    public String getFaseReglaje() {
+    	if(btnFasePercusion.isSelected()) return "PERCUSION";
+	    	else {
+	    		if(btnFaseTiempo.isSelected()) return "TIEMPO";    		
+	    			else {
+	    				if(btnBarrera.isSelected()) return "BARRERA";    			
+	    					else return "-";
+	    				 }
+	    		 }    	                                  
+    }
 
     public String getBarreraFrente() {
         return txtBarreraFrente.getText().trim();
@@ -773,10 +773,13 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
     }
     
     public String getModoFuego() {
-    	if(rbDisparos.isSelected())
+    	if(rbDisparosAtaque.isSelected() || rbDisparosReglaje.isSelected())
     		return "DISPAROS";
-    	else 
-    		return "RAFAGAS";
+    	else {
+    		if(rbRafagaAtaque.isSelected() || rbRafagaReglaje.isSelected())
+    			return "RAFAGAS";
+    		else return "-";
+    	}
     }
     
     public boolean isCercano() { return rbCercanoSi.isSelected(); }
