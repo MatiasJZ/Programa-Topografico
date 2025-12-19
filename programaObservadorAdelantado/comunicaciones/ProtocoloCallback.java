@@ -1,8 +1,14 @@
 package comunicaciones;
 
+import java.io.File;
+
 public interface ProtocoloCallback {
 
-    void recibir(String mensaje);
+	    // Texto (ya existente)
+	    void recibir(String mensaje);
 
-    void log(String texto);
-}
+	    // NUEVO: archivo recibido
+	    default void recibirArchivo(File archivo) {}
+
+	    void log(String texto);
+	}

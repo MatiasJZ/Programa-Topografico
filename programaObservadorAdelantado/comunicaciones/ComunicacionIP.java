@@ -1,11 +1,17 @@
 package comunicaciones;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.awt.Desktop;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class ComunicacionIP {
 
@@ -77,16 +83,9 @@ public class ComunicacionIP {
 
                     Socket cli = servidor.accept();
 
-                    BufferedReader br = new BufferedReader(
-                            new InputStreamReader(cli.getInputStream())
-                    );
-
-                    String msg = br.readLine();
-                    if (msg != null && !msg.isEmpty()) {
-                        callback.recibir(msg);
-                    }
-
-                    cli.close();
+                    new Thread(() -> manejarCliente(cli),
+                            "RX-Cliente-" + cli.getRemoteSocketAddress()
+                    ).start();
                 }
 
             } catch (Exception e) {
@@ -98,44 +97,158 @@ public class ComunicacionIP {
         }, "ServidorTCP-Harris").start();
     }
 
-    public void enviar(String ipDestino, String mensaje) {
+    private void manejarCliente(Socket cli) {
 
-        if (interfazlocal == null) {
-            if (callback != null) callback.log("[ERROR] No se configuró interfaz local (ipLocal).");
-            return;
+        try (DataInputStream dis =
+                     new DataInputStream(cli.getInputStream())) {
+
+            String tipo = dis.readUTF(); // TEXT | FILE
+
+            if ("TEXT".equals(tipo)) {
+
+                String msg = dis.readUTF();
+                callback.recibir(msg);
+
+            } else if ("FILE".equals(tipo)) {
+
+                String nombre = dis.readUTF();
+                long size = dis.readLong();
+
+                File dir = new File("recibidos");
+                dir.mkdirs();
+
+                File out = new File(dir, nombre);
+
+                try (FileOutputStream fos = new FileOutputStream(out)) {
+
+                    byte[] buf = new byte[4096];
+                    long recibidos = 0;
+
+                    while (recibidos < size) {
+                        int r = dis.read(buf, 0,
+                                (int) Math.min(buf.length, size - recibidos));
+                        if (r == -1) break;
+                        fos.write(buf, 0, r);
+                        recibidos += r;
+                    }
+                }
+
+                callback.log("[RX-FILE] " + out.getName() +
+                             " (" + size + " bytes)");
+
+                SwingUtilities.invokeLater(() ->
+                	preguntarApertura(out)
+                );
+
+            }
+
+        } catch (Exception e) {
+            callback.log("[ERROR RX] " + e.getMessage());
+        } finally {
+            try { cli.close(); } catch (Exception ignored) {}
         }
+    }
+    
+    private void preguntarApertura(File f) {
 
-        if (ipDestino == null || ipDestino.isEmpty()) {
-            if (callback != null) callback.log("[ERROR] IP destino vacía.");
-            return;
+        String[] opciones = {
+            "Abrir ahora",
+            "Solo descargar",
+            "Cancelar"
+        };
+
+        int r = JOptionPane.showOptionDialog(
+                null,
+                "Archivo recibido:\n" + f.getName() +
+                "\n\n¿Qué desea hacer?",
+                "Archivo recibido",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        if (r == 0) { // Abrir ahora
+            abrirArchivo(f);
+        } else if (r == 1) {
+            callback.log("[INFO] Archivo descargado: " + f.getName());
+        } else {
+            callback.log("[INFO] Recepción ignorada: " + f.getName());
         }
+    }
 
-        if (mensaje == null || mensaje.isEmpty()) {
-            if (callback != null) callback.log("[INFO] Mensaje vacío, no se envía nada.");
+    private void abrirArchivo(File f) {
+        try {
+            if (!Desktop.isDesktopSupported()) {
+                callback.log("[INFO] Apertura automática no soportada.");
+                return;
+            }
+            Desktop.getDesktop().open(f);
+            callback.log("[INFO] Archivo abierto: " + f.getName());
+        } catch (Exception e) {
+            callback.log("[ERROR] No se pudo abrir archivo: " + e.getMessage());
+        }
+    }
+
+    
+    public void enviarArchivo(String ipDestino, File f) {
+
+        if (interfazlocal == null || f == null || !f.exists()) {
+            callback.log("[ERROR] Archivo o interfaz inválidos.");
             return;
         }
 
         new Thread(() -> {
-            try {
-                Socket socket = new Socket();
+            try (Socket socket = new Socket()) {
 
                 socket.connect(new InetSocketAddress(ipDestino, puerto), 3000);
 
-                PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
-                pw.println(mensaje);
+                DataOutputStream dos =
+                        new DataOutputStream(socket.getOutputStream());
 
-                if (callback != null) {
-                    callback.log("[TX → " + ipDestino + "] " + mensaje);
-                }
+                dos.writeUTF("FILE");
+                dos.writeUTF(f.getName());
+                dos.writeLong(f.length());
 
-                socket.close();
+                Files.copy(f.toPath(), dos);
+                dos.flush();
+
+                callback.log("[TX-FILE → " + ipDestino + "] "
+                             + f.getName());
 
             } catch (Exception e) {
-                if (callback != null) {
-                    callback.log("[ERROR] No se pudo enviar a " + ipDestino + ": " + e.getMessage());
-                }
+                callback.log("[ERROR TX-FILE] " + e.getMessage());
             }
-        }, "ClienteTCP-Harris").start();
+
+        }, "TX-FILE-Harris").start();
+    }
+
+    public void enviar(String ipDestino, String mensaje) {
+
+        if (interfazlocal == null || callback == null) return;
+        if (ipDestino == null || ipDestino.isEmpty()) return;
+        if (mensaje == null || mensaje.isEmpty()) return;
+
+        new Thread(() -> {
+            try (Socket socket = new Socket()) {
+
+                socket.connect(new InetSocketAddress(ipDestino, puerto), 3000);
+
+                DataOutputStream dos =
+                        new DataOutputStream(socket.getOutputStream());
+
+                dos.writeUTF("TEXT");
+                dos.writeUTF(mensaje);
+                dos.flush();
+
+                callback.log("[TX → " + ipDestino + "] " + mensaje);
+
+            } catch (Exception e) {
+                callback.log("[ERROR TX] " + e.getMessage());
+            }
+
+        }, "TX-TEXT-Harris").start();
     }
     
     public void enviarATodos(String mensaje) {

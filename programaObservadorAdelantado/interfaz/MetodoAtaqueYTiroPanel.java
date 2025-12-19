@@ -819,6 +819,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
 
     public void mostrarPanelPrincipal() {
         cardCorrecciones.show(panelCard, "principal");
+        panelMisionDeFuego.setVisible(true);
     }
 
     public CorreccionesPanel getCorreccionesPanel() {

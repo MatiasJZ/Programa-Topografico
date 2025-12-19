@@ -180,10 +180,10 @@ public class SituacionTactica extends JPanel {
 		Insets padding = new Insets(4, 10, 4, 10);
 		
 		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
-		b.setFont(fuente);
-		b.setMargin(padding);
-		b.setPreferredSize(compacto);
-		b.setFocusPainted(false);
+			b.setFont(fuente);
+			b.setMargin(padding);
+			b.setPreferredSize(compacto);
+			b.setFocusPainted(false);
 		}
 		
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -362,13 +362,14 @@ public class SituacionTactica extends JPanel {
 
         // actualizar
         btnActualizar.addActionListener(e -> {
-        actualizarBlancosEnMapa();
+        	actualizarBlancosEnMapa();
         });
 
         // PIF
         btnPIF.addActionListener(e -> {
-        armarPIF(listaUIBlancos.getSelectedValue());
-        
+        	armarPIF(listaUIBlancos.getSelectedValue());        
+        	panelPIF.mostrarDatosDeBlanco();
+        	panelPIF.getMetodoYTiroPanel().mostrarPanelPrincipal();
         });
 
         JPopupMenu popupMenu = new JPopupMenu();
@@ -413,18 +414,45 @@ public class SituacionTactica extends JPanel {
         });
 
         listaUIBlancos.addMouseListener(new MouseAdapter() {
+
             @Override
-            public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+            public void mouseClicked(MouseEvent e) {
+
+                // Doble click / doble tap
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+
+                    int idx = listaUIBlancos.locationToIndex(e.getPoint());
+                    if (idx >= 0) {
+                        listaUIBlancos.setSelectedIndex(idx);
+                        popupMenu.show(listaUIBlancos, e.getX(), e.getY());
+                    }
+                }
+
+                // Click derecho / long-press (tablet)
+                if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+                    mostrarPopup(e);
+                }
+            }
+
             @Override
-            public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) mostrarPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) mostrarPopup(e);
+            }
+
             private void mostrarPopup(MouseEvent e) {
                 int idx = listaUIBlancos.locationToIndex(e.getPoint());
                 if (idx >= 0) {
-                	listaUIBlancos.setSelectedIndex(idx);
+                    listaUIBlancos.setSelectedIndex(idx);
                     popupMenu.show(listaUIBlancos, e.getX(), e.getY());
                 }
             }
         });
+
     }
 
     private void pedirArchivoAMostrar() {

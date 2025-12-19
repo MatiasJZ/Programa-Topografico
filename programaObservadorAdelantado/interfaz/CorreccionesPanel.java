@@ -167,7 +167,7 @@ public class CorreccionesPanel extends JPanel {
         chkModoAutomatico.setFont(new Font("Arial", Font.BOLD, 16));
         chkModoAutomatico.setForeground(Color.WHITE);
         chkModoAutomatico.setBackground(Color.BLACK);
-        chkModoAutomatico.setBounds(450, 630, 250, 40);
+        chkModoAutomatico.setBounds(450, 620, 250, 40);
         chkModoAutomatico.setIcon(new CheckIconGrande(22));
         add(chkModoAutomatico);
 
@@ -258,19 +258,19 @@ public class CorreccionesPanel extends JPanel {
         l4.setBounds(810, 160, 200, 28);
         l5.setBounds(x1, 200, 500, 80);
 
-        btnNuevoPIF.setBounds(710, 580, 180, 45);
-        btnFinMision.setBounds(710, 635, 180, 45);
-        btnEnviar.setBounds(900, 580, 180, 45);
+        btnNuevoPIF.setBounds(710, 550, 180, 45);
+        btnFinMision.setBounds(710, 605, 180, 45);
+        btnEnviar.setBounds(900, 550, 180, 45);
 
         btnVolver = new JButton("VOLVER");
-        btnVolver.setBounds(20, 630, 180, 40);
+        btnVolver.setBounds(20, 620, 180, 40);
         btnVolver.setBackground(new Color(60,60,60));
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setFont(new Font("Arial", Font.BOLD, 18));
         btnVolver.setFocusPainted(false);
         add(btnVolver);
         
-        btnHistorial.setBounds(220, 630, 180, 40);
+        btnHistorial.setBounds(220, 620, 180, 40);
         btnHistorial.setBackground(new Color(60,60,60));
         btnHistorial.setForeground(Color.WHITE);
         btnHistorial.setFont(new Font("Arial", Font.BOLD, 18));
@@ -278,7 +278,7 @@ public class CorreccionesPanel extends JPanel {
         add(btnHistorial);
         
         btnFuego = new JButton("FUEGO"); 
-        btnFuego.setBounds(900, 635, 180, 45);
+        btnFuego.setBounds(900, 605, 180, 45);
         btnFuego.setBackground(new Color(200, 0, 0)); 
         btnFuego.setForeground(Color.WHITE);
         btnFuego.setFont(new Font("Arial", Font.BOLD, 18));
@@ -370,6 +370,9 @@ public class CorreccionesPanel extends JPanel {
         
         add(panelCuadricula);
 
+
+        panelCuadricula.setMetrosPorPunto(30);
+        
         this.setComponentZOrder(panelCuadricula, getComponentCount() - 1);
         this.setComponentZOrder(btnZoomIn, 0);
         this.setComponentZOrder(btnZoomOut, 0);
@@ -398,6 +401,9 @@ public class CorreccionesPanel extends JPanel {
         }
     }
     
+    public Map<String, String> getHistorialCorrecciones() {
+        return new LinkedHashMap<>(historial);
+    }
     public Timer getTimerFuego() { return timerFuego;	 }
     public JTextField getEPA() { return txtEPA; }
     public JTextField getAngOb() { return txtAngOb; }
@@ -421,10 +427,12 @@ public class CorreccionesPanel extends JPanel {
         private static final long serialVersionUID = 1L;
         private int metrosPorPunto = 200;           // A
         private static final int PUNTOS_SEMIEJE = 4; // fijo
-        private static final int TAM_PUNTO = 10;
+        @SuppressWarnings("unused")
+		private static final int TAM_PUNTO = 10;
 
         private String nombreBlanco;
-        private Point disparoPixel;
+        @SuppressWarnings("unused")
+		private Point disparoPixel;
         private int disparoXMetros;
         private int disparoYMetros;
 
@@ -587,7 +595,8 @@ public class CorreccionesPanel extends JPanel {
             repaint();
         }
 
-        private int rangoMaxMetros() {
+        @SuppressWarnings("unused")
+		private int rangoMaxMetros() {
             return metrosPorPunto * PUNTOS_SEMIEJE;
         }
 

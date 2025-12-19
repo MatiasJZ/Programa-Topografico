@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.Map;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -28,7 +30,7 @@ import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.CorreccionesPanel;
 import interfaz.PanelMapa;
 	
-class PedidoDeFuego extends JPanel {
+public class PedidoDeFuego extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -83,6 +85,28 @@ class PedidoDeFuego extends JPanel {
     public void setComunicacionIP(ComunicacionIP com) {
         this.comunicacionIP = com;
     }
+    
+    public void recibirMTO(String epa, String angob, String tvolido) {
+    	metodoYTiroPanel.getCorreccionesPanel().getEPA().setText(epa);
+    	metodoYTiroPanel.getCorreccionesPanel().getAngOb().setText(angob);
+    	metodoYTiroPanel.getCorreccionesPanel().getTVolido().setText(tvolido);
+    }
+    
+    public void mostrarDatosDeBlanco() {
+        SwingUtilities.invokeLater(() -> {
+            indiceActual = 0; // índice de DATOS BLANCO
+            cardLayout.show(pifCardPanel, "datos");
+            actualizarBotones();
+        });
+    }
+
+    public void mostrarMetodoYAtaque() {
+        SwingUtilities.invokeLater(() -> {
+            indiceActual = 1; // índice de METODO / ATAQUE
+            cardLayout.show(pifCardPanel, "metodoTiro");
+            actualizarBotones();
+        });
+    }
 
     private void crearCardLayout() {
 
@@ -129,6 +153,8 @@ class PedidoDeFuego extends JPanel {
         JPanel panel = new JPanel(new GridLayout(1, 2, 5, 5));
         panel.setBackground(Color.BLACK);
 
+        panel.setPreferredSize(new Dimension(0, 30));
+        
         btnDatos = new JButton("DATOS DEL BLANCO");
         btnMetodo = new JButton("MÉTODO Y TIRO");
 
@@ -325,6 +351,9 @@ class PedidoDeFuego extends JPanel {
     private void generarPDFFinMision(PIF pif, ReporteFinMision rep) {
         try {
 
+        	CorreccionesPanel corr = metodoYTiroPanel.getCorreccionesPanel();
+        	Map<String, String> historial = corr.getHistorialCorrecciones();
+        	
         	String desktop = System.getProperty("user.home") + File.separator + "Desktop";
             String nombreArchivo = desktop + File.separator + "FinMision_" + pif.getId() + ".pdf";
 
@@ -363,6 +392,36 @@ class PedidoDeFuego extends JPanel {
             agregarFilaPDF("Observaciones", rep.getObservaciones(), tabla);
 
             doc.add(tabla);
+            
+            doc.add(Chunk.NEWLINE);
+            doc.add(new Paragraph("HISTORIAL DE DISPAROS Y CORRECCIONES"));
+            doc.add(Chunk.NEWLINE);
+
+            if (historial.isEmpty()) {
+                doc.add(new Paragraph("(No se registraron correcciones)"));
+            } else {
+
+                PdfPTable tablaHist = new PdfPTable(2);
+                tablaHist.setWidthPercentage(100);
+                tablaHist.setWidths(new float[]{1, 4});
+
+                PdfPCell h1 = new PdfPCell(new Phrase("Disparo"));
+                PdfPCell h2 = new PdfPCell(new Phrase("Detalle"));
+
+                h1.setBackgroundColor(BaseColor.GRAY);
+                h2.setBackgroundColor(BaseColor.GRAY);
+
+                tablaHist.addCell(h1);
+                tablaHist.addCell(h2);
+
+                historial.forEach((id, texto) -> {
+                    tablaHist.addCell(new PdfPCell(new Phrase(id)));
+                    tablaHist.addCell(new PdfPCell(new Phrase(texto)));
+                });
+
+                doc.add(tablaHist);
+            }
+            
             doc.close();
 
             JOptionPane.showMessageDialog(

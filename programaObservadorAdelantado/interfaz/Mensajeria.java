@@ -1,6 +1,8 @@
 package interfaz;
 
 import java.awt.*;
+import java.io.File;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -65,14 +67,27 @@ public class Mensajeria extends JPanel {
 
         JScrollPane scrollEscritura = new JScrollPane(txtMensaje);
 
+        JPanel panelBotones = new JPanel(new GridLayout(2, 1, 5, 5));
+        panelBotones.setBackground(Color.BLACK);
+
         JButton btnEnviarChat = new JButton("ENVIAR");
         btnEnviarChat.setBackground(new Color(60, 130, 255));
         btnEnviarChat.setForeground(Color.WHITE);
         btnEnviarChat.setFont(new Font("Arial", Font.BOLD, 16));
         btnEnviarChat.addActionListener(e -> enviarChat());
 
+        JButton btnEnviarArchivo = new JButton("📎 ARCHIVO");
+        btnEnviarArchivo.setBackground(new Color(90, 90, 90));
+        btnEnviarArchivo.setForeground(Color.WHITE);
+        btnEnviarArchivo.setFont(new Font("Arial", Font.BOLD, 14));
+        btnEnviarArchivo.addActionListener(e -> enviarArchivo());
+
+        panelBotones.add(btnEnviarArchivo);
+        panelBotones.add(btnEnviarChat);
+
+        panelEscritura.add(panelBotones, BorderLayout.EAST);
+
         panelEscritura.add(scrollEscritura, BorderLayout.CENTER);
-        panelEscritura.add(btnEnviarChat, BorderLayout.EAST);
 
         panelCentral.add(panelEscritura);
 
@@ -96,6 +111,38 @@ public class Mensajeria extends JPanel {
     public void setComunicacion(ComunicacionIP c) {
         this.com = c;
     }
+    
+    private void enviarArchivo() {
+
+        if (com == null) {
+            agregarLog("[ERROR] Comunicacion IP no configurada.");
+            return;
+        }
+
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle("Seleccionar archivo a enviar");
+
+        int r = fc.showOpenDialog(this);
+        if (r != JFileChooser.APPROVE_OPTION) return;
+
+        File f = fc.getSelectedFile();
+
+        int conf = JOptionPane.showConfirmDialog(
+                this,
+                "Enviar archivo:\n" + f.getName() + "?",
+                "Confirmar envío",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (conf != JOptionPane.YES_OPTION) return;
+
+        agregarLog("[TX-FILE] " + f.getName());
+
+        for (String ip : com.getDestinos()) {
+            com.enviarArchivo(ip, f);
+        }
+    }
+
 
     private void enviarChat() {
         if (com == null) {

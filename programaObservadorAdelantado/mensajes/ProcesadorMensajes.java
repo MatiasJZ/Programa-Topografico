@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 import app.ConsolaMensajes;
+import app.PedidoDeFuego;
 import app.PopupAlerta;
 import app.SituacionTactica;
 import dominio.Blanco;
@@ -14,10 +15,12 @@ public class ProcesadorMensajes {
 
     private ConsolaMensajes consola;
     private SituacionTactica panelTactico;
+    private PedidoDeFuego panelPedidoDeFuego;
     private LinkedList<Blanco> listaDeBlancos;
 
-    public ProcesadorMensajes(ConsolaMensajes consola,SituacionTactica panelTactico,LinkedList<Blanco> listaDeBlancos) {
-        this.consola = consola;
+    public ProcesadorMensajes(PedidoDeFuego panelPedidoDeFuego,SituacionTactica panelTactico,LinkedList<Blanco> listaDeBlancos) {
+    	consola= panelPedidoDeFuego.getConsolaMensajes();
+    	this.panelPedidoDeFuego = panelPedidoDeFuego;
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
     }
@@ -46,16 +49,18 @@ public class ProcesadorMensajes {
     }
 
     private void procesarMTO(String msg) {
-    	String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
-        if (contenido == null) return;
+    	String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
+    	String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
+    	String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
 
-        consola.agregarMensaje("[MTO] " + contenido);
+    	panelPedidoDeFuego.recibirMTO(EPA,ANGOB,TVOLIDO);
+    		
+        consola.agregarMensaje("[MTO] RECIBIDO");
                
         SwingUtilities.invokeLater(() ->
         PopupAlerta.mostrar(
-            "MTO:",
-            contenido
-        )
+            "MTO",
+            "RECIBIDO Y DISPONIBLE")
     );
     }
     

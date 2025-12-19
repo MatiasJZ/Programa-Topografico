@@ -50,12 +50,13 @@ public class ObservadorAdelantado extends JPanel {
 
     public ObservadorAdelantado(LinkedList<Blanco> listaDeBlancos) {
 
-        //pedirID();
+        pedirID();
 
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
+        menuSuperior.setPreferredSize(new Dimension(0, 40));
         menuSuperior.setBackground(Color.DARK_GRAY);
         String[] secciones = {"SITUACION TACTICA", "PEDIDO DE FUEGO", "MENSAJERIA"};
 
@@ -105,11 +106,7 @@ public class ObservadorAdelantado extends JPanel {
         // COMUNICACIÓN IP
         comunicacionIP = new ComunicacionIP();
 
-        procesadorMensajes = new ProcesadorMensajes(
-                pedidoDeFuego.getConsolaMensajes(),
-                situacionTactica,
-                situacionTactica.getListaDeBlancos()
-        );
+        procesadorMensajes = new ProcesadorMensajes(pedidoDeFuego,situacionTactica,situacionTactica.getListaDeBlancos());
 
         comunicacionIP.setCallback(new ProtocoloCallback() {
             @Override
