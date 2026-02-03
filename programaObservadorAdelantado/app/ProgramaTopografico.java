@@ -11,7 +11,7 @@ import interfaz.Mensajeria;
 import mensajes.ProcesadorMensajes;
 import util.SoundManager;
 
-public class ObservadorAdelantado extends JPanel {
+public class ProgramaTopografico extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,21 +34,21 @@ public class ObservadorAdelantado extends JPanel {
     public static void main(String[] args) {
 
         LinkedList<Blanco> listaDeBlancos = new LinkedList<>();
-        JFrame ventana = new JFrame("Sistema de Artillería de Reconocimiento y Gestión Operacional - OBSERVADOR");
+        JFrame ventana = new JFrame("Sistema de Artillería de Reconocimiento y Gestión Operacional - GRUPO TOPOGRAFICO");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setLocationRelativeTo(null);
 
-        ImageIcon iconoOriginal = new ImageIcon(ObservadorAdelantado.class.getResource("/LOGOBIAC.png"));
+        ImageIcon iconoOriginal = new ImageIcon(ProgramaTopografico.class.getResource("/LOGOBIAC.png"));
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 100, Image.SCALE_SMOOTH);
         ventana.setIconImage(imgEscalada);
 
-        ObservadorAdelantado panelObservador = new ObservadorAdelantado(listaDeBlancos);
+        ProgramaTopografico panelObservador = new ProgramaTopografico(listaDeBlancos);
         ventana.setContentPane(panelObservador);
         ventana.setVisible(true);
     }
 
-    public ObservadorAdelantado(LinkedList<Blanco> listaDeBlancos) {
+    public ProgramaTopografico(LinkedList<Blanco> listaDeBlancos) {
 
         pedirID();
 

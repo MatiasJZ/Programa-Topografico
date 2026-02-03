@@ -51,10 +51,14 @@ import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Image;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +68,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class PanelMapa extends JPanel {
 
@@ -401,7 +406,7 @@ public class PanelMapa extends JPanel {
     private Style crearEstilo(String sidc, double orient) {
 
         try {
-            proveedorMilSym prov = new proveedorMilSym(sidc, 75);
+            proveedorMilSym prov = new proveedorMilSym(sidc, 55);
             Field f = proveedorMilSym.class.getDeclaredField("simbolo");
             f.setAccessible(true);
             BufferedImage simbolo = (BufferedImage) f.get(prov);
@@ -482,7 +487,6 @@ public class PanelMapa extends JPanel {
     }
     
     private void agregarControlesDeZoom() {
-    	
         JLayeredPane capa = new JLayeredPane();
         setLayout(new BorderLayout());
         add(capa, BorderLayout.CENTER);
@@ -500,20 +504,17 @@ public class PanelMapa extends JPanel {
                 overlay.setBounds(0, 0, getWidth(), getHeight());
             }
         });
-        int size = 50;
+
+        int size = 80;
         int margin = 12;
-        
+
         JButton btnZoomIn = new JButton("+");
         JButton btnZoomOut = new JButton("-");
-        JButton btnPan = new JButton();
-
-        ImageIcon icono = new ImageIcon(getClass().getResource("/arrastrar.png"));
-        Image imgEscalada = icono.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
-        btnPan.setIcon(new ImageIcon(imgEscalada));
+        JButton btnPan = new JButton("•");
 
         JButton[] botones = {btnZoomIn, btnZoomOut, btnPan};
         for (int i = 0; i < botones.length; i++) {
-        	JButton b = botones[i];
+            JButton b = botones[i];
             b.setBounds(margin, margin + i * (size + 8), size, size);
             b.setFocusPainted(false);
             b.setBorderPainted(false);
@@ -521,27 +522,11 @@ public class PanelMapa extends JPanel {
             b.setOpaque(true);
             b.setBackground(new Color(25, 25, 25));
             b.setForeground(Color.WHITE);
+            b.setFont(new Font("Arial", Font.BOLD, 30)); 
             overlay.add(b);
         }
-        PanTool panTool = new PanTool();
-        boolean[] modoPan = {false};
-        CursorTool[] anterior = {null};
-        btnPan.addActionListener(e -> {
-            if (!modoPan[0]) {
-                anterior[0] = mapPane.getCursorTool();
-                mapPane.setCursorTool(panTool);
-                mapPane.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-                btnPan.setBackground(new Color(60, 160, 60, 180));
-                modoPan[0] = true;
-            } else {
-                mapPane.setCursorTool(anterior[0]);
-                mapPane.setCursor(Cursor.getDefaultCursor());
-                btnPan.setBackground(new Color(0, 0, 0, 150));
-                modoPan[0] = false;
-            }
-        });
-        ActionListener zoom = e -> {
-            boolean in = e.getSource() == btnZoomIn;
+
+        Consumer<Boolean> ejecutarZoom = (Boolean in) -> {
             double factor = in ? 0.5 : 2.0;
             ReferencedEnvelope view = mapPane.getDisplayArea();
             ReferencedEnvelope bounds = mapContent.getMaxBounds();
@@ -549,11 +534,11 @@ public class PanelMapa extends JPanel {
             double cy = view.getMedian(1);
             double w = view.getWidth() * factor;
             double h = view.getHeight() * factor;
-            double minX = cx - w / 2;
-            double maxX = cx + w / 2;
-            double minY = cy - h / 2;
-            double maxY = cy + h / 2;
-            ReferencedEnvelope nueva = new ReferencedEnvelope(minX, maxX, minY, maxY, view.getCoordinateReferenceSystem());
+
+            ReferencedEnvelope nueva = new ReferencedEnvelope(
+                cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2, 
+                view.getCoordinateReferenceSystem()
+            );
 
             if (bounds != null) {
                 if (nueva.getWidth() > bounds.getWidth() || nueva.getHeight() > bounds.getHeight()) {
@@ -567,8 +552,46 @@ public class PanelMapa extends JPanel {
             }
             mapPane.setDisplayArea(nueva);
         };
-        btnZoomIn.addActionListener(zoom);
-        btnZoomOut.addActionListener(zoom);
+
+        btnZoomIn.addActionListener(e -> ejecutarZoom.accept(true));
+        btnZoomOut.addActionListener(e -> ejecutarZoom.accept(false));
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    int keyCode = e.getKeyCode();
+                    if (keyCode == KeyEvent.VK_PAGE_UP) {
+                        ejecutarZoom.accept(true);
+                        return true; 
+                    } else if (keyCode == KeyEvent.VK_PAGE_DOWN) {
+                        ejecutarZoom.accept(false);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        PanTool panTool = new PanTool();
+        boolean[] modoPan = {false};
+        CursorTool[] anterior = {null};
+
+        btnPan.addActionListener(e -> {
+            if (!modoPan[0]) {
+                anterior[0] = mapPane.getCursorTool();
+                mapPane.setCursorTool(panTool);
+                mapPane.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                btnPan.setBackground(new Color(60, 160, 60, 180));
+                modoPan[0] = true;
+            } else {
+                mapPane.setCursorTool(anterior[0]);
+                mapPane.setCursor(Cursor.getDefaultCursor());
+                btnPan.setBackground(new Color(25, 25, 25)); 
+                modoPan[0] = false;
+            }
+        });
+
         overlay.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {

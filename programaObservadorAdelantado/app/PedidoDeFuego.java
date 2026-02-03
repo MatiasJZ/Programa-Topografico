@@ -182,7 +182,7 @@ public class PedidoDeFuego extends JPanel {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.BLACK);
-        panel.setBorder(crearBordeTitulo("HISTORIAL DE PIFs"));
+        panel.setBorder(crearBordeTitulo("HISTORIAL DE PIF"));
         panel.setPreferredSize(new Dimension(300, 0));
 
         modeloHistorial = new DefaultListModel<>();
@@ -618,10 +618,10 @@ public class PedidoDeFuego extends JPanel {
     private void volverASituacionTactica() {
 
         Container parent = getParent();
-        while (parent != null && !(parent instanceof ObservadorAdelantado))
+        while (parent != null && !(parent instanceof ProgramaTopografico))
             parent = parent.getParent();
 
-        if (parent instanceof ObservadorAdelantado obs)
+        if (parent instanceof ProgramaTopografico obs)
             obs.mostrarPanel("SITUACION");
     }
 
