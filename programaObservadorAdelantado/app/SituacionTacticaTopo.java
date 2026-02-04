@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.Coordinate;
 import dominio.Blanco;
 import dominio.CodigosMilitares;
 import dominio.Linea;
+import dominio.Posicionable;
 import dominio.Punto;
 import dominio.SituacionMovimiento;
 import dominio.coordPolares;
@@ -23,12 +24,13 @@ import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.PanelMapa;
 import util.SoundManager;
 
-public class SituacionTactica extends JPanel {
+public class SituacionTacticaTopo extends JPanel {
 
 	private static final long serialVersionUID = 789462013392544798L;
 	private DefaultListModel<Blanco> modeloListaBlancos;
     private JList<Blanco> listaUIBlancos;
     protected LinkedList<Blanco> listaDeBlancos;
+    protected LinkedList<Punto> listaDePuntos;
     private PanelMapa panelMapa;
     protected LinkedList<poligonal> listaDePoligonales;
     private DefaultListModel<poligonal> modeloListaPoligonales;
@@ -40,14 +42,17 @@ public class SituacionTactica extends JPanel {
     protected String designacionBlancoPrefijo = "AF"; // Prefijo de designación 
     protected int designacionBlancoContador = 6400;	// Contador de designación
     private JPanel panelGlobalTopografico;
+    protected JLabel tooltipLabel;
 
-    public SituacionTactica(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
+    public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
 
 		this.observador = obs;
 		
 		setSize(900, 600);
 		setLayout(new BorderLayout());
 		setBackground(Color.BLACK);
+		
+		listaDePuntos = new LinkedList<>();
 		
 		this.listaDeBlancos = listaDeBlancos;
 		modeloListaBlancos = new DefaultListModel<>();
@@ -155,55 +160,66 @@ public class SituacionTactica extends JPanel {
 		JPanel panelBotones = new JPanel(new GridBagLayout());
 		panelBotones.setBackground(Color.BLACK);
 		
-		JButton btnAgregar = new JButton("AGREGAR");
-		JButton btnEliminar = new JButton("ELIMINAR");
-		JButton btnActualizar = new JButton("REFRESCAR");
+		JButton btnAgregar = new JButton("\u2795 AGREGAR");     
+		JButton btnEliminar = new JButton("\u274C ELIMINAR");    
+		JButton btnActualizar = new JButton("\u21BB REFRESCAR");
 		JButton btnPIF = new JButton("GENERAR PIF");
-		JButton btnConfigIP = new JButton("HARRIS");  
+		JButton btnConfigIP = new JButton("HARRIS"); 
+		JButton btnHerramientas = new JButton("\u2692 HERRAM.");   
 		JButton btnPifRapido = new JButton("PIF RAPIDO");
-		JButton btnHerramientas = new JButton();	
 		
-		btnPifRapido.setBackground(new Color(60, 60, 120));
-		btnPifRapido.setForeground(Color.WHITE);
-		btnPifRapido.setFont(new Font("Arial", Font.BOLD, 14)); 
-		btnPifRapido.setPreferredSize(new Dimension(280, 45));
-		btnPifRapido.setFocusPainted(false);
+		// 2. Configuración de Fuentes y Dimensiones comunes
+		Font fuenteEmoji = new Font("Segoe UI Emoji", Font.BOLD, 16);
+		Dimension dimPequeña = new Dimension(135, 45);
+		Dimension dimAncha = new Dimension(280, 45);
 
-		for (JButton b : new JButton[]{btnConfigIP, btnHerramientas}) {
-		    b.setBackground(new Color(60, 60, 120)); 
-		    b.setForeground(Color.WHITE);          
-		    b.setFont(new Font("Arial", Font.BOLD, 14)); 
-		    b.setPreferredSize(new Dimension(135, 45)); 
-		    b.setFocusPainted(false);
-		}
-		
-		btnHerramientas.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
-		btnHerramientas.setText("\u2692 HERRAM.");
-		
-		btnPifRapido.addActionListener(e -> { dialogoPIFRapido();
-		});
-		
-		btnHerramientas.addActionListener(e -> {
-			if(!panelGlobalTopografico.isShowing()) {
-				panelGlobalTopografico.show();
-			}
-		});
-		
-		// abre el diálogo
-		btnConfigIP.addActionListener(e -> {
-		DialogoConfigRed dlg =
-		new DialogoConfigRed(SwingUtilities.getWindowAncestor(this),
-		                     observador.getComunicacionIP());
-		dlg.setVisible(true);
-		});
-		
-		Dimension compacto = new Dimension(135, 45); 
-		Font fuente = new Font("Arial", Font.BOLD, 14); 
+		// GRUPO A: Botones Grises (Superiores)
 		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
-		    b.setFont(fuente);
-		    b.setPreferredSize(compacto);
+		    b.setFont(fuenteEmoji);
+		    b.setPreferredSize(dimPequeña);
 		    b.setFocusPainted(false);
 		}
+
+		// GRUPO B: Botones Azules (Harris, Herramientas, PIF Rápido)
+		Color azulOscuro = new Color(60, 60, 120);
+		Color azulClaro = new Color(129,129,204);
+		for (JButton b : new JButton[]{btnConfigIP, btnHerramientas, btnPifRapido}) {
+		    b.setBackground(azulOscuro);
+		    b.setForeground(Color.WHITE);
+		    b.setFont(fuenteEmoji);
+		    b.setFocusPainted(false);
+		    
+		    // Asignar ancho según el botón
+		    if (b == btnPifRapido) {
+		        b.setPreferredSize(dimAncha);
+		    } else {
+		        b.setPreferredSize(dimPequeña);
+		    }
+		}
+		
+		btnHerramientas.setBackground(azulClaro);
+
+		// 3. Listeners (Acciones)
+		btnPifRapido.addActionListener(e -> dialogoPIFRapido());
+
+		btnHerramientas.addActionListener(e -> {
+		    if(!panelGlobalTopografico.isShowing()) {
+		        panelGlobalTopografico.show();
+		        btnHerramientas.setBackground(azulClaro);
+		    }
+		    else {
+		    	panelGlobalTopografico.hide();
+		    	btnHerramientas.setBackground(azulOscuro);
+		    }
+		});
+
+		btnConfigIP.addActionListener(e -> {
+		    DialogoConfigRed dlg = new DialogoConfigRed(
+		        SwingUtilities.getWindowAncestor(this),
+		        observador.getComunicacionIP()
+		    );
+		    dlg.setVisible(true);
+		});
 		
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(6, 6, 6, 6);
@@ -213,7 +229,7 @@ public class SituacionTactica extends JPanel {
 		gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc);
 		gbc.gridx = 1; panelBotones.add(btnPIF, gbc);
 		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; panelBotones.add(btnConfigIP, gbc);
-		gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; panelBotones.add(btnPifRapido,gbc);
+		gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; panelBotones.add(btnPifRapido,gbc); 
 		gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; panelBotones.add(btnHerramientas,gbc);
 		
 		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
@@ -232,8 +248,19 @@ public class SituacionTactica extends JPanel {
 
 		// El split ocupa todo el panel
 		splitPane.setBounds(0, 0, getWidth(), getHeight());
-
-		// HUD flotante inferior derecha
+		
+		JButton btnConfig = new JButton("\u2699 AJUSTES");
+		btnConfig.setFont(fuenteEmoji);
+		btnConfig.setBackground(Color.DARK_GRAY);
+		btnConfig.setForeground(Color.WHITE);
+		btnConfig.setSize(150, 80);
+		btnConfig.setFocusPainted(false);
+		
+		btnConfig.addActionListener(e -> {
+			dialogoConfiguracion();
+		});
+		
+		// Panel flotante de Herramientas Topograficas
 		panelGlobalTopografico = new JPanel(new GridBagLayout());
 		panelGlobalTopografico.setBackground(Color.BLACK);  
 		panelGlobalTopografico.setBorder(BorderFactory.createLineBorder(Color.WHITE));
@@ -266,6 +293,7 @@ public class SituacionTactica extends JPanel {
 		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
 		layered.add(hud, JLayeredPane.PALETTE_LAYER);
 		layered.add(panelGlobalTopografico, JLayeredPane.PALETTE_LAYER);
+		layered.add(btnConfig,JLayeredPane.PALETTE_LAYER);
 
 		this.addComponentListener(new ComponentAdapter() {
 		    @Override
@@ -276,9 +304,11 @@ public class SituacionTactica extends JPanel {
 		        hud.setLocation(getWidth() - hud.getWidth() - 20,getHeight() - hud.getHeight() - 20);
 		        
 		        int x = 370;
-		        int y = 10;
+		        int y = 30;
 
 		        panelGlobalTopografico.setLocation(x, y);
+		        
+		        btnConfig.setLocation(270, getHeight() - 90);
 		    }
 		});
 
@@ -288,7 +318,6 @@ public class SituacionTactica extends JPanel {
 		
 		LinkedList<JButton> botoneraPanelTopo = new LinkedList<JButton>();
 		 
-		JButton ADyD = new JButton("ANG DYD"); botoneraPanelTopo.addLast(ADyD);
 		JButton triangulacion = new JButton("TRIANG"); botoneraPanelTopo.addLast(triangulacion);
 		JButton radiacion = new JButton("RAD"); botoneraPanelTopo.addLast(radiacion);
 		JButton trilateracion = new JButton("TRILAT"); botoneraPanelTopo.addLast(trilateracion);
@@ -312,14 +341,9 @@ public class SituacionTactica extends JPanel {
             b.setFocusPainted(false);
 			panelGlobalTopografico.add(b);
 		}
-		
-		ocultarHerramientas.setBackground(new Color(0,108,212));
-		ocultarHerramientas.addActionListener(e -> {
-			panelGlobalTopografico.hide();
-		});
 
 		// 1. Configuración de la etiqueta (fuera del listener)
-		JLabel tooltipLabel = new JLabel("");
+		tooltipLabel = new JLabel("");
 		tooltipLabel.setOpaque(true);
 		tooltipLabel.setBackground(new Color(255, 255, 255, 220)); 
 		tooltipLabel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
@@ -329,58 +353,7 @@ public class SituacionTactica extends JPanel {
 		tooltipLabel.setVisible(false);
 		panelMapa.getMapPane().add(tooltipLabel);
 
-		panelMapa.getMapPane().setCursorTool(new CursorTool() {
-		    
-		    @Override
-		    public void onMousePressed(MapMouseEvent ev) {
-		        tooltipLabel.setVisible(true);
-		        actualizarTooltip(ev);
-		    }
-		    @Override
-		    public void onMouseDragged(MapMouseEvent ev) {
-		        actualizarTooltip(ev);
-		    }
-		    @Override
-		    public void onMouseReleased(MapMouseEvent ev) {
-		        // Oculto el tooltip visual
-		        tooltipLabel.setVisible(false);
-		        panelMapa.getMapPane().repaint();
-
-		        // Extraigo las coordenadas finales del evento
-		        double x = ev.getWorldPos().getX();
-		        double y = ev.getWorldPos().getY();
-		        coordRectangulares coord = new coordRectangulares(x, y, 0);
-
-		        // Disparo la lógica de selección (Blanco o Punto)
-		        String[] opciones = {"Marcar Blanco", "Marcar Punto"};
-		        Image imgRaw = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage();
-		        Icon icono = new ImageIcon(imgRaw.getScaledInstance(32, 32, Image.SCALE_SMOOTH));
-
-		        int seleccion = JOptionPane.showOptionDialog(SituacionTactica.this,
-		                "Coordenadas: " + String.format("%.2f, %.2f", x, y) + "\n¿Qué desea marcar?", 
-		                "Nuevo Marcador",
-		                JOptionPane.DEFAULT_OPTION,
-		                JOptionPane.QUESTION_MESSAGE,
-		                icono,
-		                opciones,
-		                opciones[0]);
-
-		        if (seleccion == 0) {
-		            dialogoAgregarBlanco(coord);
-		        } else if (seleccion == 1) {
-		            dialogoAgregarPunto(coord);
-		        }
-		    }
-
-		    private void actualizarTooltip(MapMouseEvent ev) {
-		        double x = ev.getWorldPos().getX();
-		        double y = ev.getWorldPos().getY();
-		        
-		        tooltipLabel.setText(String.format("X: ( %.5f )  Y: ( %.5f )", x, y));
-		        
-		        panelMapa.getMapPane().repaint();
-		    }
-		});
+		configurarHerramientasMapa();
 
         btnAgregar.addActionListener(e -> {
         	
@@ -519,7 +492,8 @@ public class SituacionTactica extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) mostrarPopup(e);
             }
-
+            														////////////////////////////////// HACER QUE SE DES-SELECCIONEN AL HACER
+            													    ///////////////////////////////// CLICK SOBRE UN ITEM SELECCIONADO
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) mostrarPopup(e);
@@ -533,7 +507,193 @@ public class SituacionTactica extends JPanel {
                 }
             }
         });
+    }
+    
+    private void configurarHerramientasMapa() {
 
+    	panelMapa.getMapPane().setCursorTool(new CursorTool() {
+		    
+		    @Override
+		    public void onMousePressed(MapMouseEvent ev) {
+		        tooltipLabel.setVisible(true);
+		        actualizarTooltip(ev);
+		    }
+		    @Override
+		    public void onMouseDragged(MapMouseEvent ev) {
+		        actualizarTooltip(ev);
+		    }
+		    @Override
+		    public void onMouseReleased(MapMouseEvent ev) {
+		        // Oculto el tooltip visual
+		        tooltipLabel.setVisible(false);
+		        panelMapa.getMapPane().repaint();
+
+		        // Extraigo las coordenadas finales del evento
+		        double x = ev.getWorldPos().getX();
+		        double y = ev.getWorldPos().getY();
+		        coordRectangulares coord = new coordRectangulares(x, y, 0);
+
+		        // Disparo la lógica de selección (Blanco o Punto)
+		        String[] opciones = {"Marcar Blanco", "Marcar Punto"};
+		        Image imgRaw = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage();
+		        Icon icono = new ImageIcon(imgRaw.getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+
+		        int seleccion = JOptionPane.showOptionDialog(SituacionTacticaTopo.this,
+		                "Coordenadas: " + String.format("%.2f, %.2f", x, y) + "\n¿Qué desea marcar?", 
+		                "Nuevo Marcador",
+		                JOptionPane.DEFAULT_OPTION,
+		                JOptionPane.QUESTION_MESSAGE,    ///////////////////////////////////////////////////// MODIFICAR TAMAÑO DE TODO EL DIALOGO
+		                icono,                               
+		                opciones,
+		                opciones[0]);
+
+		        if (seleccion == 0) {
+		            dialogoAgregarBlanco(coord);
+		        } else if (seleccion == 1) {
+		            dialogoAgregarPunto(coord);
+		        }
+		    }
+
+		    private void actualizarTooltip(MapMouseEvent ev) {
+		        double x = ev.getWorldPos().getX();
+		        double y = ev.getWorldPos().getY();
+		        
+		        tooltipLabel.setText(String.format("X: ( %.5f )  Y: ( %.5f )", x, y));
+		        
+		        panelMapa.getMapPane().repaint();
+		    }	
+		});
+    }
+    
+    private void cambiarMapaEnTiempoReal() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileNameExtensionFilter("GeoTIFF", "tif", "tiff"));
+        
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String nuevaRuta = chooser.getSelectedFile().getAbsolutePath();
+            
+            listaDeBlancos.clear();
+            listaDePuntos.clear();
+            listaDePoligonales.clear();
+            modeloListaBlancos.clear();
+            modeloListaPoligonales.clear();
+
+            panelMapa.dispose();
+            PanelMapa nuevoMapa = new PanelMapa(nuevaRuta);
+
+            JSplitPane split = null;
+            for (Component comp : getComponents()) {
+                if (comp instanceof JLayeredPane lp) {
+                    for (Component sub : lp.getComponents()) {
+                        if (sub instanceof JSplitPane sp) {
+                            split = sp;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (split != null) {
+                this.panelMapa = nuevoMapa;
+                split.setRightComponent(panelMapa);
+                panelPIF.setMapaObservacion(panelMapa);
+                configurarHerramientasMapa();
+            }
+
+            repaint();
+        }
+    }
+    
+    private void cambiarDesignacionEnTiempoReal() {
+        String nuevaDesig = JOptionPane.showInputDialog(this, 
+            "Ingrese nueva designación (Ej: BB 2000):", 
+            designacionBlancoPrefijo + " " + designacionBlancoContador);
+
+        if (nuevaDesig != null && nuevaDesig.contains(" ")) {
+            try {
+                String[] partes = nuevaDesig.split(" ");
+                designacionBlancoPrefijo = partes[0].toUpperCase();
+                designacionBlancoContador = Integer.parseInt(partes[1]);
+                JOptionPane.showMessageDialog(this, "Designación actualizada.");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Formato incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    private void dialogoConfiguracion() {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "SISTEMA - CONFIGURACIÓN TÁCTICA", true);
+        dialog.setSize(450, 350);
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+
+        // Panel principal con fondo oscuro y borde refinado
+        JPanel panelPrincipal = new JPanel(new BorderLayout(10, 10));
+        panelPrincipal.setBackground(new Color(30, 30, 30));
+        panelPrincipal.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 60, 60), 2),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel lblHeader = new JLabel("UNIDAD DE CONTROL DE DATOS");
+        lblHeader.setForeground(new Color(150, 150, 150));
+        lblHeader.setFont(new Font("Consolas", Font.BOLD, 12));
+        lblHeader.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPrincipal.add(lblHeader, BorderLayout.NORTH);
+
+        // Contenedor de botones (Tarjetas)
+        JPanel panelContenido = new JPanel(new GridLayout(2, 1, 15, 15));
+        panelContenido.setOpaque(false);
+
+        // Estilo común para los botones de acción
+        Font fuenteBoton = new Font("Arial", Font.BOLD, 14);
+
+        JButton btnMapa = new JButton("<html><center>ACTUALIZAR CARTOGRAFÍA<br><font size='2' color='#AAAAAA'>Cargar nuevo archivo GeoTIFF</font></center></html>");
+        configurarBotonMilitar(btnMapa, fuenteBoton, new Color(130, 40, 40)); // Rojo táctico
+        btnMapa.addActionListener(e -> {
+            dialog.dispose();
+            cambiarMapaEnTiempoReal();
+        });
+
+        JButton btnDesig = new JButton("<html><center>MODIFICAR DESIGNACIÓN<br><font size='2' color='#AAAAAA'>Prefijo y contador de blancos</font></center></html>");
+        configurarBotonMilitar(btnDesig, fuenteBoton, new Color(40, 70, 130)); // Azul táctico
+        btnDesig.addActionListener(e -> {
+            dialog.dispose();
+            cambiarDesignacionEnTiempoReal();
+        });
+
+        panelContenido.add(btnMapa);
+        panelContenido.add(btnDesig);
+        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+
+        dialog.add(panelPrincipal);
+        dialog.setVisible(true);
+    }
+
+    // Método auxiliar para dar el aspecto militar a los botones
+    private void configurarBotonMilitar(JButton btn, Font font, Color accentColor) {
+        btn.setFont(font);
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(new Color(45, 45, 45));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Borde lateral de color (el detalle estético)
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 5, 0, 0, accentColor),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+
+        // Efecto de hover
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                btn.setBackground(new Color(60, 60, 60));
+            }
+            public void mouseExited(MouseEvent evt) {
+                btn.setBackground(new Color(45, 45, 45));
+            }
+        });
     }
 
     private void pedirArchivoAMostrar() {
@@ -1237,11 +1397,18 @@ public class SituacionTactica extends JPanel {
                 JOptionPane.showMessageDialog(dialog, "Ingrese un nombre para el punto.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            
             Punto nuevo = new Punto(coordInicial, nombre);
             
             panelMapa.agregarPoligonal(nuevo);
             listaDePoligonales.add(nuevo);
+            listaDePuntos.add(nuevo); // listaDePuntos es la LinkedList que definiste arriba
+            
+            // Actualizamos la UI
             modeloListaPoligonales.addElement(nuevo);
+            
+            System.out.println("Punto guardado: " + nuevo.getNombre() + ". Total puntos: " + listaDePuntos.size());
+            
             dialog.dispose();
         });
         btnCancelar.addActionListener(e -> dialog.dispose());
@@ -1487,12 +1654,11 @@ public class SituacionTactica extends JPanel {
         return Math.round(mils);
     }
     
-    @SuppressWarnings("serial")
-	private void dialogoMedir(Blanco b) {
+    private void dialogoMedir(Posicionable origen) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + b.getNombre(), true);
-        dialog.setSize(300, 200);
+        JDialog dialog = new JDialog(parentFrame, "Medir distancia desde: " + origen.getNombre(), true);
+        dialog.setSize(350, 250);
         dialog.setLocationRelativeTo(this);
 
         JPanel panelDialog = new JPanel(new GridBagLayout());
@@ -1500,39 +1666,50 @@ public class SituacionTactica extends JPanel {
         dialog.setContentPane(panelDialog);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblTitulo = new JLabel("Seleccione el blanco de destino:");
+        JLabel lblTitulo = new JLabel("Seleccione el destino (Blanco o Punto):");
         lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setFont(new Font("Arial Black",Font.BOLD,12)); 	
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panelDialog.add(lblTitulo, gbc);
 
-        JComboBox<Blanco> comboBlancos = new JComboBox<>();
-        comboBlancos.setBackground(new Color(70, 70, 70));
-        comboBlancos.setForeground(Color.WHITE);
+        JComboBox<Posicionable> comboDestinos = new JComboBox<>();
+        comboDestinos.setBackground(new Color(70, 70, 70));
+        comboDestinos.setForeground(Color.WHITE);
 
-        comboBlancos.setRenderer(new DefaultListCellRenderer() {
+        comboDestinos.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Blanco) {
-                    Blanco b = (Blanco) value;
-                    setText(b.NombretoString());
+                if (value instanceof Posicionable p) {
+                	String tipo = (p instanceof Blanco) ? "[B] " : "[P] ";
+                    setText(tipo + p.getNombre());
                 }
                 setBackground(isSelected ? new Color(100, 100, 100) : new Color(70, 70, 70));
                 setForeground(Color.WHITE);
                 return this;
             }
         });
-        for (Blanco a : listaDeBlancos) {
-            if (a != b) comboBlancos.addItem(a);
+        
+        if (listaDeBlancos != null) {
+            for (Blanco b : listaDeBlancos) {
+                if (!b.equals(origen)) comboDestinos.addItem(b);
+            }
         }
+        
+        if (listaDePuntos != null) {
+            for (Punto p : listaDePuntos) {
+                    comboDestinos.addItem(p);
+            }
+        }
+        
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
-        panelDialog.add(comboBlancos, gbc);
+        panelDialog.add(comboDestinos, gbc);
 
         // botones
         JButton btnAceptar = new JButton("Aceptar");
@@ -1548,72 +1725,53 @@ public class SituacionTactica extends JPanel {
 
         // acción de los botones
         btnAceptar.addActionListener(e -> {
-            Blanco b2 = (Blanco) comboBlancos.getSelectedItem();
-            if (b2 == null) {
-            	sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Seleccione un blanco destino válido.", "Error", JOptionPane.ERROR_MESSAGE);               
+            Posicionable destino = (Posicionable) comboDestinos.getSelectedItem();
+            if (destino == null) {
+                sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Seleccione un destino válido.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             try {
-            	double x1 = b.getCoordenadas().getX();
-                double y1 = b.getCoordenadas().getY();
-                double x2 = b2.getCoordenadas().getX();
-                double y2 = b2.getCoordenadas().getY();
-                
-                double distancia = b.getCoordenadas().distanciaA(b2.getCoordenadas());
-                
+                // Lógica unificada usando la interfaz
+                double x1 = origen.getCoordenadas().getX();
+                double y1 = origen.getCoordenadas().getY();
+                double x2 = destino.getCoordenadas().getX();
+                double y2 = destino.getCoordenadas().getY();
+
+                double distancia = origen.getCoordenadas().distanciaA(destino.getCoordenadas());
                 double azimutMils = calcularAzimutEnMils(x1, y1, x2, y2);
-                
+
                 String resultado = String.format(
-                        "Distancia entre %s y %s:\n" +
-                        "%.0f metros\n\n" +
-                        "AD:\n" +
-                        "%.0f milésimos",
-                        b.getNombre(),
-                        b2.getNombre(),
-                        distancia,
-                        azimutMils
+                        "Distancia entre %s y %s:\n%.0f metros\n\nAD: %.0f milésimos",
+                        origen.getNombre(), destino.getNombre(), distancia, azimutMils
                 );
 
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        resultado,
-                        "Resultado de Medición",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                JOptionPane.showMessageDialog(dialog, resultado, "Resultado de Medición", JOptionPane.INFORMATION_MESSAGE);
+
+                // Crear la línea de unión en el mapa
+                Coordinate c1 = new Coordinate();
+                c1.setX(origen.getCoordenadas().getX());
+                c1.setY(origen.getCoordenadas().getY());
+                Coordinate c2 = new Coordinate();
+                c2.setX(destino.getCoordenadas().getX());
+                c2.setY(destino.getCoordenadas().getY());
+                String nombreLinea = "Medición: " + origen.getNombre() + " → " + destino.getNombre();
+                Linea nuevaLinea = new Linea(nombreLinea, c1,c2, distancia, azimutMils);
                 
-                dialog.dispose();
-                Coordinate c1 = new Coordinate(b.getCoordenadas().getX(),b.getCoordenadas().getY());
-                Coordinate c2 = new Coordinate(b2.getCoordenadas().getX(),b2.getCoordenadas().getY());
-                String nombreLinea = "Medición: " + b.getNombre() + " → " + b2.getNombre();
-                Linea nuevaLinea = new Linea(nombreLinea, c1, c2, distancia,azimutMils);
                 listaDePoligonales.add(nuevaLinea);
                 modeloListaPoligonales.addElement(nuevaLinea);
                 panelMapa.agregarPoligonal(nuevaLinea);
+                
+                dialog.dispose();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "Error al calcular la distancia:\n" + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 sonidos.clickError();
             }
         });
+        
         btnCancelar.addActionListener(e -> dialog.dispose());
-
-        JRootPane rootPane = dialog.getRootPane();
-        rootPane.setDefaultButton(btnAceptar);
-        KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeStroke, "ESCAPE");
-        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
-
-			@Override
-            public void actionPerformed(ActionEvent e) {
-                btnCancelar.doClick();
-            }
-        });
+        
         dialog.setVisible(true);
     }
     

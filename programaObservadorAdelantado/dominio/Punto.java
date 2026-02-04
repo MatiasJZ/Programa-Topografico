@@ -4,9 +4,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-public class Punto implements poligonal{
+public class Punto implements poligonal, Posicionable{
 	
-	private coordenadas coord;
+	private coordRectangulares coord;
 	private String nombre;
 	
 	@Override
@@ -21,16 +21,16 @@ public class Punto implements poligonal{
         return gf.createPoint(new Coordinate(c.getX(), c.getY()));
     }
 	
-	public Punto(coordenadas c, String n) {
+	public Punto(coordRectangulares c, String n) {
 		setCoord(c);
 		setNombre(n);
 	}
 	
-	public coordenadas getCoord() {
+	public coordRectangulares getCoordenadas() {
 		return coord;
 	}
 	
-	public void setCoord(coordenadas coord) {
+	public void setCoord(coordRectangulares coord) {
 		this.coord = coord;
 	}
 	

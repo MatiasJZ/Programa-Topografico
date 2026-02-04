@@ -338,7 +338,31 @@ public class PanelMapa extends JPanel {
     }
     
     private Style estiloPunto() {
-        return SLD.createPointStyle("circle", Color.WHITE, Color.BLACK, 1.0f, 12.0f);
+        StyleBuilder sb = new StyleBuilder();
+        StyleFactory sf = CommonFactoryFinder.getStyleFactory();
+
+        // Crear el símbolo del punto (Círculo blanco con borde negro)
+        PointSymbolizer ps = sb.createPointSymbolizer(
+                sb.createGraphic(null, sb.createMark("circle", Color.WHITE, Color.BLACK, 1.0f), null, 1.0, 18.0, 0.0)
+        );
+
+        // Crear la etiqueta de texto usando el atributo "nombre" definido en tipoPuntos
+        TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", true, false, 20),"nombre");
+
+        ts.setLabelPlacement(sb.createLinePlacement(TOP_ALIGNMENT));
+        
+        // Empaquetar todo en el estilo
+        Rule rule = sf.createRule();
+        rule.symbolizers().add(ps);
+        rule.symbolizers().add(ts);
+
+        FeatureTypeStyle fts = sf.createFeatureTypeStyle();
+        fts.rules().add(rule);
+
+        Style s = sf.createStyle();
+        s.featureTypeStyles().add(fts);
+
+        return s;
     }
     
     private Style estiloLinea() {

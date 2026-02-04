@@ -1,5 +1,8 @@
 package dominio;
-public class Blanco {
+
+import org.locationtech.jts.geom.Coordinate;
+
+public class Blanco implements Posicionable {
     private String nombre;
     private coordRectangulares coordenadas;
     private String naturaleza;

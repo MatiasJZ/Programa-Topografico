@@ -6,7 +6,7 @@ import javax.swing.SwingUtilities;
 import app.ConsolaMensajes;
 import app.PedidoDeFuego;
 import app.PopupAlerta;
-import app.SituacionTactica;
+import app.SituacionTacticaTopo;
 import dominio.Blanco;
 import dominio.SituacionMovimiento;
 import dominio.coordRectangulares;
@@ -14,11 +14,11 @@ import dominio.coordRectangulares;
 public class ProcesadorMensajes {
 
     private ConsolaMensajes consola;
-    private SituacionTactica panelTactico;
+    private SituacionTacticaTopo panelTactico;
     private PedidoDeFuego panelPedidoDeFuego;
     private LinkedList<Blanco> listaDeBlancos;
 
-    public ProcesadorMensajes(PedidoDeFuego panelPedidoDeFuego,SituacionTactica panelTactico,LinkedList<Blanco> listaDeBlancos) {
+    public ProcesadorMensajes(PedidoDeFuego panelPedidoDeFuego,SituacionTacticaTopo panelTactico,LinkedList<Blanco> listaDeBlancos) {
     	consola= panelPedidoDeFuego.getConsolaMensajes();
     	this.panelPedidoDeFuego = panelPedidoDeFuego;
         this.panelTactico = panelTactico;

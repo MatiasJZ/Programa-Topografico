@@ -29,7 +29,7 @@ public class ProgramaTopografico extends JPanel {
     private ComunicacionIP comunicacionIP;
     private Mensajeria mensajeriaPanel;
     private PedidoDeFuego pedidoDeFuego;
-    private SituacionTactica situacionTactica;
+    private SituacionTacticaTopo situacionTactica;
 
     public static void main(String[] args) {
 
@@ -91,7 +91,7 @@ public class ProgramaTopografico extends JPanel {
         cards = new JPanel(cardLayout);
 
         pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
-        situacionTactica = new SituacionTactica(listaDeBlancos, pedidoDeFuego, this); 
+        situacionTactica = new SituacionTacticaTopo(listaDeBlancos, pedidoDeFuego, this); 
         mensajeriaPanel = new Mensajeria();
 
         cards.add(situacionTactica, "SITUACION");
