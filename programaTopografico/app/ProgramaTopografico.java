@@ -148,21 +148,36 @@ public class ProgramaTopografico extends JPanel {
 
     private void pedirID() {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
-        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(80, 90, Image.SCALE_SMOOTH);
+        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(100, 110, Image.SCALE_SMOOTH); // Un poco más grande para acompañar
         ImageIcon icono = new ImageIcon(imgEscalada);
 
         sonidos = new SoundManager();
 
         while (true) {
+            // 1. Crear el campo de texto con fuente grande
+            JPasswordField passwordField = new JPasswordField(10);
+            passwordField.setEchoChar('●'); // Un carácter de punto suele verse más moderno que '*'
+            passwordField.setFont(new Font("Arial", Font.BOLD, 30)); // Letra MUY grande
+            passwordField.setHorizontalAlignment(JTextField.CENTER); // Centrar el texto ingresado
 
-            JPasswordField passwordField = new JPasswordField(15);
-            passwordField.setEchoChar('*');
-            passwordField.setFont(new Font("Arial", Font.BOLD, 15));           
+            // 2. Crear un panel para controlar el tamaño y márgenes
+            JPanel panelContenedor = new JPanel(new BorderLayout(0, 15));
+            panelContenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            
+            JLabel lblInstruccion = new JLabel("INGRESE IDENTIFICADOR DE OPERADOR:", SwingConstants.CENTER);
+            lblInstruccion.setFont(new Font("Arial", Font.BOLD, 14));
+            
+            panelContenedor.add(lblInstruccion, BorderLayout.NORTH);
+            panelContenedor.add(passwordField, BorderLayout.CENTER);
+
+            // 3. Configurar el tamaño de los botones globalmente (solo para este diálogo)
+            UIManager.put("OptionPane.buttonFont", new Font("Arial", Font.BOLD, 18));
+            UIManager.put("Button.minimumSize", new Dimension(120, 50));
 
             int opcion = JOptionPane.showConfirmDialog(
                     null,
-                    passwordField,
-                    "Autenticación requerida",
+                    panelContenedor,
+                    "SISTEMA DE AUTENTICACIÓN TÁCTICA",
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
                     icono
@@ -182,10 +197,15 @@ public class ProgramaTopografico extends JPanel {
             }
 
             sonidos.ingresoError();
+            
+            // El diálogo de error también con fuente grande
+            JLabel lblError = new JLabel("ID INCORRECTO. REINTENTE.");
+            lblError.setFont(new Font("Arial", Font.BOLD, 16));
+            
             JOptionPane.showMessageDialog(
                     null,
-                    "ID incorrecto. Intente de nuevo.",
-                    "Error",
+                    lblError,
+                    "FALLO DE ACCESO",
                     JOptionPane.ERROR_MESSAGE,
                     icono
             );
