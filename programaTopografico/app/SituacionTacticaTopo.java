@@ -1,15 +1,27 @@
 package app;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
+import java.util.Map;
+
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 import org.locationtech.jts.geom.Coordinate;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import dominio.Blanco;
 import dominio.CodigosMilitares;
@@ -23,7 +35,7 @@ import dominio.poligonal;
 import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.PanelMapa;
 import util.SoundManager;
-
+	
 public class SituacionTacticaTopo extends JPanel {
 
 	private static final long serialVersionUID = 789462013392544798L;
@@ -44,7 +56,8 @@ public class SituacionTacticaTopo extends JPanel {
     private JPanel panelGlobalTopografico;
     protected JLabel tooltipLabel;
 
-    public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
+    @SuppressWarnings("deprecation")
+	public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
 
 		this.observador = obs;
 		
@@ -166,7 +179,7 @@ public class SituacionTacticaTopo extends JPanel {
 		JButton btnPIF = new JButton("GENERAR PIF");
 		JButton btnConfigIP = new JButton("HARRIS"); 
 		JButton btnHerramientas = new JButton("\u2692 HERRAM.");   
-		JButton btnPifRapido = new JButton("PIF RAPIDO");
+		JButton btnGenPdf = new JButton("GENERAR PDF");
 		
 		// 2. Configuración de Fuentes y Dimensiones comunes
 		Font fuenteEmoji = new Font("Segoe UI Emoji", Font.BOLD, 16);
@@ -183,14 +196,14 @@ public class SituacionTacticaTopo extends JPanel {
 		// GRUPO B: Botones Azules (Harris, Herramientas, PIF Rápido)
 		Color azulOscuro = new Color(60, 60, 120);
 		Color azulClaro = new Color(129,129,204);
-		for (JButton b : new JButton[]{btnConfigIP, btnHerramientas, btnPifRapido}) {
+		for (JButton b : new JButton[]{btnConfigIP, btnHerramientas, btnGenPdf}) {
 		    b.setBackground(azulOscuro);
 		    b.setForeground(Color.WHITE);
 		    b.setFont(fuenteEmoji);
 		    b.setFocusPainted(false);
 		    
 		    // Asignar ancho según el botón
-		    if (b == btnPifRapido) {
+		    if (b == btnGenPdf) {
 		        b.setPreferredSize(dimAncha);
 		    } else {
 		        b.setPreferredSize(dimPequeña);
@@ -199,8 +212,17 @@ public class SituacionTacticaTopo extends JPanel {
 		
 		btnHerramientas.setBackground(azulClaro);
 
-		// 3. Listeners (Acciones)
-		btnPifRapido.addActionListener(e -> dialogoPIFRapido());
+		btnGenPdf.addActionListener(e -> {
+		    if (RegistroCalculos.getBitacora().isEmpty()) {
+		        sonidos.clickError();
+		        JOptionPane.showMessageDialog(this, 
+		            "ERROR: No hay cálculos registrados para exportar.\nRealice al menos una operación topográfica.", 
+		            "SISTEMA DE REGISTRO", 
+		            JOptionPane.WARNING_MESSAGE);
+		    } else {
+		        generarInformePDF();
+		    }
+		});
 
 		btnHerramientas.addActionListener(e -> {
 		    if(!panelGlobalTopografico.isShowing()) {
@@ -229,7 +251,7 @@ public class SituacionTacticaTopo extends JPanel {
 		gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc);
 		gbc.gridx = 1; panelBotones.add(btnPIF, gbc);
 		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; panelBotones.add(btnConfigIP, gbc);
-		gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; panelBotones.add(btnPifRapido,gbc); 
+		gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; panelBotones.add(btnGenPdf,gbc); 
 		gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; panelBotones.add(btnHerramientas,gbc);
 		
 		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
@@ -288,7 +310,7 @@ public class SituacionTacticaTopo extends JPanel {
 		hud.add(btnHerramientas,h);
 		
 		h.gridx = 0; h.gridy = 3; h.gridwidth = 2;
-		hud.add(btnPifRapido,h);
+		hud.add(btnGenPdf,h);
 
 		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
 		layered.add(hud, JLayeredPane.PALETTE_LAYER);
@@ -318,27 +340,47 @@ public class SituacionTacticaTopo extends JPanel {
 		
 		LinkedList<JButton> botoneraPanelTopo = new LinkedList<JButton>();
 		 
+		JButton poligonal = new JButton("POLIGONAL"); botoneraPanelTopo.addLast(poligonal);
 		JButton triangulacion = new JButton("TRIANG"); botoneraPanelTopo.addLast(triangulacion);
 		JButton radiacion = new JButton("RAD"); botoneraPanelTopo.addLast(radiacion);
 		JButton trilateracion = new JButton("TRILAT"); botoneraPanelTopo.addLast(trilateracion);
 		JButton intInv3P = new JButton("INT-INV-3P"); botoneraPanelTopo.addLast(intInv3P);
 		JButton intInv2P = new JButton("INT-INV-2P"); botoneraPanelTopo.addLast(intInv2P);
 		JButton intDirMult = new JButton("INT-D-M"); botoneraPanelTopo.addLast(intDirMult);
-		JButton poligonal = new JButton("POLIGONAL"); botoneraPanelTopo.addLast(poligonal);
 		JButton mesaPolotting = new JButton("MESA-P"); botoneraPanelTopo.addLast(mesaPolotting);
 		JButton anguloBase = new JButton("ANG-B"); botoneraPanelTopo.addLast(anguloBase);
 		JButton actMag = new JButton("ACT-MAG"); botoneraPanelTopo.addLast(actMag);
-		JButton registroCoordMod = new JButton("REG-C-M"); botoneraPanelTopo.addLast(registroCoordMod);
 		JButton nivelTrigo = new JButton("NIVEL-T"); botoneraPanelTopo.addLast(nivelTrigo);
 		JButton registroPPAL = new JButton("REG-PPAL"); botoneraPanelTopo.addLast(registroPPAL);
+		JButton registroCoordMod = new JButton("REG-C-M"); botoneraPanelTopo.addLast(registroCoordMod);
 		
 		for(JButton b : botoneraPanelTopo) {
+			
 			b.setBackground(Color.DARK_GRAY);
             b.setForeground(Color.WHITE);
             b.setFont(new Font("Arial", Font.BOLD, 10)); 
             b.setPreferredSize(new Dimension(98, 60)); 
             b.setFocusPainted(false);
 			panelGlobalTopografico.add(b);
+		    
+		    b.addActionListener(e -> {
+		        String comando = b.getText();
+		        switch(comando) {
+		           // case "TRIANG": abrirDialogoTriangulacion(); break;
+		           // case "RAD": abrirDialogoRadiacion(); break;
+		           // case "TRILAT": abrirDialogoTrilateracion(); break;
+		           // case "INT-INV-3P": abrirDialogoInterseccionInversa3P(); break;
+		           // case "INT-INV-2P": abrirDialogoInterseccionInversa2P(); break;
+		           // case "INT-D-M": abrirDialogoInterseccionDirecta(); break;
+		           // case "POLIGONAL": abrirDialogoPoligonal(); break;
+		           // case "MESA-P": abrirDialogoMesaPlotting(); break;
+		           // case "ANG-B": abrirDialogoAnguloBase(); break;
+		           // case "ACT-MAG": abrirDialogoActualizacionMagnetica(); break;
+		           // case "REG-C-M": abrirDialogoRegistroCoordMod(); break;
+		           // case "NIVEL-T": abrirDialogoNivelacionTrigo(); break;
+		           // case "REG-PPAL": exportarRegistroPDF(); break; // El botón de exportación
+		        }
+		    });
 		}
 
 		// 1. Configuración de la etiqueta (fuera del listener)
@@ -555,88 +597,196 @@ public class SituacionTacticaTopo extends JPanel {
         });
     }
     
+    private void generarInformePDF() {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        FileDialog fd = new FileDialog(parentFrame, "GUARDAR REGISTRO TOPOGRÁFICO", FileDialog.SAVE);
+        fd.setFile("Reporte_Topografico.pdf");
+        fd.setVisible(true);
+
+        if (fd.getFile() != null) {
+            String rutaCompleta = fd.getDirectory() + fd.getFile();
+            if (!rutaCompleta.toLowerCase().endsWith(".pdf")) rutaCompleta += ".pdf";
+
+            // Definimos las fuentes de iText correctamente
+            com.itextpdf.text.Font fuenteTitulo = FontFactory.getFont(FontFactory.HELVETICA, 18, Font.BOLD);
+            com.itextpdf.text.Font fuenteCabeceraTabla = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD);
+            com.itextpdf.text.Font fuenteTexto = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+
+            Document documento = new Document();
+            try {
+                PdfWriter.getInstance(documento, new FileOutputStream(rutaCompleta));
+                documento.open();
+
+                // Encabezado
+                Paragraph titulo = new Paragraph("BATALLÓN DE ARTILLERÍA DE CAMPAÑA N°1\nSECCIÓN ADQUISICIÓN DE BLANCOS");
+                titulo.setAlignment(Element.ALIGN_CENTER);
+                documento.add(titulo);
+                
+                documento.add(new Paragraph("\nFECHA DE OPERACIÓN: " + LocalDateTime.now().toString()));
+                documento.add(new Paragraph("------------------------------------------------------------------------------------------"));
+
+                Map<String, String> datos = RegistroCalculos.getBitacora();
+
+                String[] funcionesPDF = {
+                    "TRIANGULACIÓN", "RADIACIÓN", "TRILATERACIÓN", 
+                    "INTERSECCIÓN INVERSA 3P", "INTERSECCIÓN INVERSA 2P", 
+                    "INTERSECCIÓN DIRECTA", "POLIGONAL", "MESA PLOTTING", 
+                    "ÁNGULO BASE", "ACTUALIZACIÓN MAGNÉTICA", 
+                    "REGISTRO COORD. MODIFICADAS", "NIVELACIÓN TRIGONOMÉTRICA",
+                    "MEDICIÓN ENTRE PUNTOS"
+                };
+
+                for (String funcion : funcionesPDF) {
+                    if (datos.containsKey(funcion)) {
+                        PdfPTable tabla = new PdfPTable(1);
+                        tabla.setWidthPercentage(100);
+                        tabla.setSpacingBefore(10f);
+
+                        // Celda de título de la función
+                        PdfPCell celdaTitulo = new PdfPCell(new Phrase(funcion, fuenteCabeceraTabla));
+                        celdaTitulo.setBackgroundColor(new BaseColor(192, 192, 192));
+                        celdaTitulo.setPadding(5);
+                        tabla.addCell(celdaTitulo);
+                        
+                        // Celda de contenido del cálculo
+                        PdfPCell celdaContenido = new PdfPCell(new Phrase(datos.get(funcion), fuenteTexto));
+                        celdaContenido.setPadding(10);
+                        tabla.addCell(celdaContenido);
+
+                        documento.add(tabla);
+                    }
+                }
+
+                documento.close();
+                JOptionPane.showMessageDialog(this, "Informe PDF generado con éxito.");
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error al generar PDF: " + ex.getMessage());
+            }
+        }
+    }
+    
     private void configurarHerramientasMapa() {
+        panelMapa.getMapPane().setCursorTool(new CursorTool() {
+            @Override
+            public void onMousePressed(MapMouseEvent ev) {
+                tooltipLabel.setVisible(true);
+                actualizarTooltip(ev);
+            }
 
-    	panelMapa.getMapPane().setCursorTool(new CursorTool() {
-		    
-		    @Override
-		    public void onMousePressed(MapMouseEvent ev) {
-		        tooltipLabel.setVisible(true);
-		        actualizarTooltip(ev);
-		    }
-		    @Override
-		    public void onMouseDragged(MapMouseEvent ev) {
-		        actualizarTooltip(ev);
-		    }
-		    @Override
-		    public void onMouseReleased(MapMouseEvent ev) {
-		        // Oculto el tooltip visual
-		        tooltipLabel.setVisible(false);
-		        panelMapa.getMapPane().repaint();
+            @Override
+            public void onMouseDragged(MapMouseEvent ev) {
+                actualizarTooltip(ev);
+            }
 
-		        // Extraigo las coordenadas finales del evento
-		        double x = ev.getWorldPos().getX();
-		        double y = ev.getWorldPos().getY();
-		        coordRectangulares coord = new coordRectangulares(x, y, 0);
+            @Override
+            public void onMouseReleased(MapMouseEvent ev) {
+                tooltipLabel.setVisible(false);
+                panelMapa.getMapPane().repaint();
 
-		        // Disparo la lógica de selección (Blanco o Punto)
-		        String[] opciones = {"Marcar Blanco", "Marcar Punto"};
-		        Image imgRaw = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage();
-		        Icon icono = new ImageIcon(imgRaw.getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+                double x = ev.getWorldPos().getX();
+                double y = ev.getWorldPos().getY();
+                coordRectangulares coord = new coordRectangulares(x, y, 0);
 
-		        int seleccion = JOptionPane.showOptionDialog(SituacionTacticaTopo.this,
-		                "Coordenadas: " + String.format("%.2f, %.2f", x, y) + "\n¿Qué desea marcar?", 
-		                "Nuevo Marcador",
-		                JOptionPane.DEFAULT_OPTION,
-		                JOptionPane.QUESTION_MESSAGE,    ///////////////////////////////////////////////////// MODIFICAR TAMAÑO DE TODO EL DIALOGO
-		                icono,                               
-		                opciones,
-		                opciones[0]);
+                // MÁSCARA VISUAL: Desde el 3er dígito, sin decimales
+                String xVisual = String.format("%.0f", x);
+                String yVisual = String.format("%.0f", y);
+                
+                if (xVisual.length() > 2) xVisual = xVisual.substring(2);
+                if (yVisual.length() > 2) yVisual = yVisual.substring(2);
 
-		        if (seleccion == 0) {
-		            dialogoAgregarBlanco(coord);
-		        } else if (seleccion == 1) {
-		            dialogoAgregarPunto(coord);
-		        }
-		    }
+                mostrarDialogoSeleccionNormal(coord, xVisual, yVisual);
+            }
 
-		    private void actualizarTooltip(MapMouseEvent ev) {
-		        double x = ev.getWorldPos().getX();
-		        double y = ev.getWorldPos().getY();
-		        
-		        tooltipLabel.setText(String.format("X: ( %.5f )  Y: ( %.5f )", x, y));
-		        
-		        panelMapa.getMapPane().repaint();
-		    }	
-		});
+            private void actualizarTooltip(MapMouseEvent ev) {
+                double x = ev.getWorldPos().getX();
+                double y = ev.getWorldPos().getY();
+                
+                String xV = String.format("%.0f", x);
+                String yV = String.format("%.0f", y);
+                if (xV.length() > 2) xV = xV.substring(2);
+                if (yV.length() > 2) yV = yV.substring(2);
+
+                tooltipLabel.setText("DERECHAS: " + xV + " | IZQUIERDAS: " + yV);
+                panelMapa.getMapPane().repaint();
+            }
+        });
+    }
+
+    private void mostrarDialogoSeleccionNormal(coordRectangulares coord, String xV, String yV) {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parent, "Selección de Marcador", true);
+        dialog.setSize(550, 350);
+        dialog.setLocationRelativeTo(this);
+        
+        // Panel con colores normales (System Default)
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // Etiquetas de coordenadas
+        JLabel lblInfo = new JLabel("<html><center><font size='5'>COORDENADAS</font><br>"
+                + "<font color='blue' size='6'>DERECHAS: " + xV + " | IZQUIERDAS: " + yV + "</font></center></html>");
+        lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        panel.add(lblInfo, gbc);
+
+        // Botones con tamaño para Tablet
+        JButton btnBlanco = new JButton("Marcar Blanco");
+        JButton btnPunto = new JButton("Marcar Punto");
+        
+        Font fontBoton = new Font("Arial", Font.BOLD, 18);
+        for (JButton b : new JButton[]{btnBlanco, btnPunto}) {
+            b.setFont(fontBoton);
+            b.setPreferredSize(new Dimension(200, 80));
+            b.setFocusPainted(false);
+        }
+
+        gbc.gridwidth = 1; gbc.gridy = 1;
+        gbc.gridx = 0; panel.add(btnBlanco, gbc);
+        gbc.gridx = 1; panel.add(btnPunto, gbc);
+
+        // Listeners
+        btnBlanco.addActionListener(e -> {
+            dialog.dispose();
+            dialogoAgregarBlanco(coord);
+        });
+
+        btnPunto.addActionListener(e -> {
+            dialog.dispose();
+            dialogoAgregarPunto(coord);
+        });
+
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
     
     private void cambiarMapaEnTiempoReal() {
-        // 1. Invocación del explorador nativo de Windows
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         FileDialog fd = new FileDialog(parentFrame, "SELECCIONAR NUEVA CARTOGRAFÍA GeoTIFF", FileDialog.LOAD);
         
         // Filtro para archivos TIFF
         fd.setFile("*.tif;*.tiff");
-        fd.setDirectory("C:\\"); // Directorio inicial sugerido
+        fd.setDirectory("C:\\");
         fd.setVisible(true);
 
-        // 2. Verificamos si el usuario seleccionó un archivo o canceló
         if (fd.getFile() != null) {
             String nuevaRuta = (fd.getDirectory() + fd.getFile()).replace("\\", "/");
 
-            // --- REINICIO DE BASE DE DATOS OPERATIVA ---
             listaDeBlancos.clear();
             listaDePuntos.clear();
             listaDePoligonales.clear();
             modeloListaBlancos.clear();
             modeloListaPoligonales.clear();
 
-            // --- REEMPLAZO DINÁMICO DEL PANEL DE MAPA ---
             panelMapa.dispose();
             PanelMapa nuevoMapa = new PanelMapa(nuevaRuta);
 
-            // Buscamos el JSplitPane dentro de la jerarquía de la UI para inyectar el nuevo mapa
             JSplitPane split = null;
             for (Component comp : getComponents()) {
                 if (comp instanceof JLayeredPane lp) {
@@ -653,12 +803,10 @@ public class SituacionTacticaTopo extends JPanel {
                 this.panelMapa = nuevoMapa;
                 split.setRightComponent(panelMapa);
                 
-                // Re-vinculación con el panel de herramientas de tiro/observación
                 panelPIF.setMapaObservacion(panelMapa);
                 configurarHerramientasMapa();
             }
 
-            // Refresco de la interfaz gráfica
             revalidate();
             repaint();
             
@@ -1020,24 +1168,6 @@ public class SituacionTacticaTopo extends JPanel {
                 if (resp == JOptionPane.YES_OPTION) System.exit(0);
             }
         });
-
-        dialog.setVisible(true);
-    }
-
-    private void dialogoPIFRapido() {
-    	JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "PIF RAPIDO", true);
-        dialog.setSize(500, 540);
-        dialog.setLocationRelativeTo(this);
-
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(50, 50, 50));
-        dialog.setContentPane(panel);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 6, 4, 6);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
-        //Proxima implementacion de PIF rapido
 
         dialog.setVisible(true);
     }
@@ -1992,6 +2122,10 @@ public class SituacionTacticaTopo extends JPanel {
                 listaDePoligonales.add(nuevaLinea);
                 modeloListaPoligonales.addElement(nuevaLinea);
                 panelMapa.agregarPoligonal(nuevaLinea);
+                
+                String medicionData = String.format("Origen: %s -> Destino: %s | Dist: %.2f m | Az: %.0f mil", 
+                        origen.getNombre(), destino.getNombre(), distancia, azimutMils);
+                RegistroCalculos.guardar("MEDICION_DIRECTA", medicionData);
                 
                 dialog.dispose();
             } catch (Exception ex) {
