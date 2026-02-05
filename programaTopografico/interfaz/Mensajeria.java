@@ -2,11 +2,10 @@ package interfaz;
 
 import java.awt.*;
 import java.io.File;
-
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-
 import comunicaciones.ComunicacionIP;
+import app.ConsolaMensajes;
 
 public class Mensajeria extends JPanel {
 
@@ -15,46 +14,41 @@ public class Mensajeria extends JPanel {
     private ComunicacionIP com;
     private JTextArea txtMensaje;
     private JTextArea txtLogChat;
+    private ConsolaMensajes consolaMensajes; // La consola ahora vive aquí
 
     public Mensajeria() {
-
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
 
+        // Inicializamos la consola interna
+        consolaMensajes = new ConsolaMensajes();
+
+        // PANEL LATERAL DE FORMULARIOS
         JPanel panelFormularios = new JPanel(new GridLayout(7, 1, 5, 5));
         panelFormularios.setBackground(Color.BLACK);
         panelFormularios.setBorder(crearBordeTitulo("FORMULARIOS"));
         panelFormularios.setPreferredSize(new Dimension(180, 0));
 
         String[] formularios = {"CHIMENTO", "GRANADA", "APOYO", "FIRECAP", "DISREP", "SHELLREP"};
-
         for (String nombre : formularios) {
             JButton btn = new JButton(nombre);
-            btn.setBackground(new Color(60, 60, 60));
-            btn.setForeground(Color.WHITE);
-            btn.setFocusPainted(false);
-            btn.setFont(new Font("Arial", Font.BOLD, 14));
-            btn.setPreferredSize(new Dimension(160, 40));
+            styleMilitarBtn(btn);
             btn.addActionListener(e -> abrirDialogo(nombre));
             panelFormularios.add(btn);
         }
 
         JButton btnEnviarLateral = new JButton("ENVIAR");
         btnEnviarLateral.setBackground(new Color(242, 37, 37));
-        btnEnviarLateral.setForeground(Color.BLACK);
         btnEnviarLateral.setFont(new Font("Arial", Font.BOLD, 14));
-        btnEnviarLateral.setPreferredSize(new Dimension(160, 40));
-        // sin lógica por ahora
         panelFormularios.add(btnEnviarLateral);
 
         add(panelFormularios, BorderLayout.WEST);
 
-        // PANEL CENTRAL DIVIDIDO EN DOS
-        JPanel panelCentral = new JPanel(new GridLayout(4, 1));
+        // PANEL CENTRAL (Escritura + Log Manual)
+        JPanel panelCentral = new JPanel(new GridLayout(2, 1));
         panelCentral.setBackground(Color.BLACK);
-        add(panelCentral, BorderLayout.CENTER);
 
-        // MITAD SUPERIOR — ESCRITURA
+        // Mitad Superior: Escritura
         JPanel panelEscritura = new JPanel(new BorderLayout());
         panelEscritura.setBorder(crearBordeTitulo("ESCRIBIR MENSAJE MANUAL"));
         panelEscritura.setBackground(Color.BLACK);
@@ -64,122 +58,107 @@ public class Mensajeria extends JPanel {
         txtMensaje.setWrapStyleWord(true);
         txtMensaje.setBackground(new Color(143, 140, 140));
         txtMensaje.setFont(new Font("Arial", Font.PLAIN, 24));
+        
+        panelEscritura.add(new JScrollPane(txtMensaje), BorderLayout.CENTER);
 
-        JScrollPane scrollEscritura = new JScrollPane(txtMensaje);
+        JPanel panelBotonesEnvio = new JPanel(new GridLayout(2, 1, 5, 5));
+        panelBotonesEnvio.setBackground(Color.BLACK);
+        
+        JButton btnArchivo = new JButton("📎 ARCHIVO");
+        styleMilitarBtn(btnArchivo);
+        btnArchivo.addActionListener(e -> enviarArchivo());
+        
+        JButton btnEnviar = new JButton("ENVIAR CHAT");
+        btnEnviar.setBackground(new Color(60, 130, 255));
+        btnEnviar.setForeground(Color.WHITE);
+        btnEnviar.addActionListener(e -> enviarChat());
 
-        JPanel panelBotones = new JPanel(new GridLayout(2, 1, 5, 5));
-        panelBotones.setBackground(Color.BLACK);
+        panelBotonesEnvio.add(btnArchivo);
+        panelBotonesEnvio.add(btnEnviar);
+        panelEscritura.add(panelBotonesEnvio, BorderLayout.EAST);
 
-        JButton btnEnviarChat = new JButton("ENVIAR");
-        btnEnviarChat.setBackground(new Color(60, 130, 255));
-        btnEnviarChat.setForeground(Color.WHITE);
-        btnEnviarChat.setFont(new Font("Arial", Font.BOLD, 16));
-        btnEnviarChat.addActionListener(e -> enviarChat());
-
-        JButton btnEnviarArchivo = new JButton("📎 ARCHIVO");
-        btnEnviarArchivo.setBackground(new Color(90, 90, 90));
-        btnEnviarArchivo.setForeground(Color.WHITE);
-        btnEnviarArchivo.setFont(new Font("Arial", Font.BOLD, 14));
-        btnEnviarArchivo.addActionListener(e -> enviarArchivo());
-
-        panelBotones.add(btnEnviarArchivo);
-        panelBotones.add(btnEnviarChat);
-
-        panelEscritura.add(panelBotones, BorderLayout.EAST);
-
-        panelEscritura.add(scrollEscritura, BorderLayout.CENTER);
-
-        panelCentral.add(panelEscritura);
-
-        // MITAD INFERIOR — LOG MANUAL
-        JPanel panelLog = new JPanel(new BorderLayout());
-        panelLog.setBorder(crearBordeTitulo("LOG COMUNICACIONES MANUALES"));
-        panelLog.setBackground(Color.BLACK);
-
+        // Mitad Inferior: Log Manual propio de esta pestaña
         txtLogChat = new JTextArea();
         txtLogChat.setEditable(false);
         txtLogChat.setBackground(new Color(20, 20, 20));
         txtLogChat.setForeground(Color.GREEN);
-        txtLogChat.setFont(new Font("Consolas", Font.PLAIN, 25));
+        txtLogChat.setFont(new Font("Consolas", Font.PLAIN, 20));
+        
+        JPanel panelLog = new JPanel(new BorderLayout());
+        panelLog.setBorder(crearBordeTitulo("LOG MANUAL"));
+        panelLog.add(new JScrollPane(txtLogChat), BorderLayout.CENTER);
 
-        JScrollPane scrollLog = new JScrollPane(txtLogChat);
-        panelLog.add(scrollLog, BorderLayout.CENTER);
-
+        panelCentral.add(panelEscritura);
         panelCentral.add(panelLog);
+
+        add(panelCentral, BorderLayout.CENTER);
+        
+        // La consola de mensajes la añadimos al sur o la dejamos disponible para el JSplitPane principal
+        consolaMensajes.setPreferredSize(new Dimension(0, 150));
+        add(consolaMensajes, BorderLayout.SOUTH);
+    }
+
+    public ConsolaMensajes getConsolaMensajes() {
+        return consolaMensajes;
     }
 
     public void setComunicacion(ComunicacionIP c) {
         this.com = c;
     }
-    
-    private void enviarArchivo() {
-
-        if (com == null) {
-            agregarLog("[ERROR] Comunicacion IP no configurada.");
-            return;
-        }
-
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Seleccionar archivo a enviar");
-
-        int r = fc.showOpenDialog(this);
-        if (r != JFileChooser.APPROVE_OPTION) return;
-
-        File f = fc.getSelectedFile();
-
-        int conf = JOptionPane.showConfirmDialog(
-                this,
-                "Enviar archivo:\n" + f.getName() + "?",
-                "Confirmar envío",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (conf != JOptionPane.YES_OPTION) return;
-
-        agregarLog("[TX-FILE] " + f.getName());
-
-        for (String ip : com.getDestinos()) {
-            com.enviarArchivo(ip, f);
-        }
-    }
-
 
     private void enviarChat() {
-        if (com == null) {
-            agregarLog("[ERROR] Comunicacion IP no configurada.");
-            return;
-        }
-
         String msg = txtMensaje.getText().trim();
-        if (msg.isEmpty()) return;
+        if (msg.isEmpty() || com == null) return;
 
         com.enviarATodos("CHAT|" + msg);
-        agregarLog("[TX] " + msg);
+        consolaMensajes.mostrarTx(msg); // Se muestra en la consola global
+        agregarLogLocal("[TX] " + msg); // Se muestra en el log de esta pestaña
         txtMensaje.setText("");
     }
-
+    
     public void recibirChat(String msg) {
-        agregarLog("[RX] " + msg);
+        // Notificamos a la consola externa
+        if (consolaMensajes != null) consolaMensajes.mostrarRx(msg);
+        	agregarLogLocal("[RX] " + msg);
     }
 
-    private void agregarLog(String texto) {
+    public void recibirMensajeGlobal(String origen, String msg) {
+        consolaMensajes.mostrarRx(origen + ": " + msg);
+        agregarLogLocal("[RX de " + origen + "] " + msg);
+    }
+
+    private void agregarLogLocal(String texto) {
         txtLogChat.append(texto + "\n");
         txtLogChat.setCaretPosition(txtLogChat.getDocument().getLength());
     }
-    
+
+    private void styleMilitarBtn(JButton b) {
+        b.setBackground(new Color(60, 60, 60));
+        b.setForeground(Color.WHITE);
+        b.setFocusPainted(false);
+        b.setFont(new Font("Arial", Font.BOLD, 14));
+    }
+
     private TitledBorder crearBordeTitulo(String titulo) {
-        Font fuente = new Font("Arial", Font.BOLD, 18);
         TitledBorder borde = BorderFactory.createTitledBorder(titulo);
         borde.setTitleColor(Color.WHITE);
-        borde.setTitleFont(fuente);
+        borde.setTitleFont(new Font("Arial", Font.BOLD, 16));
         return borde;
     }
 
-    private void abrirDialogo(String nombreFormulario) {
-        JDialog dialog = new JDialog((Frame) null, nombreFormulario, true);
-        dialog.setSize(400, 300);
-        dialog.setLocationRelativeTo(this);
-        dialog.add(new JLabel("Formulario: " + nombreFormulario, SwingConstants.CENTER));
-        dialog.setVisible(true);
+    private void enviarArchivo() {
+        if (com == null) return;
+        FileDialog fd = new FileDialog((Frame)null, "Enviar Archivo", FileDialog.LOAD);
+        fd.setVisible(true);
+        if (fd.getFile() != null) {
+            File f = new File(fd.getDirectory() + fd.getFile());
+            com.enviarArchivo(com.getDestinos().get(0), f); // Ejemplo
+            consolaMensajes.mostrarEstado("Archivo enviado: " + f.getName());
+        }
+    }
+
+    private void abrirDialogo(String nombre) {
+        consolaMensajes.mostrarEstado("Abriendo formulario: " + nombre);
+        // Lógica de diálogos...
     }
 }

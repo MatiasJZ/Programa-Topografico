@@ -28,7 +28,6 @@ public class ProgramaTopografico extends JPanel {
 
     private ComunicacionIP comunicacionIP;
     private Mensajeria mensajeriaPanel;
-    private PedidoDeFuego pedidoDeFuego;
     private SituacionTacticaTopo situacionTactica;
 
     public static void main(String[] args) {
@@ -58,7 +57,7 @@ public class ProgramaTopografico extends JPanel {
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
         menuSuperior.setPreferredSize(new Dimension(0, 40));
         menuSuperior.setBackground(Color.DARK_GRAY);
-        String[] secciones = {"SITUACION TACTICA", "PEDIDO DE FUEGO", "MENSAJERIA"};
+        String[] secciones = {"SITUACION TACTICA", "MENSAJERIA"};
 
         botonesMenu = new JButton[secciones.length];
 
@@ -76,8 +75,7 @@ public class ProgramaTopografico extends JPanel {
                 panelActual = idx;
                 switch (idx) {
                     case 0 -> cardLayout.show(cards, "SITUACION");
-                    case 1 -> cardLayout.show(cards, "PEDIDO");
-                    case 2 -> cardLayout.show(cards, "MENSAJERIA");
+                    case 1 -> cardLayout.show(cards, "MENSAJERIA");
                 }
                 actualizarBotonesMenu();
             });
@@ -90,12 +88,10 @@ public class ProgramaTopografico extends JPanel {
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
-        situacionTactica = new SituacionTacticaTopo(listaDeBlancos, pedidoDeFuego, this); 
+        situacionTactica = new SituacionTacticaTopo(listaDeBlancos, this); 
         mensajeriaPanel = new Mensajeria();
 
         cards.add(situacionTactica, "SITUACION");
-        cards.add(pedidoDeFuego, "PEDIDO");
         cards.add(mensajeriaPanel, "MENSAJERIA");
 
         add(cards, BorderLayout.CENTER);
@@ -106,7 +102,7 @@ public class ProgramaTopografico extends JPanel {
         // COMUNICACIÓN IP
         comunicacionIP = new ComunicacionIP();
 
-        procesadorMensajes = new ProcesadorMensajes(pedidoDeFuego,situacionTactica,situacionTactica.getListaDeBlancos());
+        procesadorMensajes = new ProcesadorMensajes(situacionTactica,situacionTactica.getListaDeBlancos());
 
         comunicacionIP.setCallback(new ProtocoloCallback() {
             @Override
@@ -115,7 +111,7 @@ public class ProgramaTopografico extends JPanel {
                 if (mensaje.startsWith("CHAT|")) {
                     String cuerpo = mensaje.substring("CHAT|".length());
                     mensajeriaPanel.recibirChat(cuerpo);
-                    pedidoDeFuego.getConsolaMensajes().agregarMensaje("[CHAT RX] " + cuerpo);
+                    mensajeriaPanel.getConsolaMensajes().agregarMensaje("[CHAT RX] " + cuerpo);
                     return;
                 }
 
@@ -124,12 +120,10 @@ public class ProgramaTopografico extends JPanel {
 
             @Override
             public void log(String texto) {
-                pedidoDeFuego.getConsolaMensajes().agregarMensaje(texto);
+            	mensajeriaPanel.getConsolaMensajes().agregarMensaje(texto);
             }
         });
-
         mensajeriaPanel.setComunicacion(comunicacionIP);
-        pedidoDeFuego.setComunicacionIP(comunicacionIP);
     }
 
     public ComunicacionIP getComunicacionIP() {
@@ -139,8 +133,7 @@ public class ProgramaTopografico extends JPanel {
     public void mostrarPanel(String nombreCard) {
         switch (nombreCard) {
             case "SITUACION" -> panelActual = 0;
-            case "PEDIDO" -> panelActual = 1;
-            case "MENSAJERIA" -> panelActual = 2;
+            case "MENSAJERIA" -> panelActual = 1;
         }
         cardLayout.show(cards, nombreCard);
         actualizarBotonesMenu();
@@ -216,10 +209,6 @@ public class ProgramaTopografico extends JPanel {
         for (int i = 0; i < botonesMenu.length; i++) {
             botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
-    }
-    
-    public PedidoDeFuego getPedidoDeFuego() {
-    	return pedidoDeFuego;
     }
 
     public String getIdOAA() {

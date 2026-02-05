@@ -32,7 +32,6 @@ import dominio.SituacionMovimiento;
 import dominio.coordPolares;
 import dominio.coordRectangulares;
 import dominio.poligonal;
-import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.PanelMapa;
 import util.SoundManager;
 	
@@ -48,7 +47,6 @@ public class SituacionTacticaTopo extends JPanel {
     private DefaultListModel<poligonal> modeloListaPoligonales;
     private JList<poligonal> listaUIPoligonales;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
-    protected PedidoDeFuego panelPIF;
     private SoundManager sonidos;
     private ProgramaTopografico observador;
     protected String designacionBlancoPrefijo = "AF"; // Prefijo de designación 
@@ -57,7 +55,7 @@ public class SituacionTacticaTopo extends JPanel {
     protected JLabel tooltipLabel;
 
     @SuppressWarnings("deprecation")
-	public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
+	public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,ProgramaTopografico obs) { 
 
 		this.observador = obs;
 		
@@ -73,7 +71,6 @@ public class SituacionTacticaTopo extends JPanel {
 		listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20));
 		listaUIBlancos.setBackground(Color.BLACK);
 		
-		panelPIF = pif;
 		sonidos = new SoundManager();
 		
 		listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
@@ -176,7 +173,6 @@ public class SituacionTacticaTopo extends JPanel {
 		JButton btnAgregar = new JButton("\u2795 AGREGAR");     
 		JButton btnEliminar = new JButton("\u274C ELIMINAR");    
 		JButton btnActualizar = new JButton("\u21BB REFRESCAR");
-		JButton btnPIF = new JButton("GENERAR PIF");
 		JButton btnConfigIP = new JButton("HARRIS"); 
 		JButton btnHerramientas = new JButton("\u2692 HERRAM.");   
 		JButton btnGenPdf = new JButton("GENERAR PDF");
@@ -187,7 +183,7 @@ public class SituacionTacticaTopo extends JPanel {
 		Dimension dimAncha = new Dimension(280, 45);
 
 		// GRUPO A: Botones Grises (Superiores)
-		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar, btnPIF}) {
+		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar}) {
 		    b.setFont(fuenteEmoji);
 		    b.setPreferredSize(dimPequeña);
 		    b.setFocusPainted(false);
@@ -243,23 +239,42 @@ public class SituacionTacticaTopo extends JPanel {
 		    dlg.setVisible(true);
 		});
 		
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets = new Insets(6, 6, 6, 6);
+		Dimension dimTactico = new Dimension(140, 65);
+		Dimension dimAnchaTactico = new Dimension(290, 70);
 		
-		gbc.gridx = 0; gbc.gridy = 0; panelBotones.add(btnAgregar, gbc);
-		gbc.gridx = 1; panelBotones.add(btnEliminar, gbc);
-		gbc.gridx = 0; gbc.gridy = 1; panelBotones.add(btnActualizar, gbc);
-		gbc.gridx = 1; panelBotones.add(btnPIF, gbc);
-		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; panelBotones.add(btnConfigIP, gbc);
-		gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; panelBotones.add(btnGenPdf,gbc); 
-		gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; panelBotones.add(btnHerramientas,gbc);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(8, 6, 8, 6); // Más espacio entre ellos
+		gbc.fill = GridBagConstraints.BOTH; // Rellena tanto ancho como ALTO
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0; // Esto les da el "grosor" vertical
+
+		// Fila 0
+		gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
+		panelBotones.add(btnAgregar, gbc);
+		gbc.gridx = 1;
+		panelBotones.add(btnEliminar, gbc);
+
+		// Fila 1
+		gbc.gridx = 0; gbc.gridy = 1;
+		panelBotones.add(btnActualizar, gbc);
+		gbc.gridx = 1;
+		panelBotones.add(btnConfigIP, gbc);
+
+		// Fila 2: Los botones anchos
+		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+		btnGenPdf.setPreferredSize(dimAnchaTactico);
+		panelBotones.add(btnGenPdf, gbc); 
+
+		// Fila 3
+		gbc.gridx = 0; gbc.gridy = 3;
+		btnHerramientas.setPreferredSize(dimAnchaTactico);
+		panelBotones.add(btnHerramientas, gbc);
 		
 		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
 		
 		// MAPA
 		pedirArchivoAMostrar();
 		panelMapa = new PanelMapa(rutaArchivoMapa);
-		panelPIF.setMapaObservacion(panelMapa);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
 		splitPane.setDividerLocation(250);
@@ -292,25 +307,32 @@ public class SituacionTacticaTopo extends JPanel {
 		JPanel hud = new JPanel(new GridBagLayout());
 		hud.setBackground(new Color(0, 0, 0, 170));  
 		hud.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		hud.setSize(300, 230);
+		hud.setSize(300, 230); 
+
+		hud.setSize(320, 300); // Aumentamos la altura total del contenedor
 
 		GridBagConstraints h = new GridBagConstraints();
-		h.insets = new Insets(5, 5, 5, 5);
+		h.insets = new Insets(10, 10, 10, 10);
+		h.fill = GridBagConstraints.BOTH; // Importante para que no queden flaquitos
+		h.weightx = 1.0;
+		h.weighty = 1.0;
 
-		h.gridx = 0; h.gridy = 0; hud.add(btnAgregar, h);
-		h.gridx = 1; hud.add(btnEliminar, h);
+		// Configuración de botones en el HUD
+		h.gridy = 0; h.gridx = 0; h.gridwidth = 1;
+		hud.add(btnAgregar, h);
+		h.gridx = 1;
+		hud.add(btnEliminar, h);
 
-		h.gridx = 0; h.gridy = 1; hud.add(btnActualizar, h);
-		h.gridx = 1; hud.add(btnPIF, h);
-
-		h.gridx = 0; h.gridy = 2; h.gridwidth = 1;
+		h.gridy = 1; h.gridx = 0;
+		hud.add(btnActualizar, h);
+		h.gridx = 1;
 		hud.add(btnConfigIP, h);
-		
-		h.gridx = 1; h.gridy = 2; h.gridwidth = 1;
-		hud.add(btnHerramientas,h);
-		
-		h.gridx = 0; h.gridy = 3; h.gridwidth = 2;
-		hud.add(btnGenPdf,h);
+
+		h.gridy = 2; h.gridx = 0; h.gridwidth = 2;
+		hud.add(btnHerramientas, h);
+
+		h.gridy = 3;
+		hud.add(btnGenPdf, h);
 
 		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
 		layered.add(hud, JLayeredPane.PALETTE_LAYER);
@@ -477,13 +499,6 @@ public class SituacionTacticaTopo extends JPanel {
         // actualizar
         btnActualizar.addActionListener(e -> {
         	actualizarBlancosEnMapa();
-        });
-
-        // PIF
-        btnPIF.addActionListener(e -> {
-        	armarPIF(listaUIBlancos.getSelectedValue());        
-        	panelPIF.mostrarDatosDeBlanco();
-        	panelPIF.getMetodoYTiroPanel().mostrarPanelPrincipal();
         });
 
         JPopupMenu popupMenu = new JPopupMenu();
@@ -803,7 +818,6 @@ public class SituacionTacticaTopo extends JPanel {
                 this.panelMapa = nuevoMapa;
                 split.setRightComponent(panelMapa);
                 
-                panelPIF.setMapaObservacion(panelMapa);
                 configurarHerramientasMapa();
             }
 
@@ -2496,8 +2510,6 @@ public class SituacionTacticaTopo extends JPanel {
     }
     
     private void armarPIF(Blanco b) {
-        panelPIF.getDatosDeBlancoPanel().setDatosBlanco(b);
-        panelPIF.getMetodoYTiroPanel().actualizar();
         Container parent = this.getParent();
         while (parent != null && !(parent instanceof ProgramaTopografico)) {
             parent = parent.getParent();
@@ -2560,8 +2572,4 @@ public class SituacionTacticaTopo extends JPanel {
     public LinkedList<Blanco> getListaDeBlancos(){
     	return listaDeBlancos;
     }
-
-	public MetodoAtaqueYTiroPanel getMetodoAtaqueYTiroPanel() {
-		return observador.getPedidoDeFuego().getMetodoYTiroPanel();
-	}
 }

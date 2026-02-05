@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 import app.ConsolaMensajes;
-import app.PedidoDeFuego;
 import app.PopupAlerta;
 import app.SituacionTacticaTopo;
 import dominio.Blanco;
@@ -15,12 +14,9 @@ public class ProcesadorMensajes {
 
     private ConsolaMensajes consola;
     private SituacionTacticaTopo panelTactico;
-    private PedidoDeFuego panelPedidoDeFuego;
     private LinkedList<Blanco> listaDeBlancos;
 
-    public ProcesadorMensajes(PedidoDeFuego panelPedidoDeFuego,SituacionTacticaTopo panelTactico,LinkedList<Blanco> listaDeBlancos) {
-    	consola= panelPedidoDeFuego.getConsolaMensajes();
-    	this.panelPedidoDeFuego = panelPedidoDeFuego;
+    public ProcesadorMensajes(SituacionTacticaTopo panelTactico,LinkedList<Blanco> listaDeBlancos) {
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
     }
@@ -52,8 +48,6 @@ public class ProcesadorMensajes {
     	String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
     	String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
     	String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
-
-    	panelPedidoDeFuego.recibirMTO(EPA,ANGOB,TVOLIDO);
     		
         consola.agregarMensaje("[MTO] RECIBIDO");
                
