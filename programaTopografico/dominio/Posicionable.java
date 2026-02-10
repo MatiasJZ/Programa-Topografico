@@ -1,6 +1,6 @@
 package dominio;
 
-public interface Posicionable {
+public interface Posicionable extends Vertice{
     coordRectangulares getCoordenadas();
     String getNombre();
 }

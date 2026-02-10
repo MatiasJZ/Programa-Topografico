@@ -4,7 +4,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-public class Linea implements poligonal {
+public class Linea implements Poligonal {
 
     private String nombre;
     private Coordinate inicio;

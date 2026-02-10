@@ -1,4 +1,5 @@
 package dominio;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 
 public class PIF {
@@ -96,19 +97,19 @@ public class PIF {
         // Si existe ReporteFinMision (si añadiste ese atributo en PIF)
         try {
             // evita dependencias si ReporteFinMision no existe
-            java.lang.reflect.Method m = this.getClass().getMethod("getReporteFin");
+            Method m = this.getClass().getMethod("getReporteFin");
             Object rep = m.invoke(this);
             if (rep != null) {
                 sb.append("\n--- Reporte Fin de Misión ---\n");
                 // intentamos llamar a los getters comunes del ReporteFinMision
                 try {
-                    java.lang.reflect.Method gEfecto = rep.getClass().getMethod("getEfectoObservado");
-                    java.lang.reflect.Method gDisp = rep.getClass().getMethod("getDispersion");
-                    java.lang.reflect.Method gDanos = rep.getClass().getMethod("getDanos");
-                    java.lang.reflect.Method gMov  = rep.getClass().getMethod("getMovimiento");
-                    java.lang.reflect.Method gRec  = rep.getClass().getMethod("getRecomendacion");
-                    java.lang.reflect.Method gObs  = rep.getClass().getMethod("getObservaciones");
-                    java.lang.reflect.Method gFecha = rep.getClass().getMethod("getFechaHora");
+                    Method gEfecto = rep.getClass().getMethod("getEfectoObservado");
+                    Method gDisp = rep.getClass().getMethod("getDispersion");
+                    Method gDanos = rep.getClass().getMethod("getDanos");
+                    Method gMov  = rep.getClass().getMethod("getMovimiento");
+                    Method gRec  = rep.getClass().getMethod("getRecomendacion");
+                    Method gObs  = rep.getClass().getMethod("getObservaciones");
+                    Method gFecha = rep.getClass().getMethod("getFechaHora");
 
                     Object fechaRep = gFecha.invoke(rep);
                     sb.append("Fecha reporte: ").append(fechaRep == null ? "-" : fechaRep.toString()).append("\n");

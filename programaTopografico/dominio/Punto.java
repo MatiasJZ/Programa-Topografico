@@ -4,7 +4,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-public class Punto implements poligonal, Posicionable{
+public class Punto implements Poligonal,Posicionable{
 	
 	private coordRectangulares coord;
 	private String nombre;
@@ -28,6 +28,11 @@ public class Punto implements poligonal, Posicionable{
 	
 	public coordRectangulares getCoordenadas() {
 		return coord;
+	}
+	
+	@Override
+	public String toString() {
+	    return this.nombre; // O el método que uses para obtener el nombre
 	}
 	
 	public void setCoord(coordRectangulares coord) {

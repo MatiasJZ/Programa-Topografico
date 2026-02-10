@@ -2,7 +2,7 @@ package dominio;
 
 import org.locationtech.jts.geom.Geometry;
 
-public interface poligonal {
+public interface Poligonal {
     String getName();
     Geometry getGeometry();
 }

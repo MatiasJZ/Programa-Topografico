@@ -24,6 +24,10 @@ public class ProcesadorMensajes {
     public void procesar(String mensaje) {
 
         if (mensaje == null || mensaje.trim().isEmpty()) return;
+        
+        if (consola == null) {
+            System.out.println("[WARN] Procesador sin consola vinculada: " + mensaje);
+        }
 
         String tipo = ProtocoloMensajes.obtenerTipo(mensaje);
 
@@ -37,25 +41,13 @@ public class ProcesadorMensajes {
             case "ESTADO":
                 procesarEstado(mensaje);
                 break;              
-            case "MTO":
-            	procesarMTO(mensaje);
             default:
                 consola.agregarMensaje("[INFO] Mensaje desconocido: " + mensaje);
         }
     }
-
-    private void procesarMTO(String msg) {
-    	String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
-    	String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
-    	String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
-    		
-        consola.agregarMensaje("[MTO] RECIBIDO");
-               
-        SwingUtilities.invokeLater(() ->
-        PopupAlerta.mostrar(
-            "MTO",
-            "RECIBIDO Y DISPONIBLE")
-    );
+    
+    public void setConsola(ConsolaMensajes consola) {
+        this.consola = consola;
     }
     
     private void procesarEstado(String msg) {

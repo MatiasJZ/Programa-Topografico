@@ -42,7 +42,7 @@ import dominio.Blanco;
 import dominio.CodigosMilitares;
 import dominio.Linea;
 import dominio.coordRectangulares;
-import dominio.poligonal;
+import dominio.Poligonal;
 import milsymb.proveedorMilSym;
 
 import javax.imageio.ImageIO;
@@ -80,8 +80,8 @@ public class PanelMapa extends JPanel {
     private SimpleFeatureType tipoPuntos;
     private SimpleFeatureType tipoLineas;
 
-    private final Map<poligonal, FeatureLayer> capaPorPoligonal = new HashMap<>();
-    private final Map<poligonal, ListFeatureCollection> coleccionPorPoligonal = new HashMap<>();
+    private final Map<Poligonal, FeatureLayer> capaPorPoligonal = new HashMap<>();
+    private final Map<Poligonal, ListFeatureCollection> coleccionPorPoligonal = new HashMap<>();
 
     private final Map<Blanco, FeatureLayer> capaPorBlanco = new HashMap<>();
     private final Map<Blanco, ListFeatureCollection> coleccionPorBlanco = new HashMap<>();
@@ -281,7 +281,7 @@ public class PanelMapa extends JPanel {
         return mapPane;
     }
 
-    public void agregarPoligonal(poligonal p) {
+    public void agregarPoligonal(Poligonal p) {
 
         Geometry geom = p.getGeometry();
         SimpleFeatureType tipo;
@@ -470,7 +470,7 @@ public class PanelMapa extends JPanel {
         return SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
     }
 
-    public void eliminarPoligonal(poligonal p) {
+    public void eliminarPoligonal(Poligonal p) {
 
         FeatureLayer capa = capaPorPoligonal.remove(p);
         coleccionPorPoligonal.remove(p);

@@ -14,8 +14,8 @@ public class Mensajeria extends JPanel {
     private ComunicacionIP com;
     private JTextArea txtMensaje;
     private JTextArea txtLogChat;
-    private ConsolaMensajes consolaMensajes; // La consola ahora vive aquí
-
+    private ConsolaMensajes consolaMensajes; 
+    
     public Mensajeria() {
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
@@ -117,9 +117,10 @@ public class Mensajeria extends JPanel {
     }
     
     public void recibirChat(String msg) {
-        // Notificamos a la consola externa
-        if (consolaMensajes != null) consolaMensajes.mostrarRx(msg);
-        	agregarLogLocal("[RX] " + msg);
+        if (!msg.contains("|")) {
+            if (consolaMensajes != null) consolaMensajes.mostrarRx(msg);
+            agregarLogLocal("[RX] " + msg);
+        }
     }
 
     public void recibirMensajeGlobal(String origen, String msg) {

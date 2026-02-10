@@ -90,7 +90,7 @@ public class ProgramaTopografico extends JPanel {
 
         situacionTactica = new SituacionTacticaTopo(listaDeBlancos, this); 
         mensajeriaPanel = new Mensajeria();
-
+       
         cards.add(situacionTactica, "SITUACION");
         cards.add(mensajeriaPanel, "MENSAJERIA");
 
@@ -103,15 +103,20 @@ public class ProgramaTopografico extends JPanel {
         comunicacionIP = new ComunicacionIP();
 
         procesadorMensajes = new ProcesadorMensajes(situacionTactica,situacionTactica.getListaDeBlancos());
+        
+        procesadorMensajes.setConsola(mensajeriaPanel.getConsolaMensajes());
 
         comunicacionIP.setCallback(new ProtocoloCallback() {
             @Override
             public void recibir(String mensaje) {
+                mensajeriaPanel.getConsolaMensajes().agregarMensaje("[RX RAW] " + mensaje);
 
                 if (mensaje.startsWith("CHAT|")) {
                     String cuerpo = mensaje.substring("CHAT|".length());
+                    
                     mensajeriaPanel.recibirChat(cuerpo);
-                    mensajeriaPanel.getConsolaMensajes().agregarMensaje("[CHAT RX] " + cuerpo);
+                    
+                    procesadorMensajes.procesar(cuerpo);
                     return;
                 }
 
@@ -120,9 +125,10 @@ public class ProgramaTopografico extends JPanel {
 
             @Override
             public void log(String texto) {
-            	mensajeriaPanel.getConsolaMensajes().agregarMensaje(texto);
+                mensajeriaPanel.getConsolaMensajes().agregarMensaje(texto);
             }
         });
+        
         mensajeriaPanel.setComunicacion(comunicacionIP);
     }
 
