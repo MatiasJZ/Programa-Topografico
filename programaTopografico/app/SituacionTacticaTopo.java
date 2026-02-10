@@ -692,7 +692,6 @@ public class SituacionTacticaTopo extends JPanel {
         formPanel.add(FabricaComponentes.crearEtiqueta("ESTACIÓN B (Derecha)", fLabel), gbc);
         gbc.gridx = 1;
         JComboBox<Posicionable> comboB = FabricaComponentes.crearComboPuntosYBlancos(fCombo,listaDePuntos,listaDeBlancos);
-        comboB.setSelectedIndex(1);
         formPanel.add(comboB, gbc);
 
         // Separador
@@ -742,22 +741,48 @@ public class SituacionTacticaTopo extends JPanel {
             try {
                 Posicionable pA = (Posicionable) comboA.getSelectedItem();
                 Posicionable pB = (Posicionable) comboB.getSelectedItem();
-                if (pA == pB) throw new Exception("Las estaciones deben ser distintas.");
                 
+                if (pA == null || pB == null) throw new Exception("Seleccione ambas estaciones.");
+                if (pA.equals(pB)) throw new Exception("Las estaciones deben ser distintas.");
+
                 double alfa = Double.parseDouble(txtAngA.getText());
                 double beta = Double.parseDouble(txtAngB.getText());
                 
+                double distLB = pA.getCoordenadas().distanciaA(pB.getCoordenadas());
                 coordRectangulares res = CalculadorTopografico.triangulacion(pA, pB, alfa, beta);
-                Punto ptoNuevo = new Punto(res, txtNombre.getText().trim());
-                
+                String id = txtNombre.getText().trim();
+
+                Punto ptoNuevo = new Punto(res, id);
+
                 listaDePuntos.add(ptoNuevo);
-                listaDePoligonales.add(ptoNuevo);
-                modeloListaPoligonales.addElement(ptoNuevo);
-                panelMapa.agregarPoligonal(ptoNuevo);
                 
-                RegistroCalculos.guardar("TRIANGULACIÓN", "Origen: " + pA.getNombre() + " y " + pB.getNombre() + " -> " + ptoNuevo.getNombre());
+                listaDePoligonales.add(ptoNuevo);
+                
+                modeloListaPoligonales.addElement(ptoNuevo);
+                
+                panelMapa.agregarPoligonal(ptoNuevo);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("DATOS DE ESTACIONES:\n");
+                sb.append(String.format(" - ETR A: %s (X: %.2f, Y: %.2f)\n", pA.getNombre(), pA.getCoordenadas().getX(), pA.getCoordenadas().getY()));
+                sb.append(String.format(" - ETR B: %s (X: %.2f, Y: %.2f)\n", pB.getNombre(), pB.getCoordenadas().getX(), pB.getCoordenadas().getY()));
+                sb.append(String.format(" - LÍNEA BASE (LB): %.2f m\n\n", distLB));
+                sb.append("MEDICIONES DE CAMPO:\n");
+                sb.append(String.format(" - ÁNGULO ALFA (α): %.0f mils\n", alfa));
+                sb.append(String.format(" - ÁNGULO BETA (β): %.0f mils\n\n", beta));
+                sb.append("RESULTADO POSICIONAMIENTO:\n");
+                sb.append(String.format(" - OBJETIVO: %s\n", id));
+                sb.append(String.format(" - COORDENADAS: X: %.3f | Y: %.3f", res.getX(), res.getY()));
+
+                RegistroCalculos.guardar("TRIANGULACIÓN", sb.toString());
+                
                 dialog.dispose();
+                
+            } catch (NumberFormatException ex) {
+                sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Error: Los ángulos deben ser valores numéricos.");
             } catch (Exception ex) {
+                sonidos.clickError();
                 JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
             }
         });
@@ -807,7 +832,7 @@ public class SituacionTacticaTopo extends JPanel {
                 if (xV.length() > 2) xV = xV.substring(2);
                 if (yV.length() > 2) yV = yV.substring(2);
 
-                tooltipLabel.setText("DERECHAS: " + xV + " | IZQUIERDAS: " + yV);
+                tooltipLabel.setText("DERECHAS: " + xV + " | ARRIBAS: " + yV);
                 panelMapa.getMapPane().repaint();
             }
         });
@@ -829,7 +854,7 @@ public class SituacionTacticaTopo extends JPanel {
 
         // Etiquetas de coordenadas
         JLabel lblInfo = new JLabel("<html><center><font size='4'>COORDENADAS</font><br>"
-                + "<font color='black' size='6'>DERECHAS: " + xV + " | IZQUIERDAS: " + yV + "</font></center></html>");
+                + "<font color='black' size='6'>DERECHAS: " + xV + " | ARRIBAS: " + yV + "</font></center></html>");
         lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
         
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
@@ -898,6 +923,8 @@ public class SituacionTacticaTopo extends JPanel {
                 }
             }
 
+            nuevoMapa.getMapPane().add(tooltipLabel);
+            
             if (split != null) {
                 this.panelMapa = nuevoMapa;
                 split.setRightComponent(panelMapa);

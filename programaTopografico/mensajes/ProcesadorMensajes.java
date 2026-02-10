@@ -70,87 +70,77 @@ public class ProcesadorMensajes {
     }
     
     private void procesarBlanco(String msg) {
-
         String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
-        String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
-        String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
-        String orient = ProtocoloMensajes.obtenerCampo(msg, "ORI");
-        String info = ProtocoloMensajes.obtenerCampo(msg, "INFO");
-        String simID = ProtocoloMensajes.obtenerCampo(msg, "SIMID");
-        String situacion = ProtocoloMensajes.obtenerCampo(msg, "SIT");
-
+        
         double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
         double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
-
         coordRectangulares coords = new coordRectangulares(x, y, 0);
 
+        Blanco blancoObjetivo = null;
         for (Blanco b : listaDeBlancos) {
             if (b.getNombre().equalsIgnoreCase(nombre)) {
-
-                b.setCoordenadas(coords);
-                b.setNaturaleza(nat);
-                b.setFecha(fecha);
-
-                if (orient != null)
-                    b.setOrientacion(Double.parseDouble(orient));
-
-                if (info != null)
-                    b.setInformacionAdicional(info);
-
-                if (simID != null)
-                    b.setSimID(simID);
-
-                if (situacion != null) {
-                    try {
-                        b.setSituacionMovimiento(
-                            SituacionMovimiento.valueOf(situacion)
-                        );
-                    } catch (Exception ignored) {}
-                }
-
-                panelTactico.actualizarBlanco(b);
-
-                consola.agregarMensaje("[ACTUALIZADO] Blanco: " + nombre);
-
-                mostrarPopupBlanco(
-                        "BLANCO ACTUALIZADO",
-                        b,
-                        coords
-                );
-                return;
+                blancoObjetivo = b;
+                break;
             }
         }
 
-        // Nuevo blanco
-        Blanco nuevo = new Blanco(nombre, coords, nat, fecha);
+        boolean esNuevo = (blancoObjetivo == null);
+        if (esNuevo) {
+            String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
+            String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
+            blancoObjetivo = new Blanco(nombre, coords, nat, fecha);
+        }
+        
+        mapearDatosBlanco(blancoObjetivo, msg, coords);
 
-        if (orient != null)
-            nuevo.setOrientacion(Double.parseDouble(orient));
-
-        if (info != null)
-            nuevo.setInformacionAdicional(info);
-
-        if (simID != null)
-            nuevo.setSimID(simID);
-
-        if (situacion != null) {
-            try {
-                nuevo.setSituacionMovimiento(
-                    SituacionMovimiento.valueOf(situacion)
-                );
-            } catch (Exception ignored) {}
+        if (esNuevo) {
+            listaDeBlancos.add(blancoObjetivo);
+            panelTactico.agregarBlanco(blancoObjetivo);
+            consola.agregarMensaje("[SISTEMA] Nuevo blanco detectado: " + nombre);
+        } else {
+            panelTactico.actualizarBlanco(blancoObjetivo);
+            consola.agregarMensaje("[SISTEMA] Actualización de datos para: " + nombre);
         }
 
-        listaDeBlancos.add(nuevo);
-        panelTactico.agregarBlanco(nuevo);
+        mostrarPopupBlanco(esNuevo ? "NUEVO BLANCO RECIBIDO" : "BLANCO ACTUALIZADO", blancoObjetivo, coords);
+    }
+    
+    private void mapearDatosBlanco(Blanco b, String msg, coordRectangulares coords) {
+        // 1. Datos Geográficos y Temporales
+        b.setCoordenadas(coords);
+        b.setFecha(ProtocoloMensajes.obtenerCampo(msg, "FECHA"));
+        
+        // 2. Atributos de Identificación Militar (Campos que faltaban)
+        String entidad = ProtocoloMensajes.obtenerCampo(msg, "ENTIDAD");
+        String afiliacion = ProtocoloMensajes.obtenerCampo(msg, "AFILIACION");
+        String echelon = ProtocoloMensajes.obtenerCampo(msg, "ECHELON");
+        
+        if (entidad != null) b.setUltEntidad(entidad);
+        if (afiliacion != null) b.setUltAfiliacion(afiliacion);
+        if (echelon != null) b.setUltEchelon(echelon);
 
-        consola.agregarMensaje("[NUEVO BLANCO] " + nombre + " (" + nat + ")");
+        // 3. Simbología y Naturaleza
+        String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
+        String simID = ProtocoloMensajes.obtenerCampo(msg, "SIMID");
+        if (nat != null) b.setNaturaleza(nat);
+        if (simID != null) b.setSimID(simID);
 
-        mostrarPopupBlanco(
-                "NUEVO BLANCO RECIBIDO",
-                nuevo,
-                coords
-        );
+        // 4. Estado Dinámico y Orientación
+        String orient = ProtocoloMensajes.obtenerCampo(msg, "ORI");
+        String situacion = ProtocoloMensajes.obtenerCampo(msg, "SIT");
+        
+        if (orient != null) b.setOrientacion(Double.parseDouble(orient));
+        if (situacion != null) {
+            try {
+                b.setSituacionMovimiento(SituacionMovimiento.valueOf(situacion));
+            } catch (Exception e) {
+                // Si el estado no es válido, mantengo el anterior o fijo por defecto
+            }
+        }
+
+        // 5. Inteligencia Adicional
+        String info = ProtocoloMensajes.obtenerCampo(msg, "INFO");
+        if (info != null) b.setInformacionAdicional(info);
     }
     
     private void procesarAviso(String msg) {
