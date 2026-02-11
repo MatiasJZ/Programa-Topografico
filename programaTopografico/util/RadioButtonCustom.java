@@ -1,11 +1,11 @@
-package interfaz;
+package util;
 import javax.swing.*;
 import java.awt.*;
 
-class RadioButtonGrande implements Icon {
+class RadioButtonCustom implements Icon {
     private int size;
 
-    public RadioButtonGrande(int size) {
+    public RadioButtonCustom(int size) {
         this.size = size;
     }
 

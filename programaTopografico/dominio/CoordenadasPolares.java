@@ -1,11 +1,11 @@
 package dominio;
-public class coordPolares extends coordenadas {
+public class CoordenadasPolares extends Coordenadas {
     private double direccion;   // milésimos (0–6399)
     private double distancia;   // metros
     private double cota; // milésimos
-    private coordRectangulares referencia;
+    private CoordenadasRectangulares referencia;
 
-    public coordPolares(double direccion, double distancia, double angVertical, coordRectangulares referencia) {
+    public CoordenadasPolares(double direccion, double distancia, double angVertical, CoordenadasRectangulares referencia) {
         this.direccion = direccion;
         this.distancia = distancia;
         this.cota = angVertical;
@@ -19,7 +19,7 @@ public class coordPolares extends coordenadas {
     public double getCota() { return cota; }// en mils
 
     // Convertir coordenadas polares a rectangulares (en metros)
-    public coordRectangulares toRectangulares() {
+    public CoordenadasRectangulares toRectangulares() {
         if (referencia == null) {
             throw new IllegalStateException("No hay referencia definida para la conversión polar.");
         }
@@ -32,13 +32,13 @@ public class coordPolares extends coordenadas {
         double x = referencia.getX() + deltaX;
         double y = referencia.getY() + deltaY;
 
-        return new coordRectangulares(x, y, 0);
+        return new CoordenadasRectangulares(x, y, 0);
     }
     
     @Override
-    public double distanciaA(coordRectangulares otro) {
+    public double distanciaA(CoordenadasRectangulares otro) {
     	
-        coordRectangulares p1 = this.toRectangulares();
+        CoordenadasRectangulares p1 = this.toRectangulares();
 
         double dx = otro.getX() - p1.getX();
         double dy = otro.getY() - p1.getY();

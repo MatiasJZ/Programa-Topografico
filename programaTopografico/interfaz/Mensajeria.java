@@ -4,14 +4,14 @@ import java.awt.*;
 import java.io.File;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import comunicaciones.ComunicacionIP;
+import comunicaciones.GestorEnlaceOperativo;
 import app.ConsolaMensajes;
 
 public class Mensajeria extends JPanel {
 
     private static final long serialVersionUID = 6622634837519332429L;
 
-    private ComunicacionIP com;
+    private GestorEnlaceOperativo com;
     private JTextArea txtMensaje;
     private JTextArea txtLogChat;
     private ConsolaMensajes consolaMensajes; 
@@ -64,7 +64,7 @@ public class Mensajeria extends JPanel {
         JPanel panelBotonesEnvio = new JPanel(new GridLayout(2, 1, 5, 5));
         panelBotonesEnvio.setBackground(Color.BLACK);
         
-        JButton btnArchivo = new JButton("📎 ARCHIVO");
+        JButton btnArchivo = new JButton("ENVIAR ARCHIVO");
         styleMilitarBtn(btnArchivo);
         btnArchivo.addActionListener(e -> enviarArchivo());
         
@@ -102,7 +102,7 @@ public class Mensajeria extends JPanel {
         return consolaMensajes;
     }
 
-    public void setComunicacion(ComunicacionIP c) {
+    public void setComunicacion(GestorEnlaceOperativo c) {
         this.com = c;
     }
 

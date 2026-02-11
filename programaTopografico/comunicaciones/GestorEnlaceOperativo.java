@@ -13,7 +13,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-public class ComunicacionIP {
+public class GestorEnlaceOperativo {
 
     // Configuración
     private InetAddress interfazlocal = null;  // Interfaz local (Harris)

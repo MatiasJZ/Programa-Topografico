@@ -9,12 +9,12 @@ import armyc2.c5isr.renderer.MilStdIconRenderer;
 import armyc2.c5isr.renderer.utilities.ImageInfo;
 import armyc2.c5isr.renderer.utilities.RendererSettings;
 
-public class proveedorMilSym extends JPanel {
+public class ProveedorSimbologiaMilitarizada extends JPanel {
 	
 	private static final long serialVersionUID = 3682810635662561460L;
 	private BufferedImage simbolo;
 
-    public proveedorMilSym(String sidc, int size) {
+    public ProveedorSimbologiaMilitarizada(String sidc, int size) {
 
         setBackground(Color.BLACK);
         try {

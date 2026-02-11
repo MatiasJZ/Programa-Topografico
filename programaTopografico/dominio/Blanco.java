@@ -2,7 +2,7 @@ package dominio;
 
 public class Blanco implements Posicionable {
     private String nombre;
-    private coordRectangulares coordenadas;
+    private CoordenadasRectangulares coordenadas;
     private String naturaleza;
     private String fecha;
     private String simID;
@@ -13,7 +13,7 @@ public class Blanco implements Posicionable {
     private String ultAfiliacion;
     private String ultEchelon;
     
-    public Blanco(String nombre, coordRectangulares c, String naturaleza, String fecha) {
+    public Blanco(String nombre, CoordenadasRectangulares c, String naturaleza, String fecha) {
         this.nombre = nombre;
         this.coordenadas = c;
         this.naturaleza = naturaleza;
@@ -52,9 +52,9 @@ public class Blanco implements Posicionable {
     
     public void setNombre(String n) { nombre = n; }
 
-    public coordRectangulares getCoordenadas() { return coordenadas; }
+    public CoordenadasRectangulares getCoordenadas() { return coordenadas; }
     
-    public void setCoordenadas(coordRectangulares c) { coordenadas = c; }
+    public void setCoordenadas(CoordenadasRectangulares c) { coordenadas = c; }
 
     public String NombretoString() {
         return nombre;

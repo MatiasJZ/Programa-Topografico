@@ -2,7 +2,7 @@ package dominio;
 
 public interface Vertice {
     String getNombre();
-    coordRectangulares getCoordenadas();
+    CoordenadasRectangulares getCoordenadas();
     
     default double distanciaA(Vertice otro) {
         return this.getCoordenadas().distanciaA(otro.getCoordenadas());

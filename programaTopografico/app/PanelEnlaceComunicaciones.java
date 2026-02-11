@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-public class PanelConfigRed extends JPanel {
+public class PanelEnlaceComunicaciones extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
@@ -23,7 +23,7 @@ public class PanelConfigRed extends JPanel {
     private JButton btnEliminarIP;
     private JButton btnAplicar;
 
-    public PanelConfigRed() {
+    public PanelEnlaceComunicaciones() {
 
         setLayout(new BorderLayout(5, 5));
         setBackground(Color.BLACK);

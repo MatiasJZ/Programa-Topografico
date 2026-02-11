@@ -5,11 +5,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SoundManager {
+public class GestorSonido {
 
     private final Map<String, Clip> sonidos = new HashMap<>();
 
-    public SoundManager() {
+    public GestorSonido() {
         cargarSonidos();
     }
 

@@ -11,9 +11,9 @@ import java.util.List;
 
 import javax.swing.*;
 
-import comunicaciones.ComunicacionIP;
+import comunicaciones.GestorEnlaceOperativo;
 
-public class DialogoConfigRed extends JDialog {
+public class Red extends JDialog {
 
 	private static final long serialVersionUID = 1218128306633571285L;
 	private JComboBox<NetworkInterfaceWrapper> cbInterfaces;
@@ -22,9 +22,9 @@ public class DialogoConfigRed extends JDialog {
     private JList<String> listaDestinos;
     private JTextField txtNuevoDestino;
 
-    private final ComunicacionIP comunicacion;
+    private final GestorEnlaceOperativo comunicacion;
 
-    public DialogoConfigRed(Window owner, ComunicacionIP comunicacion) {
+    public Red(Window owner, GestorEnlaceOperativo comunicacion) {
         super(owner, "Configuración de Red", ModalityType.APPLICATION_MODAL);
         this.comunicacion = comunicacion;
 

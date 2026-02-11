@@ -4,21 +4,24 @@ import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 import app.ConsolaMensajes;
-import app.PopupAlerta;
-import app.SituacionTacticaTopo;
+import app.DispatcherNotificacionesTacticas;
+import app.SituacionTacticaTopografica;
 import dominio.Blanco;
+import dominio.Punto;
 import dominio.SituacionMovimiento;
-import dominio.coordRectangulares;
+import dominio.CoordenadasRectangulares;
 
 public class ProcesadorMensajes {
 
     private ConsolaMensajes consola;
-    private SituacionTacticaTopo panelTactico;
+    private SituacionTacticaTopografica panelTactico;
     private LinkedList<Blanco> listaDeBlancos;
+    private LinkedList<Punto> listaDePuntos;
 
-    public ProcesadorMensajes(SituacionTacticaTopo panelTactico,LinkedList<Blanco> listaDeBlancos) {
+    public ProcesadorMensajes(SituacionTacticaTopografica panelTactico,LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos) {
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
+        this.listaDePuntos = listaDePuntos;
     }
 
     public void procesar(String mensaje) {
@@ -35,6 +38,8 @@ public class ProcesadorMensajes {
             case "BLANCO":
                 procesarBlanco(mensaje);
                 break;
+            case "PUNTO": // Nuevo caso
+                procesarPunto(mensaje);
             case "AVISO":
                 procesarAviso(mensaje);
                 break;
@@ -43,6 +48,44 @@ public class ProcesadorMensajes {
                 break;              
             default:
                 consola.agregarMensaje("[INFO] Mensaje desconocido: " + mensaje);
+        }
+    }
+    
+    private void procesarPunto(String msg) {
+        try {
+            String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
+            double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
+            double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
+            double z = 0;
+            
+            String cotaStr = ProtocoloMensajes.obtenerCampo(msg, "Z");
+            if(cotaStr != null) z = Double.parseDouble(cotaStr);
+
+            CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, z);
+
+            // Busco si ya existe para actualizar
+            for (Punto p : listaDePuntos) {
+                if (p.getNombre().equalsIgnoreCase(nombre)) {
+                    p.setCoord(coords);
+                    panelTactico.actualizarPunto(p); // Debes tener este método en SituacionTactica
+                    consola.agregarMensaje("[ACTUALIZADO] Punto: " + nombre);
+                    return;
+                }
+            }
+
+            // Si llegamos aquí, es un punto nuevo
+            Punto nuevoPunto = new Punto(coords, nombre);
+            listaDePuntos.add(nuevoPunto);
+            panelTactico.agregarPunto(nuevoPunto); // Debes tener este método en SituacionTactica
+
+            consola.agregarMensaje("[NUEVO PUNTO] Recibido: " + nombre);
+            
+            SwingUtilities.invokeLater(() ->
+                DispatcherNotificacionesTacticas.mostrar("PUNTO RECIBIDO", "Nombre: " + nombre + "\nX: " + x + " Y: " + y)
+            );
+
+        } catch (Exception e) {
+            consola.agregarMensaje("[ERROR] Fallo al procesar PUNTO: " + e.getMessage());
         }
     }
     
@@ -58,7 +101,7 @@ public class ProcesadorMensajes {
         consola.agregarMensaje("[RADIO] " + contenido);
 
         SwingUtilities.invokeLater(() ->
-            PopupAlerta.mostrar(
+            DispatcherNotificacionesTacticas.mostrar(
                 "ESTADO OPERATIVO",
                 contenido
             )
@@ -74,7 +117,7 @@ public class ProcesadorMensajes {
         
         double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
         double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
-        coordRectangulares coords = new coordRectangulares(x, y, 0);
+        CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, 0);
 
         Blanco blancoObjetivo = null;
         for (Blanco b : listaDeBlancos) {
@@ -105,7 +148,7 @@ public class ProcesadorMensajes {
         mostrarPopupBlanco(esNuevo ? "NUEVO BLANCO RECIBIDO" : "BLANCO ACTUALIZADO", blancoObjetivo, coords);
     }
     
-    private void mapearDatosBlanco(Blanco b, String msg, coordRectangulares coords) {
+    private void mapearDatosBlanco(Blanco b, String msg, CoordenadasRectangulares coords) {
         // 1. Datos Geográficos y Temporales
         b.setCoordenadas(coords);
         b.setFecha(ProtocoloMensajes.obtenerCampo(msg, "FECHA"));
@@ -153,11 +196,11 @@ public class ProcesadorMensajes {
         String titulo = esCritico(contenido) ? "ALERTA CRÍTICA" : "AVISO";
 
         SwingUtilities.invokeLater(() ->
-    		PopupAlerta.mostrar(titulo, contenido)
+    		DispatcherNotificacionesTacticas.mostrar(titulo, contenido)
         );
     }
     
-    private void mostrarPopupBlanco(String titulo, Blanco b, coordRectangulares c) {
+    private void mostrarPopupBlanco(String titulo, Blanco b, CoordenadasRectangulares c) {
 
         String texto =
                 "Nombre: " + b.getNombre() + "\n" +
@@ -168,7 +211,7 @@ public class ProcesadorMensajes {
                         : "");
 
         SwingUtilities.invokeLater(() ->
-            PopupAlerta.mostrar(titulo, texto)
+            DispatcherNotificacionesTacticas.mostrar(titulo, texto)
         );
     }
 

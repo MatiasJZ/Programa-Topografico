@@ -1,15 +1,15 @@
-package interfaz;
+package util;
 import javax.swing.*;
 import java.awt.*;
 
-public class CheckIconGrande implements Icon {
+public class CheckIconCustom implements Icon {
 
     private final int size;
     private final Color border;
     private final Color fill;
     private final Color check;
 
-    public CheckIconGrande(int size) {
+    public CheckIconCustom(int size) {
         this.size = size;
         this.border = Color.WHITE;
         this.fill = Color.BLACK;

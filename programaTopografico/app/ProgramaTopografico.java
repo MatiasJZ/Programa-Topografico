@@ -4,12 +4,12 @@ import java.awt.*;
 import java.util.LinkedList;
 import javax.swing.*;
 
-import comunicaciones.ComunicacionIP;
+import comunicaciones.GestorEnlaceOperativo;
 import comunicaciones.ProtocoloCallback;
 import dominio.Blanco;
 import interfaz.Mensajeria;
 import mensajes.ProcesadorMensajes;
-import util.SoundManager;
+import util.GestorSonido;
 
 public class ProgramaTopografico extends JPanel {
 
@@ -24,11 +24,11 @@ public class ProgramaTopografico extends JPanel {
     private int panelActual = 0;
 
     private ProcesadorMensajes procesadorMensajes;
-    private SoundManager sonidos;
+    private GestorSonido sonidos;
 
-    private ComunicacionIP comunicacionIP;
+    private GestorEnlaceOperativo comunicacionIP;
     private Mensajeria mensajeriaPanel;
-    private SituacionTacticaTopo situacionTactica;
+    private SituacionTacticaTopografica situacionTactica;
 
     public static void main(String[] args) {
 
@@ -88,8 +88,9 @@ public class ProgramaTopografico extends JPanel {
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        situacionTactica = new SituacionTacticaTopo(listaDeBlancos, this); 
+        situacionTactica = new SituacionTacticaTopografica(listaDeBlancos, this); 
         mensajeriaPanel = new Mensajeria();
+        situacionTactica.setPanelMensajeria(mensajeriaPanel);
        
         cards.add(situacionTactica, "SITUACION");
         cards.add(mensajeriaPanel, "MENSAJERIA");
@@ -100,9 +101,9 @@ public class ProgramaTopografico extends JPanel {
         actualizarBotonesMenu();
 
         // COMUNICACIÓN IP
-        comunicacionIP = new ComunicacionIP();
+        comunicacionIP = new GestorEnlaceOperativo();
 
-        procesadorMensajes = new ProcesadorMensajes(situacionTactica,situacionTactica.getListaDeBlancos());
+        procesadorMensajes = new ProcesadorMensajes(situacionTactica,situacionTactica.getListaDeBlancos(),situacionTactica.getListaDePuntos());
         
         procesadorMensajes.setConsola(mensajeriaPanel.getConsolaMensajes());
 
@@ -132,7 +133,7 @@ public class ProgramaTopografico extends JPanel {
         mensajeriaPanel.setComunicacion(comunicacionIP);
     }
 
-    public ComunicacionIP getComunicacionIP() {
+    public GestorEnlaceOperativo getComunicacionIP() {
         return comunicacionIP;
     }
 
@@ -150,7 +151,7 @@ public class ProgramaTopografico extends JPanel {
         Image imgEscalada = iconoOriginal.getImage().getScaledInstance(100, 110, Image.SCALE_SMOOTH); // Un poco más grande para acompañar
         ImageIcon icono = new ImageIcon(imgEscalada);
 
-        sonidos = new SoundManager();
+        sonidos = new GestorSonido();
 
         while (true) {
             // 1. Crear el campo de texto con fuente grande

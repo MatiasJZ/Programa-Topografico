@@ -1,10 +1,10 @@
 package dominio;
-public class coordRectangulares extends coordenadas {
+public class CoordenadasRectangulares extends Coordenadas {
     private double coordX; 
     private double coordY;
     private double cotaXY; 
 
-    public coordRectangulares(double x, double y, double cota) {
+    public CoordenadasRectangulares(double x, double y, double cota) {
         this.coordX = x;
         this.coordY = y;
         this.cotaXY = cota;
@@ -17,7 +17,7 @@ public class coordRectangulares extends coordenadas {
     public double getCota() { return cotaXY; }
 
     @Override
-    public double distanciaA(coordRectangulares otro) {
+    public double distanciaA(CoordenadasRectangulares otro) {
         double dx = otro.getX() - this.coordX;
         double dy = otro.getY() - this.coordY;
         return Math.hypot(dx, dy); // equivalente a sqrt(dx² + dy²) pero numéricamente más estable

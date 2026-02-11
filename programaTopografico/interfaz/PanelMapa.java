@@ -39,11 +39,11 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 import dominio.Blanco;
-import dominio.CodigosMilitares;
+import dominio.GestorCodigosSIDC;
 import dominio.Linea;
-import dominio.coordRectangulares;
+import dominio.CoordenadasRectangulares;
 import dominio.Poligonal;
-import milsymb.proveedorMilSym;
+import milsymb.ProveedorSimbologiaMilitarizada;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -391,14 +391,14 @@ public class PanelMapa extends JPanel {
 
     public void agregarBlanco(Blanco b) {
 
-        coordRectangulares c = b.getCoordenadas();
+        CoordenadasRectangulares c = b.getCoordenadas();
 
         GeometryFactory gf = new GeometryFactory();
         Point geom = gf.createPoint(new Coordinate(c.getX(), c.getY()));
 
         String sidc = b.getSimID();
         if (sidc == null || sidc.isEmpty()) {
-            sidc = CodigosMilitares.obtenerSIDC(b.getNaturaleza());
+            sidc = GestorCodigosSIDC.obtenerSIDC(b.getNaturaleza());
             b.setSimID(sidc);
         }
 
@@ -430,8 +430,8 @@ public class PanelMapa extends JPanel {
     private Style crearEstilo(String sidc, double orient) {
 
         try {
-            proveedorMilSym prov = new proveedorMilSym(sidc, 55);
-            Field f = proveedorMilSym.class.getDeclaredField("simbolo");
+            ProveedorSimbologiaMilitarizada prov = new ProveedorSimbologiaMilitarizada(sidc, 55);
+            Field f = ProveedorSimbologiaMilitarizada.class.getDeclaredField("simbolo");
             f.setAccessible(true);
             BufferedImage simbolo = (BufferedImage) f.get(prov);
 

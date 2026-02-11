@@ -2,7 +2,7 @@ package dominio;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CodigosMilitares {
+public class GestorCodigosSIDC {
 
     private static final Map<String, String> mapa = new HashMap<>();
 

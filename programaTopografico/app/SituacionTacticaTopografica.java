@@ -25,20 +25,21 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import dominio.Blanco;
-import dominio.CodigosMilitares;
+import dominio.GestorCodigosSIDC;
 import dominio.Linea;
 import dominio.Posicionable;
 import dominio.Punto;
 import dominio.SituacionMovimiento;
 import dominio.Vertice;
-import dominio.coordPolares;
-import dominio.coordRectangulares;
+import dominio.CoordenadasPolares;
+import dominio.CoordenadasRectangulares;
 import dominio.Poligonal;
+import interfaz.Mensajeria;
 import interfaz.PanelMapa;
 import util.FabricaComponentes;
-import util.SoundManager;
+import util.GestorSonido;
 	
-public class SituacionTacticaTopo extends JPanel {
+public class SituacionTacticaTopografica extends JPanel {
 
 	private static final long serialVersionUID = 789462013392544798L;
 	private DefaultListModel<Blanco> modeloListaBlancos;
@@ -50,16 +51,17 @@ public class SituacionTacticaTopo extends JPanel {
     private DefaultListModel<Poligonal> modeloListaPoligonales;
     private JList<Poligonal> listaUIPoligonales;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
-    private SoundManager sonidos;
+    private GestorSonido sonidos;
     private ProgramaTopografico observador;
     protected String designacionBlancoPrefijo = "AF"; // Prefijo de designación 
     protected int designacionBlancoContador = 6400;	// Contador de designación
     private JPanel panelGlobalTopografico;
     protected JLabel tooltipLabel;
-    protected Map<Vertice,Vertice> listaDeVerticesConectados;
+    protected Map<Vertice, ConexionTopografica> listaDeVerticesConectados;
+    private Mensajeria mensajeria;
 
     @SuppressWarnings("deprecation")
-	public SituacionTacticaTopo(LinkedList<Blanco> listaDeBlancos,ProgramaTopografico obs) { 
+	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,ProgramaTopografico obs) { 
 
     	setSize(900, 600);
 		setLayout(new BorderLayout());
@@ -93,7 +95,7 @@ public class SituacionTacticaTopo extends JPanel {
 			}
 			});
 		
-		listaDeVerticesConectados = new HashMap<Vertice,Vertice>();		
+		listaDeVerticesConectados = new HashMap<>();		
 		
 		listaDePoligonales = new LinkedList<>();
 		
@@ -127,7 +129,7 @@ public class SituacionTacticaTopo extends JPanel {
 		
 		listaUIPoligonales.setFixedCellHeight(40);
 		
-		sonidos = new SoundManager();
+		sonidos = new GestorSonido();
 		
 		JScrollPane scrollLista = new JScrollPane(listaUIBlancos);
 		scrollLista.setPreferredSize(new Dimension(250, 0));
@@ -237,7 +239,7 @@ public class SituacionTacticaTopo extends JPanel {
 		});
 
 		btnConfigIP.addActionListener(e -> {
-		    DialogoConfigRed dlg = new DialogoConfigRed(
+		    Red dlg = new Red(
 		        SwingUtilities.getWindowAncestor(this),
 		        observador.getComunicacionIP()
 		    );
@@ -366,7 +368,6 @@ public class SituacionTacticaTopo extends JPanel {
 		
 		LinkedList<JButton> botoneraPanelTopo = new LinkedList<JButton>();
 		 
-		JButton poligonal = new JButton("POLIGONAL"); botoneraPanelTopo.addLast(poligonal);
 		JButton triangulacion = new JButton("TRIANG"); botoneraPanelTopo.addLast(triangulacion);
 		JButton radiacion = new JButton("RAD"); botoneraPanelTopo.addLast(radiacion);
 		JButton trilateracion = new JButton("TRILAT"); botoneraPanelTopo.addLast(trilateracion);
@@ -393,9 +394,9 @@ public class SituacionTacticaTopo extends JPanel {
 		        String comando = b.getText();
 		        switch(comando) {
 		           case "TRIANG": abrirDialogoTriangulacion(); break;
-		           // case "RAD": abrirDialogoRadiacion(); break;
+		           case "RAD": abrirDialogoRadiacion(); break;
 		           // case "TRILAT": abrirDialogoTrilateracion(); break;
-		           // case "INT-INV-3P": abrirDialogoInterseccionInversa3P(); break;
+		           case "INT-INV-3P": abrirDialogoInterseccionInversa3P(); break;
 		           // case "INT-INV-2P": abrirDialogoInterseccionInversa2P(); break;
 		           // case "INT-D-M": abrirDialogoInterseccionDirecta(); break;
 		           // case "POLIGONAL": abrirDialogoPoligonal(); break;
@@ -424,7 +425,7 @@ public class SituacionTacticaTopo extends JPanel {
 
         btnAgregar.addActionListener(e -> {
         	
-            coordRectangulares coord = new coordRectangulares(0,0,0);
+            CoordenadasRectangulares coord = new CoordenadasRectangulares(0,0,0);
             String[] opciones = {"Marcar Blanco", "Marcar Punto"};
             Image img = new ImageIcon(getClass().getResource("/imagenPIN.png")).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
             Icon icono = new ImageIcon(img);
@@ -476,7 +477,7 @@ public class SituacionTacticaTopo extends JPanel {
         });
 
         JPopupMenu popupMenu = new JPopupMenu();
-        popupMenu.setPreferredSize(new Dimension(250,160));
+        popupMenu.setPreferredSize(new Dimension(250,200));
         JMenuItem itemEditar = new JMenuItem("Editar Blanco Seleccionado");
         itemEditar.setBackground(Color.BLACK);
         itemEditar.setForeground(Color.WHITE);
@@ -493,11 +494,16 @@ public class SituacionTacticaTopo extends JPanel {
         itemInfoBlanco.setBackground(Color.BLACK);
         itemInfoBlanco.setForeground(Color.WHITE);
         itemInfoBlanco.setFont(new Font("Arial", Font.BOLD, 15));
+        JMenuItem itemEnviarBlanco = new JMenuItem("Enviar");
+        itemEnviarBlanco.setBackground(Color.BLACK);
+        itemEnviarBlanco.setForeground(Color.WHITE);
+        itemEnviarBlanco.setFont(new Font("Arial", Font.BOLD, 15));
 
         popupMenu.add(itemEditar);
         popupMenu.add(itemMedir);
         popupMenu.add(itemMarcarPolares);
         popupMenu.add(itemInfoBlanco);
+        popupMenu.add(itemEnviarBlanco);
 
         itemMedir.addActionListener(e -> {
             Blanco bSel = listaUIBlancos.getSelectedValue();
@@ -515,9 +521,13 @@ public class SituacionTacticaTopo extends JPanel {
             Blanco bSel = listaUIBlancos.getSelectedValue();
             if (bSel != null) dialogoInfoBlanco(bSel);
         });
+        itemEnviarBlanco.addActionListener(e -> {
+            Blanco bSel = listaUIBlancos.getSelectedValue();
+            if (bSel != null) enviarBlanco(bSel); 
+        });
         
-        JPopupMenu popupMenuPoligonal = new JPopupMenu();
-        popupMenuPoligonal.setPreferredSize(new Dimension(250,160));     
+        JPopupMenu popupMenuPunto = new JPopupMenu();
+        popupMenuPunto.setPreferredSize(new Dimension(250,220));     
         JMenuItem itemMedirP = new JMenuItem("Marcar Medicion");
         itemMedirP.setBackground(Color.BLACK);
         itemMedirP.setForeground(Color.WHITE);
@@ -526,9 +536,19 @@ public class SituacionTacticaTopo extends JPanel {
         itemInfoP.setBackground(Color.BLACK);
         itemInfoP.setForeground(Color.WHITE);
         itemInfoP.setFont(new Font("Arial", Font.BOLD, 15));
+        JMenuItem itemEnviarPunto = new JMenuItem("Enviar");
+        itemEnviarPunto.setBackground(Color.BLACK);
+        itemEnviarPunto.setForeground(Color.WHITE);
+        itemEnviarPunto.setFont(new Font("Arial", Font.BOLD, 15));
+        JMenuItem itemCerrarP = new JMenuItem("Cerrar Poligonal (Cálculo de Error)");
+        itemCerrarP.setBackground(new Color(45, 45, 85)); // Azul oscuro táctico
+        itemCerrarP.setForeground(Color.WHITE);
+        itemCerrarP.setFont(new Font("Arial", Font.BOLD, 15));
 
-        popupMenuPoligonal.add(itemMedirP);
-        popupMenuPoligonal.add(itemInfoP);
+        popupMenuPunto.add(itemMedirP);
+        popupMenuPunto.add(itemInfoP);
+        popupMenuPunto.add(itemEnviarPunto);
+        popupMenuPunto.add(itemCerrarP);
 
         itemMedirP.addActionListener(e -> {
             Posicionable bSel = (Posicionable) listaUIPoligonales.getSelectedValue();
@@ -538,7 +558,18 @@ public class SituacionTacticaTopo extends JPanel {
         	Posicionable bSel = (Posicionable) listaUIPoligonales.getSelectedValue();
             if (bSel != null) dialogoInfoPunto(bSel);
         });
-
+        itemEnviarPunto.addActionListener(e -> {
+        	Posicionable bSel = (Posicionable) listaUIPoligonales.getSelectedValue();
+            if (bSel != null) enviarPunto(bSel);
+        });
+        itemCerrarP.addActionListener(e -> {
+            Posicionable selec = (Posicionable) listaUIPoligonales.getSelectedValue();
+            if (selec instanceof Punto pCalculado) {
+                dialogoCierreControlado(pCalculado);
+            }
+        });
+        
+        
         listaUIBlancos.addMouseListener(new MouseAdapter() {
 
         	@Override public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
@@ -577,13 +608,393 @@ public class SituacionTacticaTopo extends JPanel {
                     if (elemento instanceof Punto) {
                         listaUIPoligonales.setSelectedIndex(idx);
                         listaUIPoligonales.requestFocusInWindow();
-                        popupMenuPoligonal.show(e.getComponent(), e.getX(), e.getY());
+                        popupMenuPunto.show(e.getComponent(), e.getX(), e.getY());
                     }
                 } else {
                     listaUIPoligonales.clearSelection();
                 }
             }
         });
+    }
+
+    private void dialogoCierreControlado(Punto puntoCalculado) {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parent, "CONTROL DE PRECISIÓN AUTOMÁTICO", true);
+        dialog.setSize(600, 450);
+        dialog.setLayout(new GridBagLayout());
+        dialog.getContentPane().setBackground(new Color(40, 40, 40));
+        dialog.setLocationRelativeTo(this);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // 1. Etiqueta de información dinámica
+        JLabel lblInfo = new JLabel("<html><center>Seleccione el punto de origen real para comparar</center></html>");
+        lblInfo.setForeground(Color.WHITE);
+        lblInfo.setFont(new Font("Arial", Font.PLAIN, 18));
+        gbc.gridwidth = 2; gbc.gridx = 0; gbc.gridy = 0;
+        dialog.add(lblInfo, gbc);
+
+        // 2. Combo de puntos reales (excluyendo el seleccionado)
+        JComboBox<Punto> comboPuntosReales = new JComboBox<>();
+        for (Punto p : listaDePuntos) {
+            if (!p.equals(puntoCalculado)) comboPuntosReales.addItem(p);
+        }
+        comboPuntosReales.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridy = 1; 
+        dialog.add(comboPuntosReales, gbc);
+
+        // 3. Campo de Distancia (Se actualizará solo)
+        gbc.gridwidth = 1; gbc.gridy = 2;
+        dialog.add(new JLabel("Distancia Poligonal (m):") {
+
+			private static final long serialVersionUID = 1L;
+
+		{ setForeground(Color.GRAY); }}, gbc);
+        
+        JTextField txtDistManual = new JTextField("0.00");
+        txtDistManual.setFont(new Font("Monospaced", Font.BOLD, 20));
+        txtDistManual.setBackground(new Color(60, 60, 60));
+        txtDistManual.setForeground(Color.GREEN);
+        gbc.gridx = 1;
+        dialog.add(txtDistManual, gbc);
+
+        comboPuntosReales.addActionListener(e -> {
+            Punto real = (Punto) comboPuntosReales.getSelectedItem();
+            if (real != null) {
+                // Ejecutamos el rastreo por el grafo
+                double distCamino = calcularDistanciaRecorridaRecursiva((Vertice)puntoCalculado, (Vertice)real);
+                
+                if (distCamino > 0) {
+                    // Caso ideal: Se encontró la ruta en el mapeo
+                    txtDistManual.setText(String.format("%.2f", distCamino).replace(",", "."));
+                    txtDistManual.setForeground(Color.GREEN); // Feedback visual de éxito
+                } else {
+                    // Caso Fallido: Los puntos no están conectados en el grafo
+                    double distDirecta = puntoCalculado.getCoordenadas().distanciaA(real.getCoordenadas());
+                    txtDistManual.setText(String.format("%.2f", distDirecta).replace(",", "."));
+                    txtDistManual.setForeground(Color.ORANGE); // Advertencia: distancia geométrica simple
+                }
+            }
+        });
+
+        // 4. Botón de Acción
+        JButton btnCalcular = new JButton("GENERAR INFORME DE PRECISIÓN");
+        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(45, 90, 45));
+        gbc.gridy = 3; gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.insets = new Insets(25, 15, 10, 15);
+        dialog.add(btnCalcular, gbc);
+
+        btnCalcular.addActionListener(ev -> {
+            try {
+                Punto real = (Punto) comboPuntosReales.getSelectedItem();
+                double distFinal = Double.parseDouble(txtDistManual.getText());
+
+                // Llamada al motor matemático
+                String informe = CalculadorTopografico.obtenerInformeError(
+                    real.getCoordenadas(), 
+                    puntoCalculado.getCoordenadas(), 
+                    distFinal
+                );
+
+                RegistroCalculos.guardar("CIERRE DE POLIGONAL: " + puntoCalculado.getNombre(), informe);
+                JOptionPane.showMessageDialog(dialog, informe, "INFORME TÉCNICO", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+                
+            } catch (NumberFormatException ex) {
+                sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Error: Formato de distancia inválido.");
+            }
+        });
+
+        // Disparar carga inicial
+        if (comboPuntosReales.getItemCount() > 0) {
+            comboPuntosReales.setSelectedIndex(0);
+        }
+
+        dialog.setVisible(true);
+    }
+    
+    private double calcularDistanciaRecorridaRecursiva(Vertice destino, Vertice origenFinal) {
+        double distanciaAcumulada = 0;
+        Vertice actual = destino;
+        
+        // Guardamos los vértices visitados para evitar bucles infinitos en el grafo
+        java.util.Set<Vertice> visitados = new java.util.HashSet<>();
+
+        while (actual != null) {
+            // Si ya visitamos este punto o llegamos al origen buscado, terminamos
+            if (visitados.contains(actual)) break;
+            visitados.add(actual);
+            
+            ConexionTopografica conexion = listaDeVerticesConectados.get(actual);
+            
+            if (conexion != null) {
+                // Sumamos la distancia de la línea física que une este tramo
+                distanciaAcumulada += conexion.linea().getDistancia();
+                
+                // Movemos el puntero al origen de esta línea para seguir retrocediendo
+                actual = conexion.origen();
+                
+                // Si el origen de este tramo es el punto donde queremos cerrar, ¡llegamos!
+                if (actual.equals(origenFinal)) {
+                    return distanciaAcumulada;
+                }
+            } else {
+                // Se rompió la cadena (punto sin padre)
+                break;
+            }
+        }
+        
+        // Si salió del bucle sin encontrar el origenFinal, devolvemos 0 o la distancia directa
+        return 0; 
+    }
+        
+    private void abrirDialogoRadiacion() {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "MÓDULO DE RADIACIÓN (PUNTO Y DISTANCIA)", true);
+        dialog.setSize(500, 500);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(30, 30, 30));
+        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80), 2));
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        Font fLabel = new Font("Arial", Font.BOLD, 14);
+        Font fCombo = new Font("Arial", Font.PLAIN, 18);
+        Font fInput = new Font("Monospaced", Font.BOLD, 22);
+
+        // 1. Estación de Origen
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(FabricaComponentes.crearEtiqueta("ESTACIÓN DE ORIGEN", fLabel), gbc);
+        gbc.gridx = 1;
+        JComboBox<Posicionable> comboOrigen = FabricaComponentes.crearComboPuntosYBlancos(fCombo, listaDePuntos, listaDeBlancos);
+        formPanel.add(comboOrigen, gbc);
+
+        // 2. Azimut (Dirección)
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(FabricaComponentes.crearEtiqueta("AZIMUT (mils)", fLabel), gbc);
+        JTextField txtAzimut = FabricaComponentes.crearCampoTexto(fInput);
+        gbc.gridx = 1; formPanel.add(txtAzimut, gbc);
+
+        // 3. Distancia
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(FabricaComponentes.crearEtiqueta("DISTANCIA (m)", fLabel), gbc);
+        JTextField txtDistancia = FabricaComponentes.crearCampoTexto(fInput);
+        gbc.gridx = 1; formPanel.add(txtDistancia, gbc);
+
+        // 4. Nombre del Objetivo
+        gbc.gridx = 0; gbc.gridy = 3;
+        formPanel.add(FabricaComponentes.crearEtiqueta("ID OBJETIVO", fLabel), gbc);
+        JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
+        txtNombre.setText("RAD-" + (listaDePuntos.size() + 1));
+        gbc.gridx = 1; formPanel.add(txtNombre, gbc);
+
+        // Botones
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 30));
+
+        JButton btnCalcular = new JButton("CALCULAR");
+        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(45, 85, 45));
+        JButton btnCancelar = new JButton("CANCELAR");
+        FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
+
+        buttonPanel.add(btnCalcular);
+        buttonPanel.add(btnCancelar);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.add(mainPanel);
+
+        btnCalcular.addActionListener(e -> {
+            try {
+                Posicionable origen = (Posicionable) comboOrigen.getSelectedItem();
+                double azimut = Double.parseDouble(txtAzimut.getText());
+                double distancia = Double.parseDouble(txtDistancia.getText());
+                String id = txtNombre.getText().trim();
+
+                // Usamos una lógica similar a la de triangulación pero para Radiación
+                // Podés agregar este método a tu CalculadorTopografico
+                CoordenadasRectangulares res = CalculadorTopografico.radiacion(origen, azimut, distancia);
+                
+                Punto ptoNuevo = new Punto(res, id);
+                agregarPunto(ptoNuevo); // Usamos tu método de SituacionTacticaTopo
+
+                // REGISTRO PARA EL PDF
+                StringBuilder sb = new StringBuilder();
+                sb.append(String.format("ESTACIÓN: %s (X: %.2f, Y: %.2f)\n", origen.getNombre(), origen.getCoordenadas().getX(), origen.getCoordenadas().getY()));
+                sb.append(String.format("DATOS MEDIDOS: Azimut: %.0f mils | Distancia: %.2f m\n", azimut, distancia));
+                sb.append(String.format("RESULTADO: %s en (X: %.3f, Y: %.3f)", id, res.getX(), res.getY()));
+                
+                RegistroCalculos.guardar("RADIACIÓN", sb.toString());
+                
+                dialog.dispose();
+            } catch (Exception ex) {
+                sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
+            }
+        });
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        dialog.setVisible(true);
+    }
+    
+    private void abrirDialogoInterseccionInversa3P() {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentFrame, "MÓDULO DE INTERSECCIÓN INVERSA (3 PUNTOS)", true);
+        dialog.setSize(600, 650);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(30, 30, 30));
+        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        Font fLabel = new Font("Arial", Font.BOLD, 13);
+        Font fCombo = new Font("Arial", Font.PLAIN, 16);
+        Font fInput = new Font("Monospaced", Font.BOLD, 20);
+
+        // SELECCIÓN DE PUNTOS CONOCIDOS
+        // Punto Izquierda (P1)
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(FabricaComponentes.crearEtiqueta("PUNTO IZQUIERDA (P1)", fLabel), gbc);
+        gbc.gridx = 1;
+        JComboBox<Posicionable> comboP1 = FabricaComponentes.crearComboPuntosYBlancos(fCombo, listaDePuntos, listaDeBlancos);
+        formPanel.add(comboP1, gbc);
+
+        // Punto Central (P2)
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(FabricaComponentes.crearEtiqueta("PUNTO CENTRAL (P2)", fLabel), gbc);
+        gbc.gridx = 1;
+        JComboBox<Posicionable> comboP2 = FabricaComponentes.crearComboPuntosYBlancos(fCombo, listaDePuntos, listaDeBlancos);
+        formPanel.add(comboP2, gbc);
+
+        // Punto Derecha (P3)
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(FabricaComponentes.crearEtiqueta("PUNTO DERECHA (P3)", fLabel), gbc);
+        gbc.gridx = 1;
+        JComboBox<Posicionable> comboP3 = FabricaComponentes.crearComboPuntosYBlancos(fCombo, listaDePuntos, listaDeBlancos);
+        formPanel.add(comboP3, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        formPanel.add(new JSeparator(), gbc);
+        gbc.gridwidth = 1;
+
+        gbc.gridx = 0; gbc.gridy = 4;
+        formPanel.add(FabricaComponentes.crearEtiqueta("ANG. ALFA P1-P2 (mils)", fLabel), gbc);
+        JTextField txtAlfa = FabricaComponentes.crearCampoTexto(fInput);
+        gbc.gridx = 1; formPanel.add(txtAlfa, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 5;
+        formPanel.add(FabricaComponentes.crearEtiqueta("ANG. BETA P2-P3 (mils)", fLabel), gbc);
+        JTextField txtBeta = FabricaComponentes.crearCampoTexto(fInput);
+        gbc.gridx = 1; formPanel.add(txtBeta, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 6;
+        formPanel.add(FabricaComponentes.crearEtiqueta("ID POSICIÓN PROPIA", fLabel), gbc);
+        JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
+        txtNombre.setText("POS-PROPIA-" + (listaDePuntos.size() + 1));
+        gbc.gridx = 1; formPanel.add(txtNombre, gbc);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+
+        JButton btnCalcular = new JButton("DETERMINAR POSICIÓN");
+        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); // Azul táctico
+        JButton btnCancelar = new JButton("CANCELAR");
+        FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(80, 40, 40));
+
+        buttonPanel.add(btnCalcular);
+        buttonPanel.add(btnCancelar);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.add(mainPanel);
+
+        btnCalcular.addActionListener(e -> {
+            try {
+                Posicionable p1 = (Posicionable) comboP1.getSelectedItem();
+                Posicionable p2 = (Posicionable) comboP2.getSelectedItem();
+                Posicionable p3 = (Posicionable) comboP3.getSelectedItem();
+                
+                if (p1 == p2 || p2 == p3 || p1 == p3) throw new Exception("Seleccione tres puntos distintos.");
+
+                double alfa = Double.parseDouble(txtAlfa.getText());
+                double beta = Double.parseDouble(txtBeta.getText());
+                
+                // Llamaremos a la calculadora (Próximo paso)
+                CoordenadasRectangulares res = CalculadorTopografico.interseccionInversa3P(p1, p2, p3, alfa, beta);
+                
+                Punto miPosicion = new Punto(res, txtNombre.getText().trim());
+                agregarPunto(miPosicion);
+
+                // Registro detallado para el PDF
+                StringBuilder sb = new StringBuilder();
+                sb.append("MÉTODO: INTERSECCIÓN INVERSA (POTENOT)\n");
+                sb.append(String.format("REFERENCIAS: %s, %s, %s\n", p1.getNombre(), p2.getNombre(), p3.getNombre()));
+                sb.append(String.format("ÁNGULOS OBS: α=%.0f mils, β=%.0f mils\n", alfa, beta));
+                sb.append(String.format("POSICIÓN CALCULADA: X: %.3f | Y: %.3f", res.getX(), res.getY()));
+                
+                RegistroCalculos.guardar("INTERSECCIÓN INVERSA 3P", sb.toString());
+                
+                dialog.dispose();
+                JOptionPane.showMessageDialog(this, "Posición propia determinada con éxito.");
+                
+            } catch (Exception ex) {
+                sonidos.clickError();
+                JOptionPane.showMessageDialog(dialog, "Error en el cálculo: " + ex.getMessage());
+            }
+        });
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        dialog.setVisible(true);
+    }
+    
+    public void enviarPunto(Posicionable p) {
+        if (p == null) return;
+
+        // Construcción del datagrama según el protocolo requerido
+        StringBuilder sb = new StringBuilder();
+        sb.append("PUNTO|");
+        sb.append("NOMBRE=").append(p.getNombre()).append("|");
+        sb.append("X=").append(p.getCoordenadas().getX()).append("|");
+        sb.append("Y=").append(p.getCoordenadas().getY());
+
+        String mensajeFinal = sb.toString();
+
+        // Verificación de enlace y envío
+        if (observador != null && observador.getComunicacionIP() != null) {
+            // Usamos el método enviarATodos que ya tienes implementado en el gestor Harris/IP
+            observador.getComunicacionIP().enviarATodos(mensajeFinal);
+            
+            // Log de auditoría en consola
+            System.out.println("TX Táctica (PUNTO): " + mensajeFinal);
+            
+            // Feedback visual rápido (opcional, podrías usar un Snackbar o similar)
+            mensajeria.getConsolaMensajes().agregarMensaje("[TX] Punto " + p.getNombre() + " transmitido.");
+        } else {
+            sonidos.clickError();
+            JOptionPane.showMessageDialog(this, 
+                "FALLO DE COMUNICACIONES:\nNo se detectó el enlace IP para el envío.", 
+                "SISTEMA", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void generarInformePDF() {
@@ -749,7 +1160,7 @@ public class SituacionTacticaTopo extends JPanel {
                 double beta = Double.parseDouble(txtAngB.getText());
                 
                 double distLB = pA.getCoordenadas().distanciaA(pB.getCoordenadas());
-                coordRectangulares res = CalculadorTopografico.triangulacion(pA, pB, alfa, beta);
+                CoordenadasRectangulares res = CalculadorTopografico.triangulacion(pA, pB, alfa, beta);
                 String id = txtNombre.getText().trim();
 
                 Punto ptoNuevo = new Punto(res, id);
@@ -791,6 +1202,47 @@ public class SituacionTacticaTopo extends JPanel {
         dialog.setVisible(true);
     }
     
+    public void enviarBlanco(Blanco b) {
+        if (b == null) return;
+
+        // Construyo el mensaje siguiendo el protocolo técnico al pie de la letra
+        StringBuilder sb = new StringBuilder();
+        sb.append("BLANCO|");
+        sb.append("NOMBRE=").append(b.getNombre()).append("|");
+        sb.append("NAT=").append(b.getNaturaleza()).append("|");
+        sb.append("FECHA=").append(b.getFechaDeActualizacion()).append("|");
+        sb.append("ORI=").append((int)b.getOrientacion()).append("|");
+        
+        // Verifico que la info adicional no sea nula o vacía para cumplir el estándar
+        String info = b.getInformacionAdicional();
+        if (info == null || info.trim().isEmpty()) {
+            info = "Sin Informacion Adicional";
+        }
+        sb.append("INFO=").append(info).append("|");
+        
+        sb.append("SIMID=").append(b.getSimID()).append("|");
+        sb.append("SIT=").append(b.getSituacionMovimiento()).append("|");
+        sb.append("X=").append(b.getCoordenadas().getX()).append("|");
+        sb.append("Y=").append(b.getCoordenadas().getY());
+
+        String mensajeFinal = sb.toString();
+
+        // Envío el paquete a través del observador de comunicaciones IP
+        // Asumo que observador tiene acceso al gestor de red (Harris/IP)
+        if (observador != null && observador.getComunicacionIP() != null) {
+            observador.getComunicacionIP().enviarATodos(mensajeFinal);
+            
+            // Registro la salida en mi consola táctica para que el operador sepa que salió
+            System.out.println("Transmisión Táctica Saliente: " + mensajeFinal);
+        } else {
+            sonidos.clickError();
+            JOptionPane.showMessageDialog(this, 
+                "ERROR DE ENLACE: No hay conexión con el módulo de comunicaciones.", 
+                "FALLO DE TRANSMISIÓN", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     private void configurarHerramientasMapa() {
         panelMapa.getMapPane().setCursorTool(new CursorTool() {
             @Override
@@ -811,7 +1263,7 @@ public class SituacionTacticaTopo extends JPanel {
 
                 double x = ev.getWorldPos().getX();
                 double y = ev.getWorldPos().getY();
-                coordRectangulares coord = new coordRectangulares(x, y, 0);
+                CoordenadasRectangulares coord = new CoordenadasRectangulares(x, y, 0);
 
                 // MÁSCARA VISUAL: Desde el 3er dígito, sin decimales
                 String xVisual = String.format("%.0f", x);
@@ -838,7 +1290,7 @@ public class SituacionTacticaTopo extends JPanel {
         });
     }
 
-    private void mostrarDialogoSeleccionNormal(coordRectangulares coord, String xV, String yV) {
+    private void mostrarDialogoSeleccionNormal(CoordenadasRectangulares coord, String xV, String yV) {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parent, "Selección de Marcador", true);
         dialog.setSize(600, 300);
@@ -1454,7 +1906,7 @@ public class SituacionTacticaTopo extends JPanel {
     }
     
     @SuppressWarnings("serial")
-    private void dialogoAgregarBlanco(coordRectangulares coordInicial) {
+    private void dialogoAgregarBlanco(CoordenadasRectangulares coordInicial) {
 
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Nuevo Blanco", true);
@@ -1723,13 +2175,13 @@ public class SituacionTacticaTopo extends JPanel {
                 return;
             }
 
-            coordRectangulares coord = new coordRectangulares(x, y, cota);
+            CoordenadasRectangulares coord = new CoordenadasRectangulares(x, y, cota);
             Blanco nuevo = new Blanco(nombre, coord, naturaleza, txtFecha.getText());
 
             nuevo.setUltAfiliacion(afiliacion);
             nuevo.setUltEchelon(echelon);
             nuevo.setUltEntidad(entidad);
-            nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
+            nuevo.setSimID(GestorCodigosSIDC.obtenerSIDC(naturaleza));
             nuevo.setSituacionMovimiento( (SituacionMovimiento) cbEstado.getSelectedItem());
 
             try {
@@ -1753,7 +2205,7 @@ public class SituacionTacticaTopo extends JPanel {
         dialog.setVisible(true);
     }
 
-    private void dialogoAgregarPunto(coordRectangulares coordInicial) {
+    private void dialogoAgregarPunto(CoordenadasRectangulares coordInicial) {
     	
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Nuevo Punto", true);
@@ -2039,9 +2491,9 @@ public class SituacionTacticaTopo extends JPanel {
                 double distancia = Double.parseDouble(txtDist.getText().trim());
                 double angulo = Double.parseDouble(txtAng.getText().trim());
 
-                coordRectangulares refCoord = (coordRectangulares) referencia.getCoordenadas();
-                coordPolares polar = new coordPolares(direccion, distancia, angulo, refCoord);
-                coordRectangulares nuevas = polar.toRectangulares();
+                CoordenadasRectangulares refCoord = (CoordenadasRectangulares) referencia.getCoordenadas();
+                CoordenadasPolares polar = new CoordenadasPolares(direccion, distancia, angulo, refCoord);
+                CoordenadasRectangulares nuevas = polar.toRectangulares();
 
                 String nombre = txtNombre.getText().trim();
 
@@ -2054,7 +2506,7 @@ public class SituacionTacticaTopo extends JPanel {
                     naturaleza += "_" + echelon.toUpperCase();
 
                 Blanco nuevo = new Blanco(nombre, nuevas, naturaleza, LocalDateTime.now().toString());
-                nuevo.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
+                nuevo.setSimID(GestorCodigosSIDC.obtenerSIDC(naturaleza));
                 nuevo.setSituacionMovimiento((SituacionMovimiento) cbSituacion.getSelectedItem());
                 nuevo.setOrientacion(Double.parseDouble(txtOrient.getText().trim()));
                 nuevo.setUltEntidad(entidad);
@@ -2223,7 +2675,7 @@ public class SituacionTacticaTopo extends JPanel {
                 listaDePoligonales.add(nuevaLinea);
                 modeloListaPoligonales.addElement(nuevaLinea);
                 panelMapa.agregarPoligonal(nuevaLinea);
-                listaDeVerticesConectados.put(origen, destino);
+                listaDeVerticesConectados.put((Vertice)destino, new ConexionTopografica(origen, nuevaLinea));
                 
                 String medicionData = String.format("Origen: %s -> Destino: %s | Dist: %.2f m | Az: %.0f mil", 
                         origen.getNombre(), destino.getNombre(), distancia, azimutMils);
@@ -2239,6 +2691,44 @@ public class SituacionTacticaTopo extends JPanel {
         
         btnCancelar.addActionListener(e -> dialog.dispose());
         dialog.setVisible(true);
+    }
+    
+    public void agregarPunto(Punto p) {
+        if (p == null) return;
+        
+        if (!listaDePuntos.contains(p)) {
+            listaDePuntos.add(p);
+        }
+        
+        // Como los puntos son parte de la visualización de poligonales:
+        if (!listaDePoligonales.contains(p)) {
+            listaDePoligonales.add(p);
+        }
+        
+        if (!modeloListaPoligonales.contains(p)) {
+            modeloListaPoligonales.addElement(p);
+        }
+        
+        panelMapa.agregarPoligonal(p);
+        listaUIPoligonales.repaint();
+    }
+
+    /**
+     * Actualizo un punto existente.
+     * Es vital para cuando recibo correcciones de coordenadas vía Harris (IP)
+     * para una estación topográfica (ETR) ya establecida.
+     */
+    public void actualizarPunto(Punto p) {
+        if (p == null) return;
+
+        int idx = modeloListaPoligonales.indexOf(p);
+        if (idx >= 0) {
+            modeloListaPoligonales.set(idx, p);
+        }
+
+        listaUIPoligonales.repaint();
+        panelMapa.eliminarPoligonal(p);
+        panelMapa.agregarPoligonal(p);
     }
     
     @SuppressWarnings("serial")
@@ -2543,7 +3033,7 @@ public class SituacionTacticaTopo extends JPanel {
                 b.setUltEntidad(entidad);
                 b.setUltAfiliacion(afiliacion);
                 b.setUltEchelon(echelon);
-                b.setSimID(CodigosMilitares.obtenerSIDC(naturaleza));
+                b.setSimID(GestorCodigosSIDC.obtenerSIDC(naturaleza));
 
                 listaUIBlancos.repaint();
                 panelMapa.eliminarBlanco(b);
@@ -2601,4 +3091,14 @@ public class SituacionTacticaTopo extends JPanel {
     public LinkedList<Blanco> getListaDeBlancos(){
     	return listaDeBlancos;
     }
+    
+    public LinkedList<Punto> getListaDePuntos(){
+    	return listaDePuntos;
+    }
+
+	public void setPanelMensajeria(Mensajeria mensajeriaPanel) {
+		mensajeria = mensajeriaPanel;
+	}
+	
+	private record ConexionTopografica(Vertice origen, Linea linea) {}
 }

@@ -6,7 +6,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 
 public class Punto implements Poligonal,Posicionable{
 	
-	private coordRectangulares coord;
+	private CoordenadasRectangulares coord;
 	private String nombre;
 	
 	@Override
@@ -16,17 +16,17 @@ public class Punto implements Poligonal,Posicionable{
 
     @Override
     public Geometry getGeometry() {
-        coordRectangulares c = (coordRectangulares) coord;
+        CoordenadasRectangulares c = (CoordenadasRectangulares) coord;
         GeometryFactory gf = new GeometryFactory();
         return gf.createPoint(new Coordinate(c.getX(), c.getY()));
     }
 	
-	public Punto(coordRectangulares c, String n) {
+	public Punto(CoordenadasRectangulares c, String n) {
 		setCoord(c);
 		setNombre(n);
 	}
 	
-	public coordRectangulares getCoordenadas() {
+	public CoordenadasRectangulares getCoordenadas() {
 		return coord;
 	}
 	
@@ -35,7 +35,7 @@ public class Punto implements Poligonal,Posicionable{
 	    return this.nombre; // O el método que uses para obtener el nombre
 	}
 	
-	public void setCoord(coordRectangulares coord) {
+	public void setCoord(CoordenadasRectangulares coord) {
 		this.coord = coord;
 	}
 	

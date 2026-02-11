@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class PopupAlerta {
+public class DispatcherNotificacionesTacticas {
 
     public static void mostrar(String titulo, String mensaje) {
         JDialog dialog = new JDialog((Frame) null, titulo, true);
