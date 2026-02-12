@@ -96,7 +96,6 @@ public class Blanco implements Posicionable {
     
     @Override
     public String toString() {
-        return String.format("%s (%s) - %s [%s] {%s}",nombre,naturaleza,coordenadas != null ? coordenadas.toString() : "Sin coordenadas",
-        		situacionMovimiento,(informacionAdicional != null && !informacionAdicional.isEmpty() ? informacionAdicional : "Sin info"));
+        return this.nombre;
     }
 }

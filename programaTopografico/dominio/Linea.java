@@ -47,4 +47,9 @@ public class Linea implements Poligonal {
         GeometryFactory gf = new GeometryFactory();
         return gf.createLineString(new Coordinate[]{inicio, fin});
     }
+
+	@Override
+	public Boolean tienePopUpMenu() {
+		return false;
+	}
 }

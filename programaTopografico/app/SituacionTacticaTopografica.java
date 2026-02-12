@@ -57,125 +57,76 @@ public class SituacionTacticaTopografica extends JPanel {
     protected int designacionBlancoContador = 6400;	// Contador de designación
     private JPanel panelGlobalTopografico;
     protected JLabel tooltipLabel;
-    protected Map<Vertice, ConexionTopografica> listaDeVerticesConectados;
     private Mensajeria mensajeria;
+    private RenderizadorListas RenderListas;
+    private JPopupMenu popupMenu;      // Menú para Blancos
+    private JPopupMenu popupMenuPunto;
 
     @SuppressWarnings("deprecation")
 	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,ProgramaTopografico obs) { 
-
+    	
+    	//	Settings iniciales de Tamaño y Aspecto
     	setSize(900, 600);
 		setLayout(new BorderLayout());
 		setBackground(Color.BLACK);
-    	
+		//
+    			
+		//	Inicializacion de todos los atributos de clase y sus caracteristicas
 		this.observador = obs;
+		
 		this.listaDeBlancos = listaDeBlancos;
 		
-		listaDePuntos = new LinkedList<>();
+		this.listaDePuntos = new LinkedList<>();
 		
-		modeloListaBlancos = new DefaultListModel<>();
+		this.RenderListas = new RenderizadorListas();
 		
-		listaUIBlancos = new JList<>(modeloListaBlancos); listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20)); listaUIBlancos.setBackground(Color.BLACK); listaUIBlancos.setFixedCellHeight(50);
-		listaUIBlancos.setCellRenderer(new DefaultListCellRenderer() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-			                                          boolean isSelected, boolean cellHasFocus) {
-			
-			JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index,
-			                                                           isSelected, cellHasFocus);
-			label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-			label.setHorizontalAlignment(SwingConstants.CENTER);
-			
-			if (value instanceof Blanco b) {
-			    label.setText(b.getNombre());
-			    label.setForeground(Color.WHITE);
-			}
-			
-			return label;
-			}
-			});
+		this.modeloListaBlancos = new DefaultListModel<>();		
+		this.listaUIBlancos = new JList<>(modeloListaBlancos); listaUIBlancos.setFont(new Font("Arial", Font.BOLD, 20)); listaUIBlancos.setBackground(Color.BLACK); listaUIBlancos.setFixedCellHeight(50);	
+		this.listaUIBlancos.setCellRenderer(RenderListas);	
 		
-		listaDeVerticesConectados = new HashMap<>();		
+		this.listaDePoligonales = new LinkedList<>();
 		
-		listaDePoligonales = new LinkedList<>();
-		
-		modeloListaPoligonales = new DefaultListModel<>();
-		
-		listaUIPoligonales = new JList<>(modeloListaPoligonales);
-		
-		listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20));
-		listaUIPoligonales.setBackground(Color.BLACK);
-		
-		listaUIPoligonales.setCellRenderer(new DefaultListCellRenderer() {
-		private static final long serialVersionUID = -3139532018963310447L;
-		@Override
-		public Component getListCellRendererComponent(JList<?> list, Object value,
-		                                          int index, boolean isSelected, boolean cellHasFocus) {
-		
-		JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index,isSelected, cellHasFocus);
-		
-		if (value instanceof Punto pt)
-		    label.setText(pt.getNombre());
-		else if (value instanceof Linea ln)
-		    label.setText(ln.getName() + " (" + String.format("%.3f m", ln.getDistancia()) + ")");
-		
-		label.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-		label.setForeground(Color.WHITE);
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		return label;
-		}
-		});
-		
-		listaUIPoligonales.setFixedCellHeight(40);
+		this.modeloListaPoligonales = new DefaultListModel<>();		
+		listaUIPoligonales = new JList<>(modeloListaPoligonales); listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20)); listaUIPoligonales.setBackground(Color.BLACK); listaUIPoligonales.setFixedCellHeight(40);	
+		listaUIPoligonales.setCellRenderer(RenderListas);
 		
 		sonidos = new GestorSonido();
+		//		
 		
+		//	Declaracion de elementos visuales que maneja la clase
 		JScrollPane scrollLista = new JScrollPane(listaUIBlancos);
-		scrollLista.setPreferredSize(new Dimension(250, 0));
-		scrollLista.getViewport().setBackground(Color.BLACK);
+		scrollLista.setPreferredSize(new Dimension(250, 0)); scrollLista.getViewport().setBackground(Color.BLACK);
 		
 		JPanel panelIzquierdo = new JPanel(new BorderLayout());
-		panelIzquierdo.setBackground(Color.BLACK);
-		panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
+		panelIzquierdo.setBackground(Color.BLACK); panelIzquierdo.add(scrollLista, BorderLayout.CENTER);
 		
 		JLabel lblBlancos = new JLabel("BLANCOS", SwingConstants.CENTER);
-		lblBlancos.setForeground(Color.GRAY);
-		lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
+		lblBlancos.setForeground(Color.GRAY); lblBlancos.setFont(new Font("Arial", Font.BOLD, 18));
 		
 		JLabel lblPuntos = new JLabel("POLIGONALES", SwingConstants.CENTER);
-		lblPuntos.setForeground(Color.GRAY);
-		lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
+		lblPuntos.setForeground(Color.GRAY); lblPuntos.setFont(new Font("Arial", Font.BOLD, 18));
 		
-		JPanel panelListas = new JPanel(new GridBagLayout());
-		panelListas.setBackground(Color.BLACK);
+		JPanel panelListas = new JPanel(new GridBagLayout()); panelListas.setBackground(Color.BLACK);
 		
-		GridBagConstraints gbcList = new GridBagConstraints();
-		gbcList.fill = GridBagConstraints.BOTH;
-		gbcList.insets = new Insets(2, 0, 2, 0);
+		GridBagConstraints gbcList = new GridBagConstraints(); gbcList.fill = GridBagConstraints.BOTH; gbcList.insets = new Insets(2, 0, 2, 0);
 		
-		gbcList.gridx = 0;
-		gbcList.gridy = 0;
-		gbcList.weightx = 1;
-		gbcList.weighty = 0;
+		gbcList.gridx = 0; gbcList.gridy = 0;
+		gbcList.weightx = 1; gbcList.weighty = 0;
 		panelListas.add(lblBlancos, gbcList);
 		
-		gbcList.gridy = 1;
-		gbcList.weighty = 0.66;
+		gbcList.gridy = 1;gbcList.weighty = 0.66;
 		panelListas.add(new JScrollPane(listaUIBlancos), gbcList);
 		
-		gbcList.gridy = 2;
-		gbcList.weighty = 0;
+		gbcList.gridy = 2;gbcList.weighty = 0;
 		panelListas.add(lblPuntos, gbcList);
 		
-		gbcList.gridy = 3;
-		gbcList.weighty = 0.33;
+		gbcList.gridy = 3;gbcList.weighty = 0.33;
 		panelListas.add(new JScrollPane(listaUIPoligonales), gbcList);
 		
 		panelIzquierdo.add(panelListas, BorderLayout.CENTER);
 		
-		JPanel panelBotones = new JPanel(new GridBagLayout());
-		panelBotones.setBackground(Color.BLACK);
+		//	Panel de Botones Inferiores Derechos
+		JPanel panelBotones = new JPanel(new GridBagLayout()); panelBotones.setBackground(Color.BLACK);
 		
 		JButton btnAgregar = new JButton("\u2795 AGREGAR");     
 		JButton btnEliminar = new JButton("\u274C ELIMINAR");    
@@ -184,7 +135,7 @@ public class SituacionTacticaTopografica extends JPanel {
 		JButton btnHerramientas = new JButton("\u2692 HERRAM.");   
 		JButton btnGenPdf = new JButton("GENERAR PDF");
 		
-		// 2. Configuración de Fuentes y Dimensiones comunes
+		//	Configuración de Fuentes y Dimensiones comunes
 		Font fuenteEmoji = new Font("Segoe UI Emoji", Font.BOLD, 16);
 		Dimension dimPequeña = new Dimension(135, 45);
 		Dimension dimAncha = new Dimension(280, 45);
@@ -215,6 +166,7 @@ public class SituacionTacticaTopografica extends JPanel {
 		
 		btnHerramientas.setBackground(azulClaro);
 
+		//	ActionListeners de los botones del panel global inferior derecho
 		btnGenPdf.addActionListener(e -> {
 		    if (RegistroCalculos.getBitacora().isEmpty()) {
 		        sonidos.clickError();
@@ -246,184 +198,7 @@ public class SituacionTacticaTopografica extends JPanel {
 		    dlg.setVisible(true);
 		});
 		
-		Dimension dimAnchaTactico = new Dimension(290, 70);
-		
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets = new Insets(8, 6, 8, 6); // Más espacio entre ellos
-		gbc.fill = GridBagConstraints.BOTH; // Rellena tanto ancho como ALTO
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0; // Esto les da el "grosor" vertical
-
-		// Fila 0
-		gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
-		panelBotones.add(btnAgregar, gbc);
-		gbc.gridx = 1;
-		panelBotones.add(btnEliminar, gbc);
-
-		// Fila 1
-		gbc.gridx = 0; gbc.gridy = 1;
-		panelBotones.add(btnActualizar, gbc);
-		gbc.gridx = 1;
-		panelBotones.add(btnConfigIP, gbc);
-
-		// Fila 2: Los botones anchos
-		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-		btnGenPdf.setPreferredSize(dimAnchaTactico);
-		panelBotones.add(btnGenPdf, gbc); 
-
-		// Fila 3
-		gbc.gridx = 0; gbc.gridy = 3;
-		btnHerramientas.setPreferredSize(dimAnchaTactico);
-		panelBotones.add(btnHerramientas, gbc);
-		
-		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
-		
-		// MAPA
-		pedirArchivoAMostrar();
-		panelMapa = new PanelMapa(rutaArchivoMapa);
-		
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
-		splitPane.setDividerLocation(250);
-		splitPane.setContinuousLayout(true);
-
-		JLayeredPane layered = new JLayeredPane();
-		layered.setLayout(null);
-
-		// El split ocupa todo el panel
-		splitPane.setBounds(0, 0, getWidth(), getHeight());
-		
-		JButton btnConfig = new JButton("\u2699 AJUSTES");
-		btnConfig.setFont(fuenteEmoji);
-		btnConfig.setBackground(Color.DARK_GRAY);
-		btnConfig.setForeground(Color.WHITE);
-		btnConfig.setSize(150, 80);
-		btnConfig.setFocusPainted(false);
-		
-		btnConfig.addActionListener(e -> {
-			dialogoConfiguracion();
-		});
-		
-		// Panel flotante de Herramientas Topograficas
-		panelGlobalTopografico = new JPanel(new GridBagLayout());
-		panelGlobalTopografico.setBackground(Color.BLACK);  
-		panelGlobalTopografico.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		panelGlobalTopografico.setSize(1145, 135);
-		panelGlobalTopografico.setLayout(new FlowLayout(FlowLayout.CENTER));
-		
-		JPanel hud = new JPanel(new GridBagLayout());
-		hud.setBackground(new Color(0, 0, 0, 170));  
-		hud.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		hud.setSize(300, 230); 
-
-		hud.setSize(320, 300); // Aumentamos la altura total del contenedor
-
-		GridBagConstraints h = new GridBagConstraints();
-		h.insets = new Insets(10, 10, 10, 10);
-		h.fill = GridBagConstraints.BOTH; // Importante para que no queden flaquitos
-		h.weightx = 1.0;
-		h.weighty = 1.0;
-
-		// Configuración de botones en el HUD
-		h.gridy = 0; h.gridx = 0; h.gridwidth = 1;
-		hud.add(btnAgregar, h);
-		h.gridx = 1;
-		hud.add(btnEliminar, h);
-
-		h.gridy = 1; h.gridx = 0;
-		hud.add(btnActualizar, h);
-		h.gridx = 1;
-		hud.add(btnConfigIP, h);
-
-		h.gridy = 2; h.gridx = 0; h.gridwidth = 2;
-		hud.add(btnHerramientas, h);
-
-		h.gridy = 3;
-		hud.add(btnGenPdf, h);
-
-		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
-		layered.add(hud, JLayeredPane.PALETTE_LAYER);
-		layered.add(panelGlobalTopografico, JLayeredPane.PALETTE_LAYER);
-		layered.add(btnConfig,JLayeredPane.PALETTE_LAYER);
-
-		this.addComponentListener(new ComponentAdapter() {
-		    @Override
-		    public void componentResized(ComponentEvent e) {
-
-		        splitPane.setBounds(0, 0, getWidth(), getHeight());
-
-		        hud.setLocation(getWidth() - hud.getWidth() - 20,getHeight() - hud.getHeight() - 20);
-		        
-		        int x = 370;
-		        int y = 30;
-
-		        panelGlobalTopografico.setLocation(x, y);
-		        
-		        btnConfig.setLocation(270, getHeight() - 90);
-		    }
-		});
-
-		add(layered, BorderLayout.CENTER);
-		
-		// Botonera del panel topografico 
-		
-		LinkedList<JButton> botoneraPanelTopo = new LinkedList<JButton>();
-		 
-		JButton triangulacion = new JButton("TRIANG"); botoneraPanelTopo.addLast(triangulacion);
-		JButton radiacion = new JButton("RAD"); botoneraPanelTopo.addLast(radiacion);
-		JButton trilateracion = new JButton("TRILAT"); botoneraPanelTopo.addLast(trilateracion);
-		JButton intInv3P = new JButton("INT-INV-3P"); botoneraPanelTopo.addLast(intInv3P);
-		JButton intInv2P = new JButton("INT-INV-2P"); botoneraPanelTopo.addLast(intInv2P);
-		JButton intDirMult = new JButton("INT-D-M"); botoneraPanelTopo.addLast(intDirMult);
-		JButton mesaPolotting = new JButton("MESA-P"); botoneraPanelTopo.addLast(mesaPolotting);
-		JButton anguloBase = new JButton("ANG-B"); botoneraPanelTopo.addLast(anguloBase);
-		JButton actMag = new JButton("ACT-MAG"); botoneraPanelTopo.addLast(actMag);
-		JButton nivelTrigo = new JButton("NIVEL-T"); botoneraPanelTopo.addLast(nivelTrigo);
-		JButton registroPPAL = new JButton("REG-PPAL"); botoneraPanelTopo.addLast(registroPPAL);
-		JButton registroCoordMod = new JButton("REG-C-M"); botoneraPanelTopo.addLast(registroCoordMod);
-		
-		for(JButton b : botoneraPanelTopo) {
-			
-			b.setBackground(Color.DARK_GRAY);
-            b.setForeground(Color.WHITE);
-            b.setFont(new Font("Arial", Font.BOLD, 10)); 
-            b.setPreferredSize(new Dimension(98, 60)); 
-            b.setFocusPainted(false);
-			panelGlobalTopografico.add(b);
-		    
-		    b.addActionListener(e -> {
-		        String comando = b.getText();
-		        switch(comando) {
-		           case "TRIANG": abrirDialogoTriangulacion(); break;
-		           case "RAD": abrirDialogoRadiacion(); break;
-		           // case "TRILAT": abrirDialogoTrilateracion(); break;
-		           case "INT-INV-3P": abrirDialogoInterseccionInversa3P(); break;
-		           // case "INT-INV-2P": abrirDialogoInterseccionInversa2P(); break;
-		           // case "INT-D-M": abrirDialogoInterseccionDirecta(); break;
-		           // case "POLIGONAL": abrirDialogoPoligonal(); break;
-		           // case "MESA-P": abrirDialogoMesaPlotting(); break;
-		           // case "ANG-B": abrirDialogoAnguloBase(); break;
-		           // case "ACT-MAG": abrirDialogoActualizacionMagnetica(); break;
-		           // case "REG-C-M": abrirDialogoRegistroCoordMod(); break;
-		           // case "NIVEL-T": abrirDialogoNivelacionTrigo(); break;
-		           // case "REG-PPAL": exportarRegistroPDF(); break; // El botón de exportación
-		        }
-		    });
-		}
-
-		// 1. Configuración de la etiqueta (fuera del listener)
-		tooltipLabel = new JLabel("");
-		tooltipLabel.setOpaque(true);
-		tooltipLabel.setBackground(new Color(255, 255, 255, 220)); 
-		tooltipLabel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
-		tooltipLabel.setSize(320, 70);
-		tooltipLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		tooltipLabel.setFont(new Font("Arial", Font.BOLD, 15));
-		tooltipLabel.setVisible(false);
-		panelMapa.getMapPane().add(tooltipLabel);
-
-		configurarHerramientasMapa();
-
-        btnAgregar.addActionListener(e -> {
+		btnAgregar.addActionListener(e -> {
         	
             CoordenadasRectangulares coord = new CoordenadasRectangulares(0,0,0);
             String[] opciones = {"Marcar Blanco", "Marcar Punto"};
@@ -475,17 +250,247 @@ public class SituacionTacticaTopografica extends JPanel {
         btnActualizar.addActionListener(e -> {
         	actualizarBlancosEnMapa();
         });
+        //
+		
+		Dimension dimAnchaTactico = new Dimension(290, 70);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(8, 6, 8, 6); gbc.fill = GridBagConstraints.BOTH; 
+		gbc.weightx = 1.0; gbc.weighty = 1.0;
 
-        JPopupMenu popupMenu = new JPopupMenu();
+		// Fila 0
+		gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
+		panelBotones.add(btnAgregar, gbc);
+		gbc.gridx = 1;
+		panelBotones.add(btnEliminar, gbc);
+
+		// Fila 1
+		gbc.gridx = 0; gbc.gridy = 1;
+		panelBotones.add(btnActualizar, gbc);
+		gbc.gridx = 1;
+		panelBotones.add(btnConfigIP, gbc);
+
+		// Fila 2: Los botones anchos
+		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+		btnGenPdf.setPreferredSize(dimAnchaTactico);
+		panelBotones.add(btnGenPdf, gbc); 
+
+		// Fila 3
+		gbc.gridx = 0; gbc.gridy = 3;
+		btnHerramientas.setPreferredSize(dimAnchaTactico);
+		panelBotones.add(btnHerramientas, gbc);
+		
+		panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
+		//
+		
+		// Pedido de Archivo TIFF a mostrar en el PANEL DEL MAPA
+		pedirArchivoAMostrar();
+		panelMapa = new PanelMapa(rutaArchivoMapa);
+		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelIzquierdo, panelMapa);
+		splitPane.setDividerLocation(250);
+		splitPane.setContinuousLayout(true);
+		//
+
+		JLayeredPane layered = new JLayeredPane();
+		layered.setLayout(null);
+		splitPane.setBounds(0, 0, getWidth(), getHeight());
+				
+		//	Boton de AJUSTES y su ActionListener
+		JButton btnConfig = new JButton("\u2699 AJUSTES");
+		btnConfig.setFont(fuenteEmoji);
+		btnConfig.setBackground(Color.DARK_GRAY);
+		btnConfig.setForeground(Color.WHITE);
+		btnConfig.setSize(150, 80);
+		btnConfig.setFocusPainted(false);
+		
+		btnConfig.addActionListener(e -> {
+			dialogoConfiguracion();
+		});
+		//
+		
+		// Panel Global de Herramientas Topograficas
+		panelGlobalTopografico = new JPanel(new GridBagLayout());
+		panelGlobalTopografico.setBackground(Color.BLACK);  
+		panelGlobalTopografico.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+		panelGlobalTopografico.setSize(1145, 135);
+		panelGlobalTopografico.setLayout(new FlowLayout(FlowLayout.CENTER));
+		
+		JPanel hud = new JPanel(new GridBagLayout());
+		hud.setBackground(new Color(0, 0, 0, 170));  
+		hud.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+
+		hud.setSize(320, 300);
+
+		GridBagConstraints h = new GridBagConstraints();
+		h.insets = new Insets(10, 10, 10, 10);
+		h.fill = GridBagConstraints.BOTH; 
+		h.weightx = 1.0;h.weighty = 1.0;
+
+		// Configuración de botones en el HUD
+		h.gridy = 0; h.gridx = 0; h.gridwidth = 1;
+		hud.add(btnAgregar, h);
+		h.gridx = 1;
+		hud.add(btnEliminar, h);
+
+		h.gridy = 1; h.gridx = 0;
+		hud.add(btnActualizar, h);
+		h.gridx = 1;
+		hud.add(btnConfigIP, h);
+
+		h.gridy = 2; h.gridx = 0; h.gridwidth = 2;
+		hud.add(btnHerramientas, h);
+
+		h.gridy = 3;
+		hud.add(btnGenPdf, h);
+
+		layered.add(splitPane, JLayeredPane.DEFAULT_LAYER);
+		layered.add(hud, JLayeredPane.PALETTE_LAYER);
+		layered.add(panelGlobalTopografico, JLayeredPane.PALETTE_LAYER);
+		layered.add(btnConfig,JLayeredPane.PALETTE_LAYER);
+		//
+		
+		//	Seteo de ubicacion de cada panel flotante y boton de AJUSTES
+		this.addComponentListener(new ComponentAdapter() {
+		    @Override
+		    public void componentResized(ComponentEvent e) {
+
+		        splitPane.setBounds(0, 0, getWidth(), getHeight());
+
+		        hud.setLocation(getWidth() - hud.getWidth() - 20,getHeight() - hud.getHeight() - 20);
+
+		        panelGlobalTopografico.setLocation(370, 30);
+		        
+		        btnConfig.setLocation(270, getHeight() - 90);
+		    }
+		});
+
+		add(layered, BorderLayout.CENTER);
+		//
+		
+		//	Botonera del panel topografico 
+		LinkedList<JButton> botoneraPanelTopo = new LinkedList<JButton>();
+		 
+		JButton triangulacion = new JButton("TRIANG"); botoneraPanelTopo.addLast(triangulacion);
+		JButton radiacion = new JButton("RAD"); botoneraPanelTopo.addLast(radiacion);
+		JButton trilateracion = new JButton("TRILAT"); botoneraPanelTopo.addLast(trilateracion);
+		JButton intInv3P = new JButton("INT-INV-3P"); botoneraPanelTopo.addLast(intInv3P);
+		JButton intInv2P = new JButton("INT-INV-2P"); botoneraPanelTopo.addLast(intInv2P);
+		JButton intDirMult = new JButton("INT-D-M"); botoneraPanelTopo.addLast(intDirMult);
+		JButton mesaPolotting = new JButton("MESA-P"); botoneraPanelTopo.addLast(mesaPolotting);
+		JButton anguloBase = new JButton("ANG-B"); botoneraPanelTopo.addLast(anguloBase);
+		JButton actMag = new JButton("ACT-MAG"); botoneraPanelTopo.addLast(actMag);
+		JButton nivelTrigo = new JButton("NIVEL-T"); botoneraPanelTopo.addLast(nivelTrigo);
+		JButton registroPPAL = new JButton("REG-PPAL"); botoneraPanelTopo.addLast(registroPPAL);
+		JButton registroCoordMod = new JButton("REG-C-M"); botoneraPanelTopo.addLast(registroCoordMod);
+		
+		//	Seteo de configuracion visual de cada boton y su action listener
+		for(JButton b : botoneraPanelTopo) {
+			
+			b.setBackground(Color.DARK_GRAY);
+            b.setForeground(Color.WHITE);
+            b.setFont(new Font("Arial", Font.BOLD, 10)); 
+            b.setPreferredSize(new Dimension(98, 60)); 
+            b.setFocusPainted(false);
+			panelGlobalTopografico.add(b);
+		    
+		    b.addActionListener(e -> {
+		        String comando = b.getText();
+		        switch(comando) {
+		           case "TRIANG": abrirDialogoTriangulacion(); break;
+		           case "RAD": abrirDialogoRadiacion(); break;
+		           // case "TRILAT": abrirDialogoTrilateracion(); break;
+		           case "INT-INV-3P": abrirDialogoInterseccionInversa3P(); break;
+		           // case "INT-INV-2P": abrirDialogoInterseccionInversa2P(); break;
+		           // case "INT-D-M": abrirDialogoInterseccionDirecta(); break;
+		           // case "POLIGONAL": abrirDialogoPoligonal(); break;
+		           // case "MESA-P": abrirDialogoMesaPlotting(); break;
+		           // case "ANG-B": abrirDialogoAnguloBase(); break;
+		           // case "ACT-MAG": abrirDialogoActualizacionMagnetica(); break;
+		           // case "REG-C-M": abrirDialogoRegistroCoordMod(); break;
+		           // case "NIVEL-T": abrirDialogoNivelacionTrigo(); break;
+		           // case "REG-PPAL": exportarRegistroPDF(); break; // El botón de exportación
+		        }
+		    });
+		}
+		//
+
+		//	Configuración de la etiqueta que muestra las coordenadas con el arrastre del click 
+		tooltipLabel = new JLabel("");
+		tooltipLabel.setOpaque(true);
+		tooltipLabel.setBackground(new Color(255, 255, 255, 220)); 
+		tooltipLabel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
+		tooltipLabel.setSize(320, 70);
+		tooltipLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		tooltipLabel.setFont(new Font("Arial", Font.BOLD, 15));
+		tooltipLabel.setVisible(false);
+		//
+		
+		//	Se le añade al panel del mapa la etiqueta anterior
+		panelMapa.getMapPane().add(tooltipLabel);
+
+		//	Se configuran los controles de Zoom y Arrastre
+		configurarHerramientasMapa();
+		//
+   
+		//	Se configuran los PopUpMenu de las listas BLANCOS y POLIGONALES
+		ConfigurarPopUpMenus();
+		
+        listaUIBlancos.addMouseListener(new MouseAdapter() {
+
+        	@Override public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+            @Override public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
+
+            private void mostrarPopup(MouseEvent e) {
+                int idx = listaUIBlancos.locationToIndex(e.getPoint());
+                
+                if (idx != -1 && listaUIBlancos.getCellBounds(idx, idx).contains(e.getPoint())) {
+                    listaUIBlancos.setSelectedIndex(idx);
+                    listaUIBlancos.requestFocusInWindow();
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                } else {
+                    listaUIBlancos.clearSelection();
+                }
+            }
+        });
+        
+        listaUIPoligonales.addMouseListener(new MouseAdapter() {
+
+        	@Override public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopupPoligonal(e); }
+            @Override public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopupPoligonal(e); }
+
+            private void mostrarPopupPoligonal(MouseEvent e) {
+                // Si no es un evento de popup (clic derecho), salimos
+                if (!e.isPopupTrigger()) return;
+
+                int idx = listaUIPoligonales.locationToIndex(e.getPoint());
+                
+                if (idx != -1 && listaUIPoligonales.getCellBounds(idx, idx).contains(e.getPoint())) {
+                    Poligonal elemento = modeloListaPoligonales.getElementAt(idx);
+                    
+                    // Solo si es un Punto mostramos el menú
+                    if (elemento.tienePopUpMenu()) {
+                        listaUIPoligonales.setSelectedIndex(idx);
+                        listaUIPoligonales.requestFocusInWindow();
+                        popupMenuPunto.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                } else {
+                    listaUIPoligonales.clearSelection();
+                }
+            }
+        });
+    }
+    
+    private void ConfigurarPopUpMenus() {
+    	
+    	this.popupMenu = new JPopupMenu();
         popupMenu.setPreferredSize(new Dimension(250,200));
         JMenuItem itemEditar = new JMenuItem("Editar Blanco Seleccionado");
         itemEditar.setBackground(Color.BLACK);
         itemEditar.setForeground(Color.WHITE);
         itemEditar.setFont(new Font("Arial", Font.BOLD, 15));
         JMenuItem itemMarcarPolares = new JMenuItem("Marcar Nuevo Blanco en Polares");
-        itemMarcarPolares.setBackground(Color.BLACK);
-        itemMarcarPolares.setForeground(Color.WHITE);
-        itemMarcarPolares.setFont(new Font("Arial", Font.BOLD, 15));
+        itemMarcarPolares.setBackground(Color.BLACK);itemMarcarPolares.setForeground(Color.WHITE);itemMarcarPolares.setFont(new Font("Arial", Font.BOLD, 15));
         JMenuItem itemMedir = new JMenuItem("Marcar Medicion");
         itemMedir.setBackground(Color.BLACK);
         itemMedir.setForeground(Color.WHITE);
@@ -526,7 +531,7 @@ public class SituacionTacticaTopografica extends JPanel {
             if (bSel != null) enviarBlanco(bSel); 
         });
         
-        JPopupMenu popupMenuPunto = new JPopupMenu();
+        this.popupMenuPunto = new JPopupMenu();
         popupMenuPunto.setPreferredSize(new Dimension(250,220));     
         JMenuItem itemMedirP = new JMenuItem("Marcar Medicion");
         itemMedirP.setBackground(Color.BLACK);
@@ -564,60 +569,14 @@ public class SituacionTacticaTopografica extends JPanel {
         });
         itemCerrarP.addActionListener(e -> {
             Posicionable selec = (Posicionable) listaUIPoligonales.getSelectedValue();
-            if (selec instanceof Punto pCalculado) {
-                dialogoCierreControlado(pCalculado);
-            }
-        });
-        
-        
-        listaUIBlancos.addMouseListener(new MouseAdapter() {
-
-        	@Override public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
-            @Override public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopup(e); }
-
-            private void mostrarPopup(MouseEvent e) {
-                int idx = listaUIBlancos.locationToIndex(e.getPoint());
-                
-                // Verificamos si el índice es válido Y si el punto está dentro de la celda real
-                if (idx != -1 && listaUIBlancos.getCellBounds(idx, idx).contains(e.getPoint())) {
-                    listaUIBlancos.setSelectedIndex(idx);
-                    listaUIBlancos.requestFocusInWindow();
-                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
-                } else {
-                    // Si hizo clic en el vacío, limpiamos selección y NO mostramos nada
-                    listaUIBlancos.clearSelection();
-                }
-            }
-        });
-        
-        listaUIPoligonales.addMouseListener(new MouseAdapter() {
-
-        	@Override public void mousePressed(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopupPoligonal(e); }
-            @Override public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopupPoligonal(e); }
-
-            private void mostrarPopupPoligonal(MouseEvent e) {
-                // Si no es un evento de popup (clic derecho), salimos
-                if (!e.isPopupTrigger()) return;
-
-                int idx = listaUIPoligonales.locationToIndex(e.getPoint());
-                
-                if (idx != -1 && listaUIPoligonales.getCellBounds(idx, idx).contains(e.getPoint())) {
-                    Object elemento = modeloListaPoligonales.getElementAt(idx);
-                    
-                    // Solo si es un Punto mostramos el menú
-                    if (elemento instanceof Punto) {
-                        listaUIPoligonales.setSelectedIndex(idx);
-                        listaUIPoligonales.requestFocusInWindow();
-                        popupMenuPunto.show(e.getComponent(), e.getX(), e.getY());
-                    }
-                } else {
-                    listaUIPoligonales.clearSelection();
-                }
+            if (selec != null) {
+                selec.ejecutarCierrePoligonal(this);
             }
         });
     }
 
-    private void dialogoCierreControlado(Punto puntoCalculado) {
+    @SuppressWarnings("unused")
+	private void dialogoCierreControlado(Punto puntoCalculado) {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parent, "CONTROL DE PRECISIÓN AUTOMÁTICO", true);
         dialog.setSize(600, 450);
@@ -660,7 +619,7 @@ public class SituacionTacticaTopografica extends JPanel {
         gbc.gridx = 1;
         dialog.add(txtDistManual, gbc);
 
-        comboPuntosReales.addActionListener(e -> {
+        /*comboPuntosReales.addActionListener(e -> {
             Punto real = (Punto) comboPuntosReales.getSelectedItem();
             if (real != null) {
                 // Ejecutamos el rastreo por el grafo
@@ -677,7 +636,7 @@ public class SituacionTacticaTopografica extends JPanel {
                     txtDistManual.setForeground(Color.ORANGE); // Advertencia: distancia geométrica simple
                 }
             }
-        });
+        });*/
 
         // 4. Botón de Acción
         JButton btnCalcular = new JButton("GENERAR INFORME DE PRECISIÓN");
@@ -714,41 +673,6 @@ public class SituacionTacticaTopografica extends JPanel {
         }
 
         dialog.setVisible(true);
-    }
-    
-    private double calcularDistanciaRecorridaRecursiva(Vertice destino, Vertice origenFinal) {
-        double distanciaAcumulada = 0;
-        Vertice actual = destino;
-        
-        // Guardamos los vértices visitados para evitar bucles infinitos en el grafo
-        java.util.Set<Vertice> visitados = new java.util.HashSet<>();
-
-        while (actual != null) {
-            // Si ya visitamos este punto o llegamos al origen buscado, terminamos
-            if (visitados.contains(actual)) break;
-            visitados.add(actual);
-            
-            ConexionTopografica conexion = listaDeVerticesConectados.get(actual);
-            
-            if (conexion != null) {
-                // Sumamos la distancia de la línea física que une este tramo
-                distanciaAcumulada += conexion.linea().getDistancia();
-                
-                // Movemos el puntero al origen de esta línea para seguir retrocediendo
-                actual = conexion.origen();
-                
-                // Si el origen de este tramo es el punto donde queremos cerrar, ¡llegamos!
-                if (actual.equals(origenFinal)) {
-                    return distanciaAcumulada;
-                }
-            } else {
-                // Se rompió la cadena (punto sin padre)
-                break;
-            }
-        }
-        
-        // Si salió del bucle sin encontrar el origenFinal, devolvemos 0 o la distancia directa
-        return 0; 
     }
         
     private void abrirDialogoRadiacion() {
@@ -2675,7 +2599,6 @@ public class SituacionTacticaTopografica extends JPanel {
                 listaDePoligonales.add(nuevaLinea);
                 modeloListaPoligonales.addElement(nuevaLinea);
                 panelMapa.agregarPoligonal(nuevaLinea);
-                listaDeVerticesConectados.put((Vertice)destino, new ConexionTopografica(origen, nuevaLinea));
                 
                 String medicionData = String.format("Origen: %s -> Destino: %s | Dist: %.2f m | Az: %.0f mil", 
                         origen.getNombre(), destino.getNombre(), distancia, azimutMils);
@@ -3099,6 +3022,4 @@ public class SituacionTacticaTopografica extends JPanel {
 	public void setPanelMensajeria(Mensajeria mensajeriaPanel) {
 		mensajeria = mensajeriaPanel;
 	}
-	
-	private record ConexionTopografica(Vertice origen, Linea linea) {}
 }

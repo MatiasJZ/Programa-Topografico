@@ -4,6 +4,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import app.SituacionTacticaTopografica;
+
 public class Punto implements Poligonal,Posicionable{
 	
 	private CoordenadasRectangulares coord;
@@ -31,6 +33,16 @@ public class Punto implements Poligonal,Posicionable{
 	}
 	
 	@Override
+    public boolean soportaCierrePoligonal() {
+        return true; 
+    }
+
+    /*@Override
+    public void ejecutarCierrePoligonal(SituacionTacticaTopografica contexto) {
+        contexto.dialogoCierreControlado(this);
+    }*/
+	
+	@Override
 	public String toString() {
 	    return this.nombre; // O el método que uses para obtener el nombre
 	}
@@ -45,5 +57,10 @@ public class Punto implements Poligonal,Posicionable{
 	
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
+	}
+
+	@Override
+	public Boolean tienePopUpMenu() {
+		return true;
 	}
 }
