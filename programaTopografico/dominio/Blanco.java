@@ -47,6 +47,9 @@ public class Blanco implements Posicionable {
     public void setUltEchelon(String e) {
     	ultEchelon = e;
     }
+    
+    @Override
+    public String getPrefijoTipo() { return "[B] "; }
 
     public String getNombre() { return nombre; }
     

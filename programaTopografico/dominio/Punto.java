@@ -15,6 +15,9 @@ public class Punto implements Poligonal,Posicionable{
     public String getName() {
         return this.nombre;
     }
+	
+	@Override
+	public String getPrefijoTipo() { return "[P] "; }
 
     @Override
     public Geometry getGeometry() {

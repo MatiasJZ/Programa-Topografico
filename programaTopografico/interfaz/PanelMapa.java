@@ -25,7 +25,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
-import org.geotools.referencing.CRS;
 import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.swing.JMapPane;
@@ -149,7 +148,6 @@ public class PanelMapa extends JPanel {
         GeoTiffReader reader = (GeoTiffReader) format.getReader(file);
 
         CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-        if (crs == null) crs = CRS.decode("EPSG:9265", true);
 
         mapContent.getViewport().setCoordinateReferenceSystem(crs);
 

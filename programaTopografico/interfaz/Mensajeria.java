@@ -160,6 +160,5 @@ public class Mensajeria extends JPanel {
 
     private void abrirDialogo(String nombre) {
         consolaMensajes.mostrarEstado("Abriendo formulario: " + nombre);
-        // Lógica de diálogos...
     }
 }

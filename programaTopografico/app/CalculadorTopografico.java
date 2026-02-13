@@ -37,6 +37,20 @@ public class CalculadorTopografico {
 	    return new CoordenadasRectangulares(nuevoX, nuevoY, pA.getCoordenadas().getCota());
 	}
 	
+	public double calcularAzimutEnMils(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double radianes = Math.atan2(dx, dy);
+
+        double grados = Math.toDegrees(radianes);
+
+        if (grados < 0) {
+            grados += 360;
+        }
+        double mils = grados * (6400.0 / 360.0);
+        return Math.round(mils);
+    }
+	
 	/**
 	 * Calcula coordenadas mediante Radiación (Punto, Azimut y Distancia)
 	 * @param origen Punto conocido

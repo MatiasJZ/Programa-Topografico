@@ -128,8 +128,8 @@ public class PanelEnlaceComunicaciones extends JPanel {
 
                 for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
                     InetAddress addr = ia.getAddress();
-
-                    if (addr instanceof Inet4Address) {
+                    
+                    if (!addr.isLoopbackAddress() && addr.getAddress().length == 4) {
                         comboInterfaces.addItem(ni.getDisplayName() + " - " + addr.getHostAddress());
                         ips.add(addr);
                     }

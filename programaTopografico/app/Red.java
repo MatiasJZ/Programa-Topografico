@@ -226,10 +226,14 @@ public class Red extends JDialog {
             Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
             while (nets.hasMoreElements()) {
                 NetworkInterface ni = nets.nextElement();
-                var addrs = ni.getInetAddresses();
+                
+                if (!ni.isUp() || ni.isVirtual()) continue;
+
+                Enumeration<InetAddress> addrs = ni.getInetAddresses();
                 while (addrs.hasMoreElements()) {
                     InetAddress addr = addrs.nextElement();
-                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
+                    
+                    if (addr.getAddress().length == 4 && !addr.isLoopbackAddress()) {
                         cbInterfaces.addItem(new NetworkInterfaceWrapper(ni, addr));
                     }
                 }
@@ -295,20 +299,20 @@ public class Red extends JDialog {
         }
     }
 
-    private static class NetworkInterfaceWrapper {
-        private final NetworkInterface ni;
-        private final InetAddress addr;
-
-        NetworkInterfaceWrapper(NetworkInterface ni, InetAddress addr) {
-            this.ni = ni;
-            this.addr = addr;
-        }
-
-        InetAddress getAddress() { return addr; }
-
-        @Override
-        public String toString() {
-            return ni.getDisplayName() + " - " + addr.getHostAddress();
-        }
-    }
+private static class NetworkInterfaceWrapper {
+	private final NetworkInterface ni;
+	private final InetAddress addr;
+	
+	NetworkInterfaceWrapper(NetworkInterface ni, InetAddress addr) {
+	    this.ni = ni;
+	    this.addr = addr;
+	}
+	
+	InetAddress getAddress() { return addr; }
+	
+	@Override
+	public String toString() {
+	    return ni.getDisplayName() + " - " + addr.getHostAddress();
+	    }
+	}
 }

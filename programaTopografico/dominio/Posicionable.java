@@ -11,4 +11,6 @@ public interface Posicionable extends Vertice{
     default boolean soportaCierrePoligonal() {return false;}
     
     default void ejecutarCierrePoligonal(SituacionTacticaTopografica contexto) {}
+    
+    String getPrefijoTipo();
 }
