@@ -4,8 +4,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import app.SituacionTacticaTopografica;
-
 public class Punto implements Poligonal,Posicionable{
 	
 	private CoordenadasRectangulares coord;

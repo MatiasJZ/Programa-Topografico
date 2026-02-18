@@ -42,6 +42,14 @@ public class Linea implements Poligonal {
         return distancia;
     }
 
+    public Coordinate getC1() {
+    	return inicio;
+    }
+    
+    public Coordinate getC2() {
+    	return fin;
+    }
+    
     @Override
     public Geometry getGeometry() {
         GeometryFactory gf = new GeometryFactory();

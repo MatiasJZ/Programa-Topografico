@@ -416,17 +416,78 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 			                JOptionPane.showMessageDialog(this, "Posición propia determinada con éxito.");
 			            });
 			            break;
+			        case "MESA-P": 
+			            dialogFactory.MesaPlottingDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                
+			                RegistroCalculos.guardar("MESA PLOTTING", informe);
+			                
+			                JOptionPane.showMessageDialog(this, "Intersección de Plotting graficada con éxito.");
+			            });
+			            break;
+			        case "TRILAT": 
+			            dialogFactory.TrilateracionDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("TRILATERACIÓN", informe);
+			                JOptionPane.showMessageDialog(this, "Trilateración calculada y graficada con éxito.");
+			            });
+			            break;
+			        case "INT-INV-2P": 
+			            dialogFactory.InterseccionInversa2PDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("INTERSECCIÓN INVERSA 2P", informe);
+			                JOptionPane.showMessageDialog(this, "Posición propia (2P) determinada con éxito.");
+			            });
+			            break;
+			        case "INT-D-M": 
+			            dialogFactory.InterseccionDirectaMDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("INTERSECCIÓN DIRECTA", informe);
+			                JOptionPane.showMessageDialog(this, "Objetivo ubicado por Intersección Directa.");
+			            });
+			            break;
+			        case "ANG-B": 
+			            dialogFactory.AnguloBaseDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("ÁNGULO BASE", informe);
+			                JOptionPane.showMessageDialog(this, "Objetivo por Ángulo Base graficado con éxito.");
+			            });
+			            break;
+			        case "ACT-MAG": 
+			            dialogFactory.ActualizacionMagneticaDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                // Solo grafica si hay un punto (en este módulo no lo hay)
+			                if (resultado != null) {
+			                    agregarPunto(resultado);
+			                }
+			                
+			                RegistroCalculos.guardar("ACTUALIZACIÓN MAGNÉTICA", informe);
+			                JOptionPane.showMessageDialog(this, "Declinación actualizada con éxito. Revisa el informe.");
+			            });
+			            break;
+			        case "REG-C-M": 
+			            dialogFactory.RegistroCoordModDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("COORDENADAS MODIFICADAS", informe);
+			                JOptionPane.showMessageDialog(this, "Coordenadas modificadas y registradas con éxito.");
+			            });
+			            break;
+			        case "NIVEL-T": 
+			            dialogFactory.NivelTrigonometricoDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                agregarPunto(resultado);
+			                RegistroCalculos.guardar("NIVELACIÓN TRIGONOMÉTRICA", informe);
+			                JOptionPane.showMessageDialog(this, "Nivelación trigonométrica calculada con éxito.");
+			            });
+			            break;
 
-			        // case "TRILAT": abrirDialogoTrilateracion(); break;
-			        // case "INT-INV-2P": abrirDialogoInterseccionInversa2P(); break;
-			        // case "INT-D-M": abrirDialogoInterseccionDirecta(); break;
-			        // case "POLIGONAL": abrirDialogoPoligonal(); break;
-			        // case "MESA-P": abrirDialogoMesaPlotting(); break;
-			        // case "ANG-B": abrirDialogoAnguloBase(); break;
-			        // case "ACT-MAG": abrirDialogoActualizacionMagnetica(); break;
-			        // case "REG-C-M": abrirDialogoRegistroCoordMod(); break;
-			        // case "NIVEL-T": abrirDialogoNivelacionTrigo(); break;
-			        // case "REG-PPAL": exportarRegistroPDF(); break; 
+			        case "REG-PPAL": 
+			            dialogFactory.RegistroPPALDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
+			                // 1. Guardamos el encabezado formateado en el historial
+			                RegistroCalculos.guardar("ENCABEZADO DE EXPORTACIÓN", informe);
+			                JOptionPane.showMessageDialog(this, "Registro PPAL guardado con éxito.");
+			                
+			                JOptionPane.showMessageDialog(this, "Registro PDF exportado correctamente.");
+			            });
+			            break;
 			    }
 			});
 		}
@@ -609,112 +670,15 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         });
         itemCerrarP.addActionListener(e -> {
             Posicionable selec = (Posicionable) listaUIPoligonales.getSelectedValue();
-            if (selec != null) {
-                selec.ejecutarCierrePoligonal(this);
+            if (selec != null && selec instanceof Punto) {
+                dialogFactory.CierrePoligonalDialog((Punto) selec, listaDePuntos, (resultado, informe) -> {
+                    RegistroCalculos.guardar("CIERRE DE POLIGONAL", informe);
+                    JOptionPane.showMessageDialog(this, "Control de precisión registrado con éxito.");
+                });	
             }
         });
     }
 
-    @SuppressWarnings("unused")
-	private void dialogoCierreControlado(Punto puntoCalculado) {
-        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parent, "CONTROL DE PRECISIÓN AUTOMÁTICO", true);
-        dialog.setSize(600, 450);
-        dialog.setLayout(new GridBagLayout());
-        dialog.getContentPane().setBackground(new Color(40, 40, 40));
-        dialog.setLocationRelativeTo(this);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 15, 10, 15);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // 1. Etiqueta de información dinámica
-        JLabel lblInfo = new JLabel("<html><center>Seleccione el punto de origen real para comparar</center></html>");
-        lblInfo.setForeground(Color.WHITE);
-        lblInfo.setFont(new Font("Arial", Font.PLAIN, 18));
-        gbc.gridwidth = 2; gbc.gridx = 0; gbc.gridy = 0;
-        dialog.add(lblInfo, gbc);
-
-        // 2. Combo de puntos reales (excluyendo el seleccionado)
-        JComboBox<Punto> comboPuntosReales = new JComboBox<>();
-        for (Punto p : listaDePuntos) {
-            if (!p.equals(puntoCalculado)) comboPuntosReales.addItem(p);
-        }
-        comboPuntosReales.setFont(new Font("Arial", Font.BOLD, 18));
-        gbc.gridy = 1; 
-        dialog.add(comboPuntosReales, gbc);
-
-        // 3. Campo de Distancia (Se actualizará solo)
-        gbc.gridwidth = 1; gbc.gridy = 2;
-        dialog.add(new JLabel("Distancia Poligonal (m):") {
-
-			private static final long serialVersionUID = 1L;
-
-		{ setForeground(Color.GRAY); }}, gbc);
-        
-        JTextField txtDistManual = new JTextField("0.00");
-        txtDistManual.setFont(new Font("Monospaced", Font.BOLD, 20));
-        txtDistManual.setBackground(new Color(60, 60, 60));
-        txtDistManual.setForeground(Color.GREEN);
-        gbc.gridx = 1;
-        dialog.add(txtDistManual, gbc);
-
-        /*comboPuntosReales.addActionListener(e -> {
-            Punto real = (Punto) comboPuntosReales.getSelectedItem();
-            if (real != null) {
-                // Ejecutamos el rastreo por el grafo
-                double distCamino = calcularDistanciaRecorridaRecursiva((Vertice)puntoCalculado, (Vertice)real);
-                
-                if (distCamino > 0) {
-                    // Caso ideal: Se encontró la ruta en el mapeo
-                    txtDistManual.setText(String.format("%.2f", distCamino).replace(",", "."));
-                    txtDistManual.setForeground(Color.GREEN); // Feedback visual de éxito
-                } else {
-                    // Caso Fallido: Los puntos no están conectados en el grafo
-                    double distDirecta = puntoCalculado.getCoordenadas().distanciaA(real.getCoordenadas());
-                    txtDistManual.setText(String.format("%.2f", distDirecta).replace(",", "."));
-                    txtDistManual.setForeground(Color.ORANGE); // Advertencia: distancia geométrica simple
-                }
-            }
-        });*/
-
-        // 4. Botón de Acción
-        JButton btnCalcular = new JButton("GENERAR INFORME DE PRECISIÓN");
-        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(45, 90, 45));
-        gbc.gridy = 3; gbc.gridx = 0; gbc.gridwidth = 2;
-        gbc.insets = new Insets(25, 15, 10, 15);
-        dialog.add(btnCalcular, gbc);
-
-        btnCalcular.addActionListener(ev -> {
-            try {
-                Punto real = (Punto) comboPuntosReales.getSelectedItem();
-                double distFinal = Double.parseDouble(txtDistManual.getText());
-
-                // Llamada al motor matemático
-                String informe = CalculadorTopografico.obtenerInformeError(
-                    real.getCoordenadas(), 
-                    puntoCalculado.getCoordenadas(), 
-                    distFinal
-                );
-
-                RegistroCalculos.guardar("CIERRE DE POLIGONAL: " + puntoCalculado.getNombre(), informe);
-                JOptionPane.showMessageDialog(dialog, informe, "INFORME TÉCNICO", JOptionPane.INFORMATION_MESSAGE);
-                dialog.dispose();
-                
-            } catch (NumberFormatException ex) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Error: Formato de distancia inválido.");
-            }
-        });
-
-        // Disparar carga inicial
-        if (comboPuntosReales.getItemCount() > 0) {
-            comboPuntosReales.setSelectedIndex(0);
-        }
-
-        dialog.setVisible(true);
-    }
-                
     public void enviarPunto(Posicionable p) {
         if (p == null) return;
 
@@ -1436,5 +1400,4 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 	public void setContador(int i) {
 		this.designacionBlancoContador = i;
 	}
-
 }

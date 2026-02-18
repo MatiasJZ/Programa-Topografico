@@ -2,7 +2,6 @@ package app;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
