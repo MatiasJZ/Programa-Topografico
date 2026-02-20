@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -14,14 +13,20 @@ import comunicaciones.GestorEnlaceOperativo;
 
 public class Red extends JDialog {
 
-	private static final long serialVersionUID = 1218128306633571285L;
-	private JComboBox<NetworkInterfaceWrapper> cbInterfaces;
+    private static final long serialVersionUID = 1218128306633571285L;
+    private JComboBox<NetworkInterfaceWrapper> cbInterfaces;
     private JTextField txtPuerto;
     private DefaultListModel<String> modeloDestinos;
     private JList<String> listaDestinos;
     private JTextField txtNuevoDestino;
 
     private final GestorEnlaceOperativo comunicacion;
+
+    // DEFINICIÓN DE ESTILOS TOUCH
+    private final Font fLabel = new Font("Arial", Font.PLAIN, 18);
+    private final Font fInput = new Font("Consolas", Font.BOLD, 20);
+    private final Font fBtn = new Font("Arial", Font.BOLD, 16);
+    private final int ALTO_COMPONENTE = 50;
 
     public Red(Window owner, GestorEnlaceOperativo comunicacion) {
         super(owner, "Configuración de Red", ModalityType.APPLICATION_MODAL);
@@ -34,63 +39,56 @@ public class Red extends JDialog {
         JPanel panelForm = new JPanel(new GridBagLayout());
         panelForm.setBackground(new Color(30, 30, 30));
         panelForm.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
+        
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.insets = new Insets(10, 10, 10, 10); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // ENTRADA ETHERNET LOCAL
         gbc.gridx = 0; gbc.gridy = 0;
-        JLabel lblInterfaz = crearEtiqueta("Interfaz local:");
-        panelForm.add(lblInterfaz, gbc);
+        panelForm.add(crearEtiqueta("Interfaz local:"), gbc);
 
         cbInterfaces = new JComboBox<>();
         cbInterfaces.setBackground(Color.WHITE);
+        cbInterfaces.setFont(new Font("Arial", Font.BOLD, 16));
+        cbInterfaces.setPreferredSize(new Dimension(300, ALTO_COMPONENTE));
         cargarInterfaces();
+        
         gbc.gridx = 1; gbc.gridy = 0;
         panelForm.add(cbInterfaces, gbc);
 
-        // PUERTO TCP
         gbc.gridx = 0; gbc.gridy = 1;
-        JLabel lblPuerto = crearEtiqueta("Puerto TCP:");
-        panelForm.add(lblPuerto, gbc);
+        panelForm.add(crearEtiqueta("Puerto TCP:"), gbc);
 
         txtPuerto = new JTextField();
         txtPuerto.setBackground(new Color(50, 50, 50));
-        txtPuerto.setForeground(Color.WHITE);
+        txtPuerto.setForeground(Color.CYAN);
+        txtPuerto.setFont(fInput);
+        txtPuerto.setHorizontalAlignment(JTextField.CENTER);
+        txtPuerto.setPreferredSize(new Dimension(100, ALTO_COMPONENTE));
+        
         gbc.gridx = 1; gbc.gridy = 1;
         panelForm.add(txtPuerto, gbc);
 
-        // valor inicial de puerto (si ComunicacionIP ya tiene uno)
+        // Valor inicial de puerto
         int puertoActual = (comunicacion != null ? comunicacion.getPuerto() : 0);
-        if (puertoActual > 0) {
-            txtPuerto.setText(String.valueOf(puertoActual));
-        } else {
-            txtPuerto.setText("5056");
-        }
+        txtPuerto.setText(String.valueOf(puertoActual > 0 ? puertoActual : 5056));
 
-        // LISTA DE DESTINATARIOS
         modeloDestinos = new DefaultListModel<>();
         listaDestinos = new JList<>(modeloDestinos);
         listaDestinos.setBackground(new Color(20, 20, 20));
         listaDestinos.setForeground(Color.WHITE);
+        listaDestinos.setFont(fInput);
+        listaDestinos.setFixedCellHeight(45);
 
-        listaDestinos.setFont(new Font("Consolas", Font.BOLD, 18));
         listaDestinos.setCellRenderer(new DefaultListCellRenderer() {
-
-			private static final long serialVersionUID = -294481990100120184L;
-
-			@Override
-            public Component getListCellRendererComponent(
-                    JList<?> list, Object value, int index,
-                    boolean isSelected, boolean cellHasFocus) {
-
-                JLabel label = (JLabel) super.getListCellRendererComponent(
-                        list, value, index, isSelected, cellHasFocus);
-
+            private static final long serialVersionUID = 1L;
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 label.setHorizontalAlignment(SwingConstants.CENTER);
-                label.setFont(new Font("Consolas", Font.BOLD, 18));
+                label.setFont(fInput);
                 label.setOpaque(true);
-
                 if (isSelected) {
                     label.setBackground(new Color(60, 60, 60));
                     label.setForeground(Color.WHITE);
@@ -103,38 +101,36 @@ public class Red extends JDialog {
         });
 
         JScrollPane scrollDestinos = new JScrollPane(listaDestinos);
-        scrollDestinos.setPreferredSize(new Dimension(380, 130));
+        scrollDestinos.setPreferredSize(new Dimension(400, 200)); 
 
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.BOTH;
         panelForm.add(scrollDestinos, gbc);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // rellenar lista con lo que ya tenga ComunicacionIP
-        if (comunicacion != null) {
-            List<String> yaConfigurados = comunicacion.getDestinos();
-            if (yaConfigurados != null) {
-                for (String ip : yaConfigurados) {
-                    modeloDestinos.addElement(ip);
-                }
+        if (comunicacion != null && comunicacion.getDestinos() != null) {
+            for (String ip : comunicacion.getDestinos()) {
+                modeloDestinos.addElement(ip);
             }
         }
 
-        JPanel panelDestinos = new JPanel(new BorderLayout(5, 5));
+        JPanel panelDestinos = new JPanel(new BorderLayout(10, 10));
         panelDestinos.setBackground(new Color(30, 30, 30));
-        panelDestinos.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        panelDestinos.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         txtNuevoDestino = new JTextField("192.168.0.");
-        txtNuevoDestino.setPreferredSize(new Dimension(140, 28));
+        txtNuevoDestino.setFont(fInput);
+        txtNuevoDestino.setPreferredSize(new Dimension(180, ALTO_COMPONENTE));
+        txtNuevoDestino.setHorizontalAlignment(JTextField.CENTER);
         panelDestinos.add(txtNuevoDestino, BorderLayout.CENTER);
 
-        JPanel panelBtnDestinos = new JPanel(new GridLayout(1, 2, 6, 0));
+        JPanel panelBtnDestinos = new JPanel(new GridLayout(1, 2, 10, 0));
         panelBtnDestinos.setBackground(new Color(30, 30, 30));
 
-        JButton btnAgregar = crearBotonVerde("Agregar destino");
+        JButton btnAgregar = crearBotonVerde("AGREGAR (+)");
         btnAgregar.addActionListener(e -> agregarDestino());
 
-        JButton btnQuitar = crearBotonRojo("Quitar seleccionado");
+        JButton btnQuitar = crearBotonRojo("QUITAR (-)");
         btnQuitar.addActionListener(e -> quitarDestino());
 
         panelBtnDestinos.add(btnAgregar);
@@ -146,18 +142,18 @@ public class Red extends JDialog {
 
         add(panelForm, BorderLayout.CENTER);
 
-        JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel panelInferior = new JPanel(new GridLayout(1, 2, 15, 0));
         panelInferior.setBackground(new Color(30, 30, 30));
+        panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
 
-        Dimension tamBotonPrincipal = new Dimension(110, 32);
-
-        JButton btnCancelar = crearBotonRojo("Cancelar");
-        btnCancelar.setPreferredSize(tamBotonPrincipal);
-        btnCancelar.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnCancelar = crearBotonRojo("CANCELAR");
+        btnCancelar.setFont(new Font("Arial", Font.BOLD, 18));
+        btnCancelar.setPreferredSize(new Dimension(0, 60)); // Botones inferiores más altos
         btnCancelar.addActionListener(e -> dispose());   
 
-        JButton btnAplicar = crearBotonAzul("Aplicar");
-        btnAplicar.setPreferredSize(tamBotonPrincipal);
+        JButton btnAplicar = crearBotonAzul("APLICAR CAMBIOS");
+        btnAplicar.setFont(new Font("Arial", Font.BOLD, 18));
+        btnAplicar.setPreferredSize(new Dimension(0, 60));
         btnAplicar.addActionListener(e -> aplicarCambios());
 
         panelInferior.add(btnCancelar);
@@ -190,7 +186,7 @@ public class Red extends JDialog {
     private JLabel crearEtiqueta(String texto) {
         JLabel lbl = new JLabel(texto);
         lbl.setForeground(Color.WHITE);
-        lbl.setFont(new Font("Arial", Font.BOLD, 14));
+        lbl.setFont(fLabel);
         return lbl;
     }
 
@@ -198,7 +194,9 @@ public class Red extends JDialog {
         JButton b = new JButton(txt);
         b.setBackground(new Color(70, 150, 70));
         b.setForeground(Color.WHITE);
+        b.setFont(fBtn);
         b.setFocusPainted(false);
+        b.setPreferredSize(new Dimension(150, ALTO_COMPONENTE));
         return b;
     }
 
@@ -206,16 +204,17 @@ public class Red extends JDialog {
         JButton b = new JButton(txt);
         b.setBackground(new Color(150, 50, 50));
         b.setForeground(Color.WHITE);
+        b.setFont(fBtn);
         b.setFocusPainted(false);
-        b.setFocusPainted(false);
+        b.setPreferredSize(new Dimension(150, ALTO_COMPONENTE));
         return b;
     }
 
     private JButton crearBotonAzul(String txt) {
         JButton b = new JButton(txt);
-        b.setBackground(new Color(40, 80, 150));
+        b.setBackground(new Color(40, 80, 180)); 
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Arial", Font.BOLD, 14));
+        b.setFont(fBtn);
         b.setFocusPainted(false);
         return b;
     }
@@ -238,10 +237,7 @@ public class Red extends JDialog {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "No se pudieron cargar las interfaces de red.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No se pudieron cargar las interfaces de red.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -266,13 +262,9 @@ public class Red extends JDialog {
 
     private void aplicarCambios() {
         try {
-            NetworkInterfaceWrapper wrap =
-                    (NetworkInterfaceWrapper) cbInterfaces.getSelectedItem();
+            NetworkInterfaceWrapper wrap = (NetworkInterfaceWrapper) cbInterfaces.getSelectedItem();
             if (wrap == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Debe seleccionar una interfaz de red.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Debe seleccionar una interfaz de red.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             InetAddress interfaz = wrap.getAddress();
@@ -291,27 +283,24 @@ public class Red extends JDialog {
             dispose();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error aplicando configuración:\n" + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error aplicando configuración:\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-private static class NetworkInterfaceWrapper {
-	private final NetworkInterface ni;
-	private final InetAddress addr;
-	
-	NetworkInterfaceWrapper(NetworkInterface ni, InetAddress addr) {
-	    this.ni = ni;
-	    this.addr = addr;
-	}
-	
-	InetAddress getAddress() { return addr; }
-	
-	@Override
-	public String toString() {
-	    return ni.getDisplayName() + " - " + addr.getHostAddress();
-	    }
-	}
+    private static class NetworkInterfaceWrapper {
+        private final NetworkInterface ni;
+        private final InetAddress addr;
+        
+        NetworkInterfaceWrapper(NetworkInterface ni, InetAddress addr) {
+            this.ni = ni;
+            this.addr = addr;
+        }
+        
+        InetAddress getAddress() { return addr; }
+        
+        @Override
+        public String toString() {
+            return ni.getDisplayName() + " [" + addr.getHostAddress() + "]";
+        }
+    }
 }

@@ -281,6 +281,10 @@ public class PanelMapa extends JPanel {
 
     public void agregarPoligonal(Poligonal p) {
 
+    	if (capaPorPoligonal.containsKey(p)) {
+            eliminarPoligonal(p);
+        }
+    	
         Geometry geom = p.getGeometry();
         SimpleFeatureType tipo;
         Object[] attrs;
@@ -426,7 +430,6 @@ public class PanelMapa extends JPanel {
     }
     
     private Style crearEstilo(String sidc, double orient) {
-
         try {
             ProveedorSimbologiaMilitarizada prov = new ProveedorSimbologiaMilitarizada(sidc, 55);
             Field f = ProveedorSimbologiaMilitarizada.class.getDeclaredField("simbolo");
@@ -434,7 +437,6 @@ public class PanelMapa extends JPanel {
             BufferedImage simbolo = (BufferedImage) f.get(prov);
 
             if (simbolo != null) {
-
                 File tempFile = File.createTempFile("sym", ".png");
                 ImageIO.write(simbolo, "png", tempFile);
                 tempFile.deleteOnExit();
@@ -448,9 +450,26 @@ public class PanelMapa extends JPanel {
                 Graphic g = sb.createGraphic(new ExternalGraphic[]{eg}, null, null, 1.0, 0.0, rot);
                 PointSymbolizer ps = sb.createPointSymbolizer(g);
 
-                TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,
-                        sb.createFont("Arial Black", false, false, 18), "nombre");
+                org.geotools.api.style.Font font = sb.createFont("Arial Black", false, false, 18);
+                org.geotools.api.style.Halo halo = sb.createHalo(Color.WHITE, 0.5, 2.0);
+                org.geotools.api.style.Fill fillTexto = sb.createFill(Color.BLACK);
 
+                org.geotools.api.style.AnchorPoint anchor = sb.createAnchorPoint(0.5, 0.5);
+                
+                org.geotools.api.style.Displacement disp = sb.createDisplacement(0, -30);
+
+                org.geotools.api.filter.expression.Expression rotExpr = sb.literalExpression(rot);
+
+                org.geotools.api.style.PointPlacement placement = sb.createPointPlacement(anchor, disp, rotExpr);
+
+                TextSymbolizer ts = sb.createTextSymbolizer(
+                    fillTexto, 
+                    new org.geotools.api.style.Font[]{font}, 
+                    halo, 
+                    sb.attributeExpression("nombre"), 
+                    placement, 
+                    null // geometría por defecto
+                );
                 StyleFactory sf = CommonFactoryFinder.getStyleFactory();
                 FeatureTypeStyle fts = sf.createFeatureTypeStyle();
                 Rule r = sf.createRule();
@@ -463,7 +482,9 @@ public class PanelMapa extends JPanel {
                 return s;
             }
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            ignored.printStackTrace(); 
+        }
 
         return SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
     }
@@ -489,7 +510,7 @@ public class PanelMapa extends JPanel {
         refrescar();
     }
     
-    private void refrescar() {
+    public void refrescar() {
 
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this::refrescar);

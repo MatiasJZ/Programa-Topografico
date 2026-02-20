@@ -129,7 +129,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		
 		JButton btnAgregar = new JButton("\u2795 AGREGAR");     
 		JButton btnEliminar = new JButton("\u274C ELIMINAR");    
-		JButton btnActualizar = new JButton("\u21BB REFRESCAR");
+		JButton btnRefrescar = new JButton("\u21BB REFRESCAR");
 		JButton btnConfigIP = new JButton("HARRIS"); 
 		JButton btnHerramientas = new JButton("\u2692 HERRAM.");   
 		JButton btnGenPdf = new JButton("GENERAR PDF");
@@ -140,7 +140,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		Dimension dimAncha = new Dimension(280, 45);
 
 		// GRUPO A: Botones Grises (Superiores)
-		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnActualizar}) {
+		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnRefrescar}) {
 		    b.setFont(fuenteEmoji);
 		    b.setPreferredSize(dimPequeña);
 		    b.setFocusPainted(false);
@@ -199,14 +199,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		    
 		    // Llamamos a la Factory
 		    dialogFactory.AgregarBlancoDialog(coord, nuevoBlanco -> {
-		        
-		        // ESTO ES EL CALLBACK (Lo que se ejecuta al darle a 'Aceptar' en el diálogo)
-		        // 'nuevoBlanco' es el objeto que la fábrica construyó por ti
-		        
-		        // 1. Usas tus métodos existentes para actualizar la lógica de Sit. Tac.
 		        agregarBlanco(nuevoBlanco); 
 		        
-		        // 2. Lógica de control del contador
 		        String sugerido = designacionBlancoPrefijo + " " + designacionBlancoContador;
 		        if (nuevoBlanco.getNombre().equals(sugerido)) {
 		            designacionBlancoContador++;
@@ -216,37 +210,63 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		    });
 		});
 
-        btnEliminar.addActionListener(e -> {
-            Blanco selecB = listaUIBlancos.getSelectedValue();
-            Poligonal selecP = listaUIPoligonales.getSelectedValue();
+		btnEliminar.addActionListener(e -> {
+		    Blanco selecB = listaUIBlancos.getSelectedValue();
+		    Poligonal selecP = listaUIPoligonales.getSelectedValue();
 
-            // Verifico qué hay para borrar (gracias a la selección exclusiva, solo uno será distinto de null)
-            if (selecB != null) {
-                listaDeBlancos.remove(selecB);
-                modeloListaBlancos.removeElement(selecB);
-                panelMapa.eliminarBlanco(selecB);
-            } else if (selecP != null) {
-                listaDePoligonales.remove(selecP);
-                modeloListaPoligonales.removeElement(selecP);
-                panelMapa.eliminarPoligonal(selecP);
-                for(Punto p : listaDePuntos) {
-                	if(selecP.getName().equals(p.getName()))
-                		listaDePuntos.remove(p);
-                }
-            } else {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(this, "Seleccione un elemento para eliminar.", "SISTEMA", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+		    boolean borrarBlanco = false;
+		    boolean borrarPoligonal = false;
 
-            // Limpio cualquier rastro de selección después de borrar
-            listaUIBlancos.clearSelection();
-            listaUIPoligonales.clearSelection();
-        });
+		    if (selecB != null && selecP != null) {
+		        Object[] opciones = {"Eliminar Blanco", "Eliminar Linea/Punto", "Cancelar"};
+		        int eleccion = JOptionPane.showOptionDialog(this, // Usa 'padre' si 'this' no es el componente correcto aquí
+		                "Tiene seleccionado un Blanco y una Poligonal al mismo tiempo.\n¿Cuál de los dos desea eliminar?",
+		                "Selección Múltiple",
+		                JOptionPane.YES_NO_CANCEL_OPTION,
+		                JOptionPane.QUESTION_MESSAGE,
+		                null,
+		                opciones,
+		                opciones[0]);
+
+		        if (eleccion == 0) {
+		            borrarBlanco = true;
+		        } else if (eleccion == 1) {
+		            borrarPoligonal = true;
+		        } else {
+		            return;
+		        }
+		    } 
+		    else if (selecB != null) {
+		        borrarBlanco = true;
+		    } else if (selecP != null) {
+		        borrarPoligonal = true;
+		    } 
+		    else {
+		        sonidos.clickError();
+		        JOptionPane.showMessageDialog(this, "Seleccione un elemento para eliminar.", "SISTEMA", JOptionPane.WARNING_MESSAGE);
+		        return;
+		    }
+		    if (borrarBlanco) {
+		        listaDeBlancos.remove(selecB);
+		        modeloListaBlancos.removeElement(selecB);
+		        panelMapa.eliminarBlanco(selecB);
+		    }
+
+		    if (borrarPoligonal) {
+		        listaDePoligonales.remove(selecP);
+		        modeloListaPoligonales.removeElement(selecP);
+		        panelMapa.eliminarPoligonal(selecP);
+		        listaDePuntos.removeIf(p -> p.getName().equals(selecP.getName()));
+		    }
+		    listaUIBlancos.clearSelection();
+		    listaUIPoligonales.clearSelection();
+		    
+		    panelMapa.repaint();
+		});
 
         // actualizar
-        btnActualizar.addActionListener(e -> {
-        	actualizarBlancosEnMapa();
+		btnRefrescar.addActionListener(e -> {
+        	panelMapa.refrescar();
         });
         //
 		
@@ -264,7 +284,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
 		// Fila 1
 		gbc.gridx = 0; gbc.gridy = 1;
-		panelBotones.add(btnActualizar, gbc);
+		panelBotones.add(btnRefrescar, gbc);
 		gbc.gridx = 1;
 		panelBotones.add(btnConfigIP, gbc);
 
@@ -332,7 +352,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		hud.add(btnEliminar, h);
 
 		h.gridy = 1; h.gridx = 0;
-		hud.add(btnActualizar, h);
+		hud.add(btnRefrescar, h);
 		h.gridx = 1;
 		hud.add(btnConfigIP, h);
 
@@ -401,14 +421,12 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 			                RegistroCalculos.guardar("TRIANGULACIÓN", informe);
 			            });
 			            break;
-
 			        case "RAD": 
 			            dialogFactory.RadiacionDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
 			                agregarPunto(resultado);
 			                RegistroCalculos.guardar("RADIACIÓN", informe);
 			            });
 			            break;
-
 			        case "INT-INV-3P": 
 			            dialogFactory.InterseccionInversa3PDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
 			                agregarPunto(resultado);
@@ -1279,20 +1297,27 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     public void agregarPunto(Punto p) {
         if (p == null) return;
         
+        boolean esNuevo = false; 
+        
         if (!listaDePuntos.contains(p)) {
             listaDePuntos.add(p);
+            esNuevo = true;
         }
        
-        // Como los puntos son parte de la visualización de poligonales:
         if (!listaDePoligonales.contains(p)) {
             listaDePoligonales.add(p);
+            esNuevo = true;
         }
         
         if (!modeloListaPoligonales.contains(p)) {
             modeloListaPoligonales.addElement(p);
+            esNuevo = true;
         }
         
-        panelMapa.agregarPoligonal(p);
+        if (esNuevo) {
+            panelMapa.agregarPoligonal(p);
+        }
+        
         listaUIPoligonales.repaint();
     }
 
@@ -1333,7 +1358,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         listaUIBlancos.repaint();
     }
     
-    private void actualizarBlancosEnMapa() {
+    @SuppressWarnings("unused")
+	private void actualizarBlancosEnMapa() {
         panelMapa.repaint();
     }
         

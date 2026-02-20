@@ -22,6 +22,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
     private final GestorSonido sonidos;
     private final SituacionTacticaTopografica sit;
     private CalculadorTopografico calculadora;
+    private int contadorPlotting = 1;
 
     public FabricaDialogosTacticos(Component padre, GestorSonido sonidos) {
         this.padre = padre;
@@ -88,6 +89,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JTextField txtX = new JTextField(String.valueOf(coord.getX()));
         JTextField txtY = new JTextField(String.valueOf(coord.getY()));
         JTextField txtCota = new JTextField(String.valueOf(coord.getCota())); 
+
         txtCota.setHorizontalAlignment(SwingConstants.CENTER);
         
         // Estilos para X, Y, COTA
@@ -335,105 +337,121 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	
 	@Override
 	public void AgregarPuntoDialog(CoordenadasRectangulares coord, PuntoCallback callback) {
-		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
-        JDialog dialog = new JDialog(parentFrame, "Nuevo Punto", true);
-        dialog.setSize(650, 480); 
-        dialog.setLocationRelativeTo(padre);
+	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+	    JDialog dialog = new JDialog(parentFrame, "Nuevo Punto", true);
+	    dialog.setSize(650, 550); 
+	    dialog.setLocationRelativeTo(padre);
 
-        // DEFINICIÓN DE FUENTES TÁCTICAS
-        Font fuenteGrande = new Font("Arial", Font.BOLD, 22);
-        Font fuenteMedia = new Font("Arial", Font.PLAIN, 18);
+	    Font fuenteGrande = new Font("Arial", Font.BOLD, 22);
+	    Font fuenteMedia = new Font("Arial", Font.PLAIN, 18);
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(50, 50, 50));
-        dialog.setContentPane(panel);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(12, 12, 12, 12); // Espaciado amplio para dedos
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+	    JPanel panel = new JPanel(new GridBagLayout());
+	    panel.setBackground(new Color(50, 50, 50));
+	    dialog.setContentPane(panel);
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(12, 12, 12, 12); 
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	    
+	    JLabel lblNombre = new JLabel("Nombre del Punto:"); 
+	    lblNombre.setForeground(Color.WHITE);
+	    lblNombre.setFont(fuenteGrande);
 
-        // ETIQUETAS Y CAMPOS
-        JLabel lblNombre = new JLabel("Nombre del Punto:"); 
-        lblNombre.setForeground(Color.WHITE);
-        lblNombre.setFont(fuenteGrande);
+	    JTextField txtNombre = new JTextField(); 
+	    FabricaComponentes.addPlaceholder(txtNombre, "Nombre del Punto");
+	    txtNombre.setBackground(new Color(70,70,70)); 
+	    txtNombre.setForeground(Color.WHITE);
+	    txtNombre.setFont(fuenteMedia);
+	    txtNombre.setPreferredSize(new Dimension(300, 55));
 
-        JTextField txtNombre = new JTextField(); 
-        FabricaComponentes.addPlaceholder(txtNombre, "Nombre del Punto");
-        txtNombre.setBackground(new Color(70,70,70)); 
-        txtNombre.setForeground(Color.WHITE);
-        txtNombre.setFont(fuenteMedia);
-        txtNombre.setPreferredSize(new Dimension(300, 55)); // Altura optimizada para tablet
+	    JLabel lblX = new JLabel("DERECHAS (X):"); 
+	    lblX.setForeground(Color.WHITE);
+	    lblX.setFont(fuenteGrande);
 
-        JLabel lblX = new JLabel("DERECHAS:"); 
-        lblX.setForeground(Color.WHITE);
-        lblX.setFont(fuenteGrande);
+	    JLabel lblY = new JLabel("ARRIBAS (Y):"); 
+	    lblY.setForeground(Color.WHITE);
+	    lblY.setFont(fuenteGrande);
 
-        JLabel lblY = new JLabel("ARRIBAS:"); 
-        lblY.setForeground(Color.WHITE);
-        lblY.setFont(fuenteGrande);
+	    JLabel lblZ = new JLabel("COTA (Z):"); 
+	    lblZ.setForeground(Color.WHITE);
+	    lblZ.setFont(fuenteGrande);
 
-        JTextField txtX = new JTextField(String.valueOf(coord.getX()));
-        JTextField txtY = new JTextField(String.valueOf(coord.getY()));
-        
-        // Estilo común para campos de coordenadas
-        for (JTextField f : new JTextField[]{txtX, txtY}) {
-            f.setEditable(false);
-            f.setBackground(new Color(70, 70, 70));
-            f.setForeground(Color.WHITE);
-            f.setFont(fuenteMedia);
-            f.setPreferredSize(new Dimension(300, 50));
-        }
+	    JTextField txtX = new JTextField(String.format(java.util.Locale.US, "%.2f", coord.getX()));
+	    JTextField txtY = new JTextField(String.format(java.util.Locale.US, "%.2f", coord.getY()));
+	    JTextField txtCota = new JTextField(String.format(java.util.Locale.US, "%.2f", coord.getCota()));
+	    
+	    for (JTextField f : new JTextField[]{txtX, txtY, txtCota}) {
+	        f.setBackground(new Color(70, 70, 70));
+	        f.setForeground(Color.WHITE);
+	        f.setFont(fuenteMedia);
+	        f.setPreferredSize(new Dimension(300, 50));
+	    }
+	    
+	    txtX.setEditable(false);
+	    txtY.setEditable(false);
+	    txtCota.setEditable(true); 
+	    
+	    gbc.gridx=0; gbc.gridy=0; panel.add(lblNombre, gbc);
+	    gbc.gridx=1; panel.add(txtNombre, gbc);
+	    
+	    gbc.gridx=0; gbc.gridy=1; panel.add(lblX, gbc);
+	    gbc.gridx=1; panel.add(txtX, gbc);
+	    
+	    gbc.gridx=0; gbc.gridy=2; panel.add(lblY, gbc);
+	    gbc.gridx=1; panel.add(txtY, gbc);
 
-        // ORGANIZACIÓN EN EL PANEL
-        gbc.gridx=0; gbc.gridy=0; panel.add(lblNombre, gbc);
-        gbc.gridx=1; panel.add(txtNombre, gbc);
-        
-        gbc.gridx=0; gbc.gridy=1; panel.add(lblX, gbc);
-        gbc.gridx=1; panel.add(txtX, gbc);
-        
-        gbc.gridx=0; gbc.gridy=2; panel.add(lblY, gbc);
-        gbc.gridx=1; panel.add(txtY, gbc);
+	    // Nuevo campo Cota en la fila 3
+	    gbc.gridx=0; gbc.gridy=3; panel.add(lblZ, gbc);
+	    gbc.gridx=1; panel.add(txtCota, gbc);
 
-        // BOTONES GRANDES PARA INTERACCIÓN TÁCTIL
-        JButton btnAceptar = new JButton("Aceptar");
-        JButton btnCancelar = new JButton("Cancelar");
-        
-        for (JButton b : new JButton[]{btnAceptar, btnCancelar}) {
-            b.setFont(fuenteGrande);
-            b.setPreferredSize(new Dimension(0, 70)); 
-            b.setFocusPainted(false);
-        }
+	    JButton btnAceptar = new JButton("Aceptar");
+	    JButton btnCancelar = new JButton("Cancelar");
+	    
+	    for (JButton b : new JButton[]{btnAceptar, btnCancelar}) {
+	        b.setFont(fuenteGrande);
+	        b.setPreferredSize(new Dimension(0, 70)); 
+	        b.setFocusPainted(false);
+	    }
 
-        JPanel botones = new JPanel(new GridLayout(1, 2, 20, 0));
-        botones.setBackground(new Color(50, 50, 50));
-        botones.add(btnAceptar); 
-        botones.add(btnCancelar);
-        
-        gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=2; 
-        gbc.insets = new Insets(30, 12, 10, 12); 
-        panel.add(botones, gbc);
+	    JPanel botones = new JPanel(new GridLayout(1, 2, 20, 0));
+	    botones.setBackground(new Color(50, 50, 50));
+	    botones.add(btnAceptar); 
+	    botones.add(btnCancelar);
+	   
+	    gbc.gridx=0; gbc.gridy=4; gbc.gridwidth=2; 
+	    gbc.insets = new Insets(30, 12, 10, 12); 
+	    panel.add(botones, gbc);
 
-        // ACCIONES
-        btnAceptar.addActionListener(e -> {
-            String nombre = txtNombre.getText().trim();
-            if (nombre.isEmpty() || nombre.equals("Nombre del Punto")) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Ingrese un nombre para el punto.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            Punto nuevo = new Punto(coord, nombre);
-            
-            sit.getPanelMapa().agregarPoligonal(nuevo);
-            sit.getListaPoligonales().add(nuevo);
-            sit.getListaDePuntos().add(nuevo); 
-            
-            sit.getModeloListaPoligonales().addElement(nuevo);
-            
-            dialog.dispose();
-        });
+	    btnAceptar.addActionListener(e -> {
+	        String nombre = txtNombre.getText().trim();
+	        if (nombre.isEmpty() || nombre.equals("Nombre del Punto")) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "Ingrese un nombre para el punto.", "Error", JOptionPane.ERROR_MESSAGE);
+	            return;
+	        }
 
-        btnCancelar.addActionListener(e -> dialog.dispose());
-        dialog.setVisible(true);
+	        try {
+	            @SuppressWarnings("unused")
+				double cotaIngresada = Double.parseDouble(txtCota.getText().trim());
+	            
+	            Punto nuevo = new Punto(coord, nombre);
+	            
+	            sit.getPanelMapa().agregarPoligonal(nuevo);
+	            sit.getListaPoligonales().add(nuevo);
+	            sit.getListaDePuntos().add(nuevo); 
+	            sit.getModeloListaPoligonales().addElement(nuevo);
+	            
+	            sit.getPanelMapa().repaint();
+	            
+	            dialog.dispose();
+
+	        } catch (NumberFormatException ex) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "La Cota debe ser un número válido.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+	    dialog.setVisible(true);
 	}
 
 	@SuppressWarnings("serial")
@@ -485,7 +503,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         // COORDENADAS (solo lectura X, Y - editable COTA)
         JTextField txtX = new JTextField(String.valueOf(blanco.getCoordenadas().getX()));
         JTextField txtY = new JTextField(String.valueOf(blanco.getCoordenadas().getY()));
-        JTextField txtCota = new JTextField(String.valueOf(blanco.getCoordenadas().getCota()));
+        JTextField txtCota = new JTextField(String.valueOf(blanco.getCoordenadas().getCota())); 
         txtCota.setHorizontalAlignment(SwingConstants.CENTER);
         
         for (JTextField f : new JTextField[]{txtX, txtY, txtCota}) {
@@ -1299,6 +1317,8 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 double y1 = origen.getCoordenadas().getY();
                 double x2 = destino.getCoordenadas().getX();
                 double y2 = destino.getCoordenadas().getY();
+                
+                System.out.println(x1 + " " + y1);
 
                 double distancia = origen.getCoordenadas().distanciaA(destino.getCoordenadas());
                 double azimutMils = calculadora.calcularAzimutEnMils(x1, y1, x2, y2);
@@ -2326,17 +2346,16 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
 	            if (interseccion != null) {
 	                CoordenadasRectangulares c = new CoordenadasRectangulares(interseccion.x, interseccion.y, 0);
-	                Punto resultado = new Punto(c, "M-PLOT-1");
+	                String nombreDinamico = "M-PLOT-" + contadorPlotting++;
+	                Punto resultado = new Punto(c, nombreDinamico);
 
-	                sit.getPanelMapa().agregarPoligonal(resultado);
-	                sit.getListaDePuntos().add(resultado);
-	                sit.getModeloListaPoligonales().addElement(resultado);
+	                sit.agregarPunto(resultado);
 
 	                // 3. INFORME DETALLADO AMPLIADO
 	                StringBuilder informe = new StringBuilder();
-	                informe.append("========================================\n");
-	                informe.append("--- INFORME DETALLADO MESA PLOTTING ---\n");
-	                informe.append("========================================\n\n");
+	                informe.append("=================================\n");
+	                informe.append(" INFORME DETALLADO MESA PLOTTING \n");
+	                informe.append("=================================\n\n");
 	                
 	                informe.append("[DATOS DE ENTRADA]\n");
 	                for (int i = 0; i < 3; i++) {
@@ -2347,7 +2366,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	                }
 
 	                informe.append("\n[RESULTADO CÁLCULO]\n");
-	                informe.append(String.format("Punto Generado: M-PLOT-1\nCoordenadas: X=%.2f Y=%.2f\n", interseccion.x, interseccion.y));
+	                informe.append(String.format("Punto Generado: %s\nCoordenadas: X=%.2f Y=%.2f\n", nombreDinamico, interseccion.x, interseccion.y));
 
 	                Blanco ref = (Blanco) comboRef.getSelectedItem();
 	                informe.append("\n[DATOS DE REFERENCIA FINAL]\n");
@@ -2356,9 +2375,9 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	                    double dist = ref.getCoordenadas().distanciaA(c);
 	                    double az = calculadora.calcularAzimutEnMils(ref.getCoordenadas().getX(), ref.getCoordenadas().getY(), interseccion.x, interseccion.y);
 	                    
-	                    Linea lineaRef = new Linea(ref.getNombre() + " -> M-PLOT-1", 
-	                        new Coordinate(ref.getCoordenadas().getX(), ref.getCoordenadas().getY()), 
-	                        interseccion, dist, az);
+	                    Linea lineaRef = new Linea(ref.getNombre() + " -> " + nombreDinamico, 
+	                    	    new Coordinate(ref.getCoordenadas().getX(), ref.getCoordenadas().getY()), 
+	                    	    interseccion, dist, az);
 
 	                    sit.getPanelMapa().agregarPoligonal(lineaRef);
 	                    sit.getListaPoligonales().add(lineaRef);
@@ -2366,8 +2385,8 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
 	                    informe.append(String.format("Referencia Utilizada: %s (X: %.2f, Y: %.2f)\n", 
 	                                                 ref.getNombre(), ref.getCoordenadas().getX(), ref.getCoordenadas().getY()));
-	                    informe.append(String.format("Distancia a M-PLOT-1: %.2f metros\n", dist));
-	                    informe.append(String.format("Azimut a M-PLOT-1: %.2f milésimos\n", az));
+	                    informe.append(String.format("Distancia a %s: %.2f metros\n", nombreDinamico, dist));
+	                    informe.append(String.format("Azimut a %s: %.2f milésimos\n", nombreDinamico, az));
 	                } else {
 	                    informe.append("No se utilizó ninguna referencia final para este cálculo.\n");
 	                }
@@ -2661,284 +2680,357 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	
 	@Override
 	public void RegistroCoordModDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback) {
-		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
-        JDialog dialog = new JDialog(parentFrame, "REGISTRO DE COORDENADAS MODIFICADAS", true);
-        dialog.setSize(600, 600); 
-        dialog.setLocationRelativeTo(padre);
+	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+	    JDialog dialog = new JDialog(parentFrame, "MODIFICAR COORDENADAS EXISTENTES", true);
+	    dialog.setSize(600, 650);
+	    dialog.setLocationRelativeTo(padre);
 
-        // Panel Principal
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(30, 30, 30));
-        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
+	    // Panel Principal
+	    JPanel mainPanel = new JPanel(new BorderLayout());
+	    mainPanel.setBackground(new Color(30, 30, 30));
+	    mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
 
-        // SECCIÓN DE FORMULARIO
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setOpaque(false);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+	    // SECCIÓN DE FORMULARIO
+	    JPanel formPanel = new JPanel(new GridBagLayout());
+	    formPanel.setOpaque(false);
+	    formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(10, 10, 10, 10);
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        Font fLabel = new Font("Arial", Font.BOLD, 14);
-        Font fCombo = new Font("Arial", Font.PLAIN, 18);
-        Font fInput = new Font("Monospaced", Font.BOLD, 22);
+	    Font fLabel = new Font("Arial", Font.BOLD, 14);
+	    Font fCombo = new Font("Arial", Font.PLAIN, 18);
+	    Font fInput = new Font("Monospaced", Font.BOLD, 22);
 
-        // 1. Punto Original
-        gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(FabricaComponentes.crearEtiqueta("PUNTO/BLANCO A MODIFICAR", fLabel), gbc);
-        gbc.gridx = 1;
-        JComboBox<Posicionable> comboOriginal = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
-        formPanel.add(comboOriginal, gbc);
+	    // 1. Punto Original
+	    gbc.gridx = 0; gbc.gridy = 0;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("SELECCIONE EL PUNTO/BLANCO:", fLabel), gbc);
+	    gbc.gridx = 1;
+	    JComboBox<Posicionable> comboOriginal = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
+	    formPanel.add(comboOriginal, gbc);
 
-        // Separador
-        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
-        formPanel.add(new JSeparator(), gbc);
-        gbc.gridwidth = 1;
+	    // Separador
+	    gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
+	    formPanel.add(new JSeparator(), gbc);
+	    gbc.gridwidth = 1;
 
-        // 2. Modificaciones (Deltas)
-        gbc.gridx = 0; gbc.gridy = 2;
-        formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN DERECHAS (ΔX) [m]", fLabel), gbc);
-        JTextField txtDeltaX = FabricaComponentes.crearCampoTexto(fInput);
-        txtDeltaX.setText("0"); // Se inicializa en 0 para evitar errores si el usuario no quiere mover un eje
-        gbc.gridx = 1; formPanel.add(txtDeltaX, gbc);
+	    // 2. Modificaciones (Deltas)
+	    gbc.gridx = 0; gbc.gridy = 2;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN ESTE (ΔX) [m]", fLabel), gbc);
+	    JTextField txtDeltaX = FabricaComponentes.crearCampoTexto(fInput);
+	    txtDeltaX.setText("0"); 
+	    gbc.gridx = 1; formPanel.add(txtDeltaX, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3;
-        formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN ARRIBAS (ΔY) [m]", fLabel), gbc);
-        JTextField txtDeltaY = FabricaComponentes.crearCampoTexto(fInput);
-        txtDeltaY.setText("0");
-        gbc.gridx = 1; formPanel.add(txtDeltaY, gbc);
+	    gbc.gridx = 0; gbc.gridy = 3;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN NORTE (ΔY) [m]", fLabel), gbc);
+	    JTextField txtDeltaY = FabricaComponentes.crearCampoTexto(fInput);
+	    txtDeltaY.setText("0");
+	    gbc.gridx = 1; formPanel.add(txtDeltaY, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN COTA (ΔZ) [m]", fLabel), gbc);
-        JTextField txtDeltaZ = FabricaComponentes.crearCampoTexto(fInput);
-        txtDeltaZ.setText("0");
-        gbc.gridx = 1; formPanel.add(txtDeltaZ, gbc);
+	    gbc.gridx = 0; gbc.gridy = 4;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("CORRECCIÓN COTA (ΔZ) [m]", fLabel), gbc);
+	    JTextField txtDeltaZ = FabricaComponentes.crearCampoTexto(fInput);
+	    txtDeltaZ.setText("0");
+	    gbc.gridx = 1; formPanel.add(txtDeltaZ, gbc);
 
-        // 3. Resultado
-        gbc.gridx = 0; gbc.gridy = 5;
-        formPanel.add(FabricaComponentes.crearEtiqueta("ID NUEVO PUNTO", fLabel), gbc);
-        JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
-        txtNombre.setText("MOD-" + (sit.getListaDePuntos().size() + 1));
-        txtNombre.setForeground(new Color(255, 150, 50)); 
-        gbc.gridx = 1; formPanel.add(txtNombre, gbc);
+	    // 3. Identificador (Nombre)
+	    gbc.gridx = 0; gbc.gridy = 5;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("CONFIRMAR ID/NOMBRE:", fLabel), gbc);
+	    JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
+	    txtNombre.setForeground(new Color(255, 150, 50)); 
+	    gbc.gridx = 1; formPanel.add(txtNombre, gbc);
 
-        // PANEL DE BOTONES 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
-        buttonPanel.setOpaque(false);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
+	    comboOriginal.addActionListener(e -> {
+	        Posicionable p = (Posicionable) comboOriginal.getSelectedItem();
+	        if (p != null) {
+	            txtNombre.setText(p.getNombre());
+	        }
+	    });
+	    // Inicializar con el primero
+	    if(comboOriginal.getSelectedItem() != null) {
+	        txtNombre.setText(((Posicionable)comboOriginal.getSelectedItem()).getNombre());
+	    }
+	    
+	    // PANEL DE BOTONES 
+	    JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+	    buttonPanel.setOpaque(false);
+	    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
 
-        JButton btnCalcular = new JButton("APLICAR CORRECCIÓN");
-        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); 
-        
-        JButton btnCancelar = new JButton("CANCELAR");
-        FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
+	    JButton btnCalcular = new JButton("MOVER Y ACTUALIZAR");
+	    FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(0, 100, 0)); // Verde oscuro
+	    
+	    JButton btnCancelar = new JButton("CANCELAR");
+	    FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
 
-        buttonPanel.add(btnCalcular);
-        buttonPanel.add(btnCancelar);
+	    buttonPanel.add(btnCalcular);
+	    buttonPanel.add(btnCancelar);
 
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.add(mainPanel);
+	    mainPanel.add(formPanel, BorderLayout.CENTER);
+	    mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.add(mainPanel);
 
-        // ACCIONES
-        btnCalcular.addActionListener(e -> {
-            try {
-                Posicionable original = (Posicionable) comboOriginal.getSelectedItem();
-                if (original == null) throw new Exception("Seleccione un punto de origen para modificar.");
+	    // ACCIONES
+	    btnCalcular.addActionListener(e -> {
+	        try {
+	            Posicionable original = (Posicionable) comboOriginal.getSelectedItem();
+	            if (original == null) throw new Exception("Seleccione un elemento para modificar.");
 
-                // Tomamos las variaciones (pueden ser negativas, ej: -50 metros)
-                double dX = Double.parseDouble(txtDeltaX.getText().trim());
-                double dY = Double.parseDouble(txtDeltaY.getText().trim());
-                double dZ = Double.parseDouble(txtDeltaZ.getText().trim());
+	            // 1. Obtener correcciones
+	            double dX = Double.parseDouble(txtDeltaX.getText().trim());
+	            double dY = Double.parseDouble(txtDeltaY.getText().trim());
+	            double dZ = Double.parseDouble(txtDeltaZ.getText().trim());
 
-                // Cálculo de las nuevas coordenadas (Matemática directa)
-                double oldX = original.getCoordenadas().getX();
-                double oldY = original.getCoordenadas().getY();
-                double oldZ = original.getCoordenadas().getCota();
+	            double oldX = original.getCoordenadas().getX();
+	            double oldY = original.getCoordenadas().getY();
+	            double oldZ = original.getCoordenadas().getCota();
 
-                double newX = oldX + dX;
-                double newY = oldY + dY;
-                double newZ = oldZ + dZ;
+	            double newX = oldX + dX;
+	            double newY = oldY + dY;
+	            double newZ = oldZ + dZ;
 
-                CoordenadasRectangulares nuevasCoord = new CoordenadasRectangulares(newX, newY, newZ);
+	            CoordenadasRectangulares nuevasCoord = new CoordenadasRectangulares(newX, newY, newZ);
+	            
+	            String nuevoNombre = txtNombre.getText().trim();
+	            
+	            Punto puntoParaCallback = null;
 
-                String id = txtNombre.getText().trim();
-                Punto ptoNuevo = new Punto(nuevasCoord, id);
+	            if (original instanceof Punto) {
+	                Punto p = (Punto) original;
 
-                // Armado del reporte detallado para el PDF
-                StringBuilder sb = new StringBuilder();
-                sb.append("MÉTODO: REGISTRO DE COORDENADAS MODIFICADAS\n\n");
-                sb.append("PUNTO ORIGINAL DE REFERENCIA:\n");
-                sb.append(String.format(" - ID: %s\n", original.getNombre()));
-                sb.append(String.format(" - X: %.2f | Y: %.2f | COTA: %.2f\n\n", oldX, oldY, oldZ));
-                
-                sb.append("CORRECCIONES APLICADAS:\n");
-                sb.append(String.format(" - Δ DERECHAS (X): %s%.2f m\n", (dX >= 0 ? "+" : ""), dX));
-                sb.append(String.format(" - Δ ARRIBAS (Y): %s%.2f m\n", (dY >= 0 ? "+" : ""), dY));
-                sb.append(String.format(" - Δ COTA (Z): %s%.2f m\n\n", (dZ >= 0 ? "+" : ""), dZ));
+	                sit.getListaDePuntos().remove(p);
+	                sit.getListaPoligonales().remove(p);
+	                sit.getModeloListaPoligonales().removeElement(p);
+	                sit.getPanelMapa().eliminarPoligonal(p); 
 
-                sb.append("NUEVAS COORDENADAS REGISTRADAS:\n");
-                sb.append(String.format(" - NUEVO ID: %s\n", id));
-                sb.append(String.format(" - X: %.3f | Y: %.3f | COTA: %.3f", newX, newY, newZ));
+	                // B. ACTUALIZAR DATOS
+	                p.setCoord(nuevasCoord);
+	                p.setNombre(nuevoNombre);
 
-                // Disparamos el Callback
-                callback.onCalculationComplete(ptoNuevo, sb.toString());
-                
-                dialog.dispose();
-                
-            } catch (NumberFormatException ex) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Error: Las variaciones (Δ) deben ser valores numéricos (se admiten negativos).");
-            } catch (Exception ex) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
-            }
-        });
+	                sit.agregarPunto(p);
+	                
+	                puntoParaCallback = p;
 
-        btnCancelar.addActionListener(e -> dialog.dispose());
-        dialog.setVisible(true);
+	            } else if (original instanceof Blanco) {
+	                Blanco b = (Blanco) original;
+
+	                // A. ELIMINAR
+	                sit.getListaBlancos().remove(b);
+	                sit.getModeloListaBlancos().removeElement(b);
+	                sit.getPanelMapa().eliminarBlanco(b);
+
+	                // B. ACTUALIZAR
+	                b.setCoordenadas(nuevasCoord);
+	                b.setNombre(nuevoNombre);
+
+	                // C. RE-INSERTAR
+	                sit.agregarBlanco(b);
+	            }
+	            
+	            StringBuilder sb = new StringBuilder();
+	            sb.append("ACTUALIZACIÓN DE COORDENADAS\n\n");
+	            sb.append(String.format("ELEMENTO MODIFICADO: %s\n", nuevoNombre));
+	            sb.append("--------------------------------\n");
+	            sb.append(String.format("ANTIGUAS: X: %.2f | Y: %.2f\n", oldX, oldY));
+	            sb.append(String.format("CORRECCIÓN: ΔX: %.2f | ΔY: %.2f\n", dX, dY));
+	            sb.append(String.format("NUEVAS:   X: %.2f | Y: %.2f\n", newX, newY));
+	            sb.append("--------------------------------\n");
+	            sb.append("Estado: Re-graficado exitosamente.");
+
+	            if (puntoParaCallback != null) {
+	                callback.onCalculationComplete(puntoParaCallback, sb.toString());
+	            } else {
+	                 JOptionPane.showMessageDialog(dialog, sb.toString(), "Modificación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+	            }
+	            
+	            dialog.dispose();
+	            
+	        } catch (NumberFormatException ex) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "Los valores de corrección deben ser números.");
+	        } catch (Exception ex) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "Error al modificar: " + ex.getMessage());
+	        }
+	        
+	        sit.getPanelMapa().refrescar();
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+	    dialog.setVisible(true);
 	}
 	
 	@Override
 	public void NivelTrigonometricoDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback) {
-		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
-        JDialog dialog = new JDialog(parentFrame, "MÓDULO DE NIVELACIÓN TRIGONOMÉTRICA", true);
-        dialog.setSize(600, 650); 
-        dialog.setLocationRelativeTo(padre);
+	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+	    JDialog dialog = new JDialog(parentFrame, "MÓDULO DE NIVELACIÓN TRIGONOMÉTRICA", true);
+	    dialog.setSize(600, 600); 
+	    dialog.setLocationRelativeTo(padre);
 
-        // Panel Principal
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(30, 30, 30));
-        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
+	    // Panel Principal
+	    JPanel mainPanel = new JPanel(new BorderLayout());
+	    mainPanel.setBackground(new Color(30, 30, 30));
+	    mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
 
-        // SECCIÓN DE FORMULARIO
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setOpaque(false);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+	    // SECCIÓN DE FORMULARIO
+	    JPanel formPanel = new JPanel(new GridBagLayout());
+	    formPanel.setOpaque(false);
+	    formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(10, 10, 10, 10);
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        Font fLabel = new Font("Arial", Font.BOLD, 14);
-        Font fCombo = new Font("Arial", Font.PLAIN, 18);
-        Font fInput = new Font("Monospaced", Font.BOLD, 22);
+	    Font fLabel = new Font("Arial", Font.BOLD, 14);
+	    Font fCombo = new Font("Arial", Font.PLAIN, 18);
+	    Font fInput = new Font("Monospaced", Font.BOLD, 22);
 
-        // 1. Estación de Origen y Objetivo
-        gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(FabricaComponentes.crearEtiqueta("ESTACIÓN ORIGEN (Cota Conocida)", fLabel), gbc);
-        gbc.gridx = 1;
-        JComboBox<Posicionable> comboOrigen = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
-        formPanel.add(comboOrigen, gbc);
+	    // 1. Estación de Origen y Objetivo
+	    gbc.gridx = 0; gbc.gridy = 0;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("ESTACIÓN ORIGEN (Cota Conocida)", fLabel), gbc);
+	    gbc.gridx = 1;
+	    JComboBox<Posicionable> comboOrigen = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
+	    formPanel.add(comboOrigen, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(FabricaComponentes.crearEtiqueta("OBJETIVO (A Nivelar)", fLabel), gbc);
-        gbc.gridx = 1;
-        JComboBox<Posicionable> comboObjetivo = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
-        formPanel.add(comboObjetivo, gbc);
+	    gbc.gridx = 0; gbc.gridy = 1;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("OBJETIVO A ACTUALIZAR", fLabel), gbc);
+	    gbc.gridx = 1;
+	    JComboBox<Posicionable> comboObjetivo = FabricaComponentes.crearComboPuntosYBlancos(fCombo, sit.getListaDePuntos(), sit.getListaBlancos());
+	    formPanel.add(comboObjetivo, gbc);
 
-        // Separador
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        formPanel.add(new JSeparator(), gbc);
-        gbc.gridwidth = 1;
+	    // Separador
+	    gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+	    formPanel.add(new JSeparator(), gbc);
+	    gbc.gridwidth = 1;
 
-        // 2. Datos de Nivelación
-        gbc.gridx = 0; gbc.gridy = 3;
-        formPanel.add(FabricaComponentes.crearEtiqueta("ALTURA INSTRUMENTO (m)", fLabel), gbc);
-        JTextField txtAltInst = FabricaComponentes.crearCampoTexto(fInput);
-        txtAltInst.setText("1.50"); // Altura promedio de un trípode táctico
-        gbc.gridx = 1; formPanel.add(txtAltInst, gbc);
+	    // 2. Datos de Nivelación
+	    gbc.gridx = 0; gbc.gridy = 3;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("ALTURA INSTRUMENTO (m)", fLabel), gbc);
+	    JTextField txtAltInst = FabricaComponentes.crearCampoTexto(fInput);
+	    txtAltInst.setText("1.50"); 
+	    gbc.gridx = 1; formPanel.add(txtAltInst, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(FabricaComponentes.crearEtiqueta("ÁNGULO VERTICAL (mils) [+ Elev / - Depr]", fLabel), gbc);
-        JTextField txtAngVert = FabricaComponentes.crearCampoTexto(fInput);
-        txtAngVert.setText("0");
-        gbc.gridx = 1; formPanel.add(txtAngVert, gbc);
+	    gbc.gridx = 0; gbc.gridy = 4;
+	    formPanel.add(FabricaComponentes.crearEtiqueta("ÁNGULO VERTICAL (mils) [+ Elev / - Depr]", fLabel), gbc);
+	    JTextField txtAngVert = FabricaComponentes.crearCampoTexto(fInput);
+	    txtAngVert.setText("0");
+	    gbc.gridx = 1; formPanel.add(txtAngVert, gbc);
 
-        // 3. Resultado
-        gbc.gridx = 0; gbc.gridy = 5;
-        formPanel.add(FabricaComponentes.crearEtiqueta("ID NUEVO PUNTO NIVELADO", fLabel), gbc);
-        JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
-        txtNombre.setText("NIVEL-" + (sit.getListaDePuntos().size() + 1));
-        txtNombre.setForeground(new Color(150, 255, 255)); // Cian táctico
-        gbc.gridx = 1; formPanel.add(txtNombre, gbc);
+	    // --- PANEL DE BOTONES ---
+	    JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+	    buttonPanel.setOpaque(false);
+	    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
 
-        // --- PANEL DE BOTONES ---
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
-        buttonPanel.setOpaque(false);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
+	    JButton btnCalcular = new JButton("ACTUALIZAR COTA");
+	    FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); 
+	    
+	    JButton btnCancelar = new JButton("CANCELAR");
+	    FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
 
-        JButton btnCalcular = new JButton("CALCULAR COTA (Z)");
-        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); 
-        
-        JButton btnCancelar = new JButton("CANCELAR");
-        FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
+	    buttonPanel.add(btnCalcular);
+	    buttonPanel.add(btnCancelar);
 
-        buttonPanel.add(btnCalcular);
-        buttonPanel.add(btnCancelar);
+	    mainPanel.add(formPanel, BorderLayout.CENTER);
+	    mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.add(mainPanel);
 
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.add(mainPanel);
+	    // ACCIONES
+	    btnCalcular.addActionListener(e -> {
+	        try {
+	            Posicionable origen = (Posicionable) comboOrigen.getSelectedItem();
+	            Posicionable objetivo = (Posicionable) comboObjetivo.getSelectedItem();
+	            
+	            if (origen == null || objetivo == null) throw new Exception("Seleccione Estación y Objetivo.");
+	            if (origen.equals(objetivo)) throw new Exception("El origen y el objetivo deben ser distintos.");
 
-        // ACCIONES
-        btnCalcular.addActionListener(e -> {
-            try {
-                Posicionable origen = (Posicionable) comboOrigen.getSelectedItem();
-                Posicionable objetivo = (Posicionable) comboObjetivo.getSelectedItem();
-                
-                if (origen == null || objetivo == null) throw new Exception("Seleccione Estación y Objetivo.");
-                if (origen.equals(objetivo)) throw new Exception("El origen y el objetivo deben ser distintos.");
+	            // Parsing
+	            double altInst = Double.parseDouble(txtAltInst.getText().trim());
+	            double angVertMils = Double.parseDouble(txtAngVert.getText().trim());
+	            
+	            // Datos Geográficos
+	            double distHorizontal = origen.getCoordenadas().distanciaA(objetivo.getCoordenadas());
+	            double cotaOrigen = origen.getCoordenadas().getCota();
+	            double cotaAntiguaObjetivo = objetivo.getCoordenadas().getCota();
+	            
+	            // Matemática (Trigonometría)
+	            // Tan(angulo) = Cateto Opuesto (Desnivel) / Cateto Adyacente (Distancia)
+	            // Desnivel = Distancia * Tan(angulo)
+	            double angRad = Math.toRadians(angVertMils * 360.0 / 6400.0);
+	            double deltaZ = distHorizontal * Math.tan(angRad);
+	            
+	            // Fórmula: Z_final = Z_origen + Alt_Instrumento + Desnivel_Calculado
+	            double cotaFinal = cotaOrigen + altInst + deltaZ;
+	            
+	            // Crear la nueva coordenada (Mismos X e Y, nueva Z)
+	            CoordenadasRectangulares coordActualizada = new CoordenadasRectangulares(
+	                objetivo.getCoordenadas().getX(), 
+	                objetivo.getCoordenadas().getY(), 
+	                cotaFinal
+	            );
+	            Punto puntoParaCallback = null;
 
-                double altInst = Double.parseDouble(txtAltInst.getText().trim());
-                double angVertMils = Double.parseDouble(txtAngVert.getText().trim());
-                
-                double distHorizontal = origen.getCoordenadas().distanciaA(objetivo.getCoordenadas());
-                double cotaOrigen = origen.getCoordenadas().getCota();
-                
-                // Conversión de milésimos a radianes
-                double angRad = Math.toRadians(angVertMils * 360.0 / 6400.0);
-                
-                // Cálculo del desnivel (Delta Z)
-                double deltaZ = distHorizontal * Math.tan(angRad);
-                
-                // Cota Final = Cota Base + Altura Trípode + Desnivel
-                double cotaFinal = cotaOrigen + altInst + deltaZ;
-                
-                CoordenadasRectangulares nuevasCoord = new CoordenadasRectangulares(
-                    objetivo.getCoordenadas().getX(), 
-                    objetivo.getCoordenadas().getY(), 
-                    cotaFinal
-                );
+	            if (objetivo instanceof Punto) {
+	                Punto p = (Punto) objetivo;
+	                // 1. Eliminar rastro antiguo
+	                sit.getListaDePuntos().remove(p);
+	                sit.getListaPoligonales().remove(p);
+	                sit.getModeloListaPoligonales().removeElement(p);
+	                sit.getPanelMapa().eliminarPoligonal(p);
 
-                String id = txtNombre.getText().trim();
-                Punto ptoNuevo = new Punto(nuevasCoord, id);
+	                // 2. Modificar
+	                p.setCoord(coordActualizada);
 
-                // Informe
-                StringBuilder sb = new StringBuilder();
-                sb.append("MÉTODO: NIVELACIÓN TRIGONOMÉTRICA\n\n");
-                sb.append(String.format("ORIGEN: %s (Cota Base: %.2f m | Alt. Inst: %.2f m)\n", origen.getNombre(), cotaOrigen, altInst));
-                sb.append(String.format("OBJETIVO: %s\n", objetivo.getNombre()));
-                sb.append(String.format("DISTANCIA HORIZONTAL: %.2f m\n", distHorizontal));
-                sb.append(String.format("ÁNGULO VERTICAL: %.0f mils\n", angVertMils));
-                sb.append(String.format("DESNIVEL CALCULADO (ΔZ): %s%.2f m\n\n", (deltaZ >= 0 ? "+" : ""), deltaZ));
-                sb.append("RESULTADO DE NIVELACIÓN:\n");
-                sb.append(String.format(" - NUEVO PUNTO: %s\n", id));
-                sb.append(String.format(" - COTA FINAL (Z): %.2f m", cotaFinal));
+	                // 3. Reinsertar (El mapa lo dibujará de nuevo)
+	                sit.agregarPunto(p);
+	                puntoParaCallback = p;
 
-                callback.onCalculationComplete(ptoNuevo, sb.toString());
-                dialog.dispose();
-                
-            } catch (NumberFormatException ex) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Error: La altura y el ángulo deben ser numéricos.");
-            } catch (Exception ex) {
-                sonidos.clickError();
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
-            }
-        });
+	            } else if (objetivo instanceof Blanco) {
+	                Blanco b = (Blanco) objetivo;
+	                // 1. Eliminar rastro antiguo
+	                sit.getListaBlancos().remove(b);
+	                sit.getModeloListaBlancos().removeElement(b);
+	                sit.getPanelMapa().eliminarBlanco(b);
 
-        btnCancelar.addActionListener(e -> dialog.dispose());
-        dialog.setVisible(true);
+	                // 2. Modificar
+	                b.setCoordenadas(coordActualizada);
+
+	                // 3. Reinsertar
+	                sit.agregarBlanco(b);
+	            }
+
+	            // Informe
+	            StringBuilder sb = new StringBuilder();
+	            sb.append("MÉTODO: NIVELACIÓN TRIGONOMÉTRICA (ACTUALIZACIÓN)\n\n");
+	            sb.append(String.format("ORIGEN: %s (Z: %.2f m | Inst: %.2f m)\n", origen.getNombre(), cotaOrigen, altInst));
+	            sb.append(String.format("OBJETIVO: %s\n", objetivo.getNombre()));
+	            sb.append("--------------------------------------\n");
+	            sb.append(String.format("DISTANCIA HORIZONTAL: %.2f m\n", distHorizontal));
+	            sb.append(String.format("ÁNGULO VERTICAL: %.0f mils\n", angVertMils));
+	            sb.append(String.format("DESNIVEL (ΔZ): %s%.2f m\n", (deltaZ >= 0 ? "+" : ""), deltaZ));
+	            sb.append("--------------------------------------\n");
+	            sb.append(String.format("COTA ANTERIOR: %.2f m\n", cotaAntiguaObjetivo));
+	            sb.append(String.format("NUEVA COTA (Z): %.2f m", cotaFinal));
+
+	            // Notificar
+	            if (puntoParaCallback != null) {
+	                callback.onCalculationComplete(puntoParaCallback, sb.toString());
+	            } else {
+	                 JOptionPane.showMessageDialog(dialog, sb.toString(), "Nivelación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+	            }
+	            
+	            dialog.dispose();
+	            
+	        } catch (NumberFormatException ex) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "Error numérico: Verifique altura y ángulo.");
+	        } catch (Exception ex) {
+	            sonidos.clickError();
+	            JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
+	        }
+	        
+	        sit.getPanelMapa().refrescar();
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+	    dialog.setVisible(true);
 	}
 	
 	@Override
