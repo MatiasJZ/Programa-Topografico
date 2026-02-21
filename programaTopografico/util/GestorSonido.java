@@ -5,6 +5,32 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * La clase GestorSonido gestiona la carga y reproducción de efectos de sonido en la aplicación.
+ * Utiliza un mapa para almacenar clips de sonido identificados por una clave.
+ * 
+ * <p>Actualmente, soporta los siguientes sonidos:
+ * <ul>
+ *   <li>"clickError": Sonido para indicar un error al hacer clic.</li>
+ *   <li>"ingresoError": Sonido para indicar un error de ingreso.</li>
+ * </ul>
+ * 
+ * <p>Los archivos de sonido deben estar disponibles en el classpath.
+ * 
+ * <p>Métodos públicos:
+ * <ul>
+ *   <li>{@link #clickError()}: Reproduce el sonido de error al hacer clic.</li>
+ *   <li>{@link #ingresoError()}: Reproduce el sonido de error de ingreso.</li>
+ * </ul>
+ * 
+ * <p>Ejemplo de uso:
+ * <pre>
+ *     GestorSonido gestor = new GestorSonido();
+ *     gestor.clickError();
+ * </pre>
+ * 
+ * @author [Matias Leonel Juarez]
+ */
 public class GestorSonido {
 
     private final Map<String, Clip> sonidos = new HashMap<>();

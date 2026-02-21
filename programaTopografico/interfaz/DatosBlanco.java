@@ -1,10 +1,32 @@
 package interfaz;
+import dominio.Blanco;
+import java.awt.*;
 import javax.swing.*;
 
-import dominio.Blanco;
-
-import java.awt.*;
-
+/**
+ * {@code DatosBlanco} es un panel Swing personalizado que muestra los datos detallados de un objeto {@link Blanco}.
+ * Presenta información como designación, naturaleza, fecha, orientación, coordenadas, estado y datos adicionales,
+ * todo organizado en un diseño de cuadrícula con estilos visuales personalizados.
+ * 
+ * <p>Los campos de texto son de solo lectura y se actualizan mediante el método {@link #setDatosBlanco(Blanco)}.
+ * El panel está diseñado para integrarse en interfaces gráficas de usuario que requieren la visualización
+ * estructurada de información topográfica o de blancos.</p>
+ * 
+ * <ul>
+ *   <li><b>txtNombre</b>: Designación del blanco.</li>
+ *   <li><b>txtNaturaleza</b>: Naturaleza o tipo del blanco.</li>
+ *   <li><b>txtFecha</b>: Fecha de actualización de los datos.</li>
+ *   <li><b>txtOrientacion</b>: Orientación del blanco en mils.</li>
+ *   <li><b>txtX</b>: Coordenada X (Derechas).</li>
+ *   <li><b>txtY</b>: Coordenada Y (Arribas).</li>
+ *   <li><b>txtSituacion</b>: Estado o situación del blanco.</li>
+ *   <li><b>txtInfoAdicional</b>: Información adicional relevante.</li>
+ * </ul>
+ * 
+ * @author  [Matias Leonel Juarez]
+ * @version 1.0
+ * @see     Blanco
+ */
 public class DatosBlanco extends JPanel {
 
     private static final long serialVersionUID = 1L;

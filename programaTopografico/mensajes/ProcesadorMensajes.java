@@ -11,6 +11,38 @@ import dominio.Punto;
 import dominio.SituacionMovimiento;
 import dominio.CoordenadasRectangulares;
 
+/**
+ * ProcesadorMensajes es responsable de interpretar y procesar mensajes recibidos
+ * en el contexto de una aplicación topográfica táctica. Gestiona la actualización
+ * y creación de objetos como puntos y blancos, así como la notificación de avisos
+ * y estados operativos a la consola y al usuario mediante popups.
+ * <p>
+ * Funcionalidades principales:
+ * <ul>
+ *   <li>Procesar mensajes de tipo "BLANCO", "PUNTO", "AVISO" y "ESTADO".</li>
+ *   <li>Actualizar o agregar nuevos puntos y blancos a las listas correspondientes.</li>
+ *   <li>Notificar a la interfaz gráfica sobre cambios relevantes mediante DispatcherNotificacionesTacticas.</li>
+ *   <li>Registrar mensajes informativos, advertencias y errores en la consola asociada.</li>
+ * </ul>
+ * 
+ * Dependencias:
+ * <ul>
+ *   <li>ConsolaMensajes: para mostrar mensajes en la interfaz de usuario.</li>
+ *   <li>SituacionTacticaTopografica: panel táctico donde se visualizan puntos y blancos.</li>
+ *   <li>ProtocoloMensajes: utilitario para extraer campos y tipos de los mensajes recibidos.</li>
+ *   <li>DispatcherNotificacionesTacticas: para mostrar notificaciones emergentes.</li>
+ * </ul>
+ * 
+ * Uso típico:
+ * <pre>
+ *     ProcesadorMensajes procesador = new ProcesadorMensajes(panel, listaBlancos, listaPuntos);
+ *     procesador.setConsola(consolaMensajes);
+ *     procesador.procesar(mensajeRecibido);
+ * </pre>
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class ProcesadorMensajes {
 
     private ConsolaMensajes consola;

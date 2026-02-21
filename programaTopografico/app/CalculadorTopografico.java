@@ -12,6 +12,35 @@ import dominio.CoordenadasRectangulares;
 import dominio.Linea;
 import dominio.Poligonal;
 
+/**
+ * CalculadorTopografico
+ * 
+ * Clase utilitaria que implementa algoritmos topográficos para el cálculo de coordenadas
+ * mediante diversos métodos de levantamiento y posicionamiento.
+ * 
+ * Métodos principales:
+ * 
+ * - triangulacion(): Calcula coordenadas por triangulación (base y dos ángulos)
+ * - trilateracion(): Calcula coordenadas por trilateración (dos distancias conocidas)
+ * - calcularInterseccionMesa(): Calcula intersección de tres líneas de visada
+ * - calcularAzimutEnMils(): Convierte ángulos a azimut en milésimos
+ * - interseccionDirecta(): Determina coordenadas de un objetivo mediante dos observaciones
+ * - radiacion(): Calcula posición por radiación (punto, azimut y distancia)
+ * - interseccionInversa2P(): Posicionamiento propio con dos puntos de referencia
+ * - interseccionInversa3P(): Posicionamiento propio mediante Algoritmo de Tienstra (3 puntos)
+ * - obtenerInformeError(): Genera reportes de precisión y error de cierre en poligonales
+ * - calcularPerimetroRecursivo(): Navega grafo de poligonales mediante DFS para acumular distancias
+ * 
+ * Características:
+ * - Todos los ángulos se manejan en milésimos (0-6400)
+ * - Soporta objetos que implementen Posicionable para obtener coordenadas
+ * - Incluye validaciones de geometría crítica y condiciones de paralelismo
+ * - Manejo de excepciones para casos indeterminados
+ * - Métodos auxiliares privados para conversiones (radianes, azimut, ángulos reducidos)
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class CalculadorTopografico {
 
     /**

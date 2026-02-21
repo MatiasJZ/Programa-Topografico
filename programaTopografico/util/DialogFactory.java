@@ -7,6 +7,23 @@ import dominio.CoordenadasRectangulares;
 import dominio.Posicionable;
 import dominio.Punto;
 
+/**
+ * DialogFactory define una interfaz para la creación de diversos diálogos utilizados en la aplicación topográfica.
+ * Proporciona métodos para mostrar diálogos relacionados con la gestión de entidades (puntos, blancos, posiciones)
+ * y para la ejecución de cálculos topográficos específicos.
+ *
+ * <p>Los métodos de esta interfaz permiten:</p>
+ * <ul>
+ *   <li>Agregar, editar e informar sobre entidades como Blancos y Puntos.</li>
+ *   <li>Configurar parámetros generales de la aplicación.</li>
+ *   <li>Medir posiciones a partir de un origen dado.</li>
+ *   <li>Ejecutar cálculos topográficos como radiación, triangulación, intersecciones, trilateración, nivel trigonométrico, cierre poligonal, entre otros.</li>
+ *   <li>Registrar y actualizar coordenadas y datos magnéticos.</li>
+ * </ul>
+ *
+ * <p>Cada método recibe los parámetros necesarios para inicializar el diálogo correspondiente y, en su caso,
+ * un callback para manejar el resultado de la interacción del usuario.</p>
+ */
 public interface DialogFactory {
     // Diálogos de Entidades
     void AgregarBlancoDialog(CoordenadasRectangulares coord, BlancoCallback callback);

@@ -1,16 +1,49 @@
 package app;
 
-import java.awt.*;
-import java.util.LinkedList;
-import javax.swing.*;
-
 import comunicaciones.GestorEnlaceOperativo;
 import comunicaciones.ProtocoloCallback;
 import dominio.Blanco;
 import interfaz.Mensajeria;
+import java.awt.*;
+import java.util.LinkedList;
+import javax.swing.*;
 import mensajes.ProcesadorMensajes;
 import util.GestorSonido;
 
+/**
+ * ProgramaTopografico is the main GUI panel for a tactical topographic artillery system.
+ * 
+ * This class extends JPanel and serves as the primary user interface for the "Sistema de Artillería 
+ * de Reconocimiento y Gestión Operacional - GRUPO TOPOGRAFICO" application. It manages a multi-panel 
+ * interface using CardLayout to switch between different operational modules.
+ * 
+ * <h2>Key Features:</h2>
+ * <ul>
+ *   <li>Operator authentication via ID verification</li>
+ *   <li>Multi-panel navigation using CardLayout (Tactical Situation and Messaging)</li>
+ *   <li>IP communication management for message exchange</li>
+ *   <li>Message processing and console logging</li>
+ *   <li>Sound feedback for system events</li>
+ * </ul>
+ * 
+ * <h2>Main Components:</h2>
+ * <ul>
+ *   <li>{@link SituacionTacticaTopografica} - Displays tactical situation and target management</li>
+ *   <li>{@link Mensajeria} - Handles messaging and communication console</li>
+ *   <li>{@link GestorEnlaceOperativo} - Manages IP-based operational communication</li>
+ *   <li>{@link ProcesadorMensajes} - Processes incoming tactical messages</li>
+ *   <li>{@link GestorSonido} - Provides audio feedback</li>
+ * </ul>
+ * 
+ * <h2>Usage:</h2>
+ * The application is launched via the main method, which creates a maximized JFrame containing 
+ * this panel. Upon initialization, users must authenticate with a valid operator ID to access 
+ * the system. The interface provides a top navigation menu to switch between tactical situation 
+ * and messaging panels.
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class ProgramaTopografico extends JPanel {
 
     private static final long serialVersionUID = 1L;

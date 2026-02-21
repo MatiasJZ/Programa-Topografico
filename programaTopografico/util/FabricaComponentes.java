@@ -23,6 +23,27 @@ import dominio.Blanco;
 import dominio.Posicionable;
 import dominio.Punto;
 
+/**
+ * Clase de utilidad para la creación y configuración de componentes Swing personalizados
+ * con estilos y comportamientos específicos para la interfaz gráfica de usuario.
+ * <p>
+ * Esta clase no puede ser instanciada.
+ * </p>
+ * 
+ * Métodos principales:
+ * <ul>
+ *   <li><b>crearEtiqueta</b>: Crea un JLabel con fuente y color personalizados.</li>
+ *   <li><b>crearCampoTexto</b>: Crea un JTextField estilizado para entrada de texto.</li>
+ *   <li><b>crearComboPuntosYBlancos</b>: Crea un JComboBox que contiene elementos de tipo Punto y Blanco.</li>
+ *   <li><b>configurarBotonMilitar</b>: Aplica un estilo militar a un JButton, incluyendo color de acento y efecto hover.</li>
+ *   <li><b>crearLinea2</b>: Crea un JPanel con dos etiquetas alineadas, útil para mostrar pares etiqueta-valor.</li>
+ *   <li><b>configurarBotonEstilo</b>: Aplica un estilo general a un JButton con color de fondo personalizado.</li>
+ *   <li><b>addPlaceholder</b>: Añade funcionalidad de placeholder a JTextField o JTextArea.</li>
+ * </ul>
+ * 
+ * <b>Nota:</b> Todos los métodos son estáticos y están diseñados para facilitar la reutilización de componentes
+ * con estilos consistentes en la aplicación.
+ */
 public class FabricaComponentes {
 
 	private FabricaComponentes() {

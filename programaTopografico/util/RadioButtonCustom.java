@@ -2,6 +2,23 @@ package util;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A custom icon implementation for radio buttons that draws a circular outline,
+ * and fills the center when the button is selected.
+ * <p>
+ * The icon size is configurable via the constructor.
+ * </p>
+ *
+ * <p>
+ * Usage example:
+ * <pre>
+ * JRadioButton radioButton = new JRadioButton("Option");
+ * radioButton.setIcon(new RadioButtonCustom(16));
+ * </pre>
+ * </p>
+ *
+ * @author [Matias Leonel Juarez]
+ */
 class RadioButtonCustom implements Icon {
     private int size;
 
