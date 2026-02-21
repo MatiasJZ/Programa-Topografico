@@ -9,6 +9,5 @@ import dominio.Punto;
  * receiving both the resulting {@link Punto} and an associated report.
  */
 public interface CalculoCallback {
-    
     void onCalculationComplete(Punto resultado, String informe);
 }

@@ -18,6 +18,7 @@ import org.locationtech.jts.geom.GeometryFactory;
  * </ul>
  *
  * @author [Matias Leonel Juarez]
+ * @version 1.0
  */
 public class Punto implements Poligonal,Posicionable{
 	
