@@ -2,6 +2,31 @@ package milsymb;
 import armyc2.c5isr.renderer.utilities.MSLookup;
 import armyc2.c5isr.renderer.utilities.MSInfo;
 
+/**
+ * The {@code ExploradorSIDC_Modificadores} class explores combinations of Headquarters (HQ) codes,
+ * echelon levels, and mobility types to generate and analyze Symbol Identification Codes (SIDC)
+ * for military symbology. It prints out valid combinations along with their corresponding names
+ * and geometries as retrieved from the {@code MSLookup} system.
+ * <p>
+ * The class defines static tables for HQ codes, echelon levels, and mobility types, and iterates
+ * through all possible combinations to construct SIDC strings. For each valid SIDC, it queries
+ * the {@code MSLookup} singleton for symbol information and prints the result if a known symbol
+ * is found.
+ * <p>
+ * Usage is intended for exploration and validation of SIDC combinations in the context of
+ * military symbology standards.
+ *
+ * <ul>
+ *   <li>HQ_CODES: Array of headquarters/task force codes.</li>
+ *   <li>ECHELONS: 2D array mapping echelon codes to their descriptions.</li>
+ *   <li>MOBILITY: 2D array mapping mobility codes to their descriptions.</li>
+ * </ul>
+ *
+ * <b>Note:</b> This class requires the {@code MSLookup} and {@code MSInfo} classes to function.
+ *
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class ExploradorSIDC_Modificadores {
 
     // tablas:

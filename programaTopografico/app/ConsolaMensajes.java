@@ -11,7 +11,51 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
+/**
+ * ConsolaMensajes is a custom JPanel component that displays messages in a console-like interface.
+ * 
+ * It provides a styled message console with a header and a scrollable text area. The console
+ * displays messages with different prefixes to indicate their type (STATE, TX, RX).
+ * 
+ * The component features:
+ * - A dark-themed header with title label
+ * - A non-editable text area with green text on dark background
+ * - Automatic scrolling to the latest message
+ * - Methods to add messages with different prefixes (ESTADO, TX, RX)
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class ConsolaMensajes extends JPanel {
+
+    /**
+     * Adds a message to the console text area and scrolls to the bottom.
+     * 
+     * @param mensaje the message text to be displayed
+     */
+    public void agregarMensaje(String mensaje) { }
+
+    /**
+     * Displays a status message with [ESTADO] prefix.
+     * 
+     * @param estado the status message to be displayed
+     */
+    public void mostrarEstado(String estado) { }
+
+    /**
+     * Displays a transmission message with [TX] prefix.
+     * 
+     * @param msg the transmission message to be displayed
+     */
+    public void mostrarTx(String msg) { }
+
+    /**
+     * Displays a reception message with [RX] prefix.
+     * 
+     * @param msg the reception message to be displayed
+     */
+    public void mostrarRx(String msg) { }
+}
 
     private static final long serialVersionUID = 1L;
     private JPanel header;

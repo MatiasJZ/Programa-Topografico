@@ -8,6 +8,37 @@ import armyc2.c5isr.renderer.utilities.MSLookup;
 import armyc2.c5isr.renderer.utilities.MSInfo;
 import armyc2.c5isr.renderer.utilities.SymbolID;
 
+/**
+ * La clase {@code ExploradorDeSIDC} explora y reconstruye la lista completa de identificadores de símbolos (SIDC)
+ * de la versión MIL-STD-2525D utilizando la biblioteca milsymb. Extrae los conjuntos de símbolos y códigos de entidad,
+ * consulta sus nombres y geometrías asociadas, y genera un archivo de texto en el escritorio del usuario con la información
+ * recopilada.
+ *
+ * <p>
+ * El archivo de salida contiene una lista de todos los símbolos encontrados, mostrando el conjunto de símbolos, el código
+ * de entidad, el nombre y la geometría de cada símbolo. El proceso muestra el progreso en consola cada 500 símbolos procesados.
+ * </p>
+ *
+ * <p>
+ * Uso principal: Ejecución directa desde la línea de comandos o desde un entorno de desarrollo para generar un inventario
+ * de símbolos militares según la especificación 2525D.
+ * </p>
+ *
+ * <p>
+ * Dependencias:
+ * <ul>
+ *   <li>{@code SymbolID} para la versión de la norma.</li>
+ *   <li>{@code MSLookup} para la obtención de la lista de IDs y la información de los símbolos.</li>
+ *   <li>{@code MSInfo} para acceder a los detalles de cada símbolo.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * El archivo generado se guarda como {@code SIDC_2525D_Reconstruido.txt} en el escritorio del usuario.
+ * </p>
+ *
+ * @author [Matias Leonel Juarez]
+ */
 public class ExploradorDeSIDC {
 
     public static void main(String[] args) {

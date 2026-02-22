@@ -2,6 +2,23 @@ package dominio;
 
 import java.time.LocalDateTime;
 
+/**
+ * Representa un reporte generado al finalizar una misión topográfica.
+ * 
+ * <p>Incluye información sobre el efecto observado, dispersión, daños,
+ * movimiento y observaciones adicionales, junto con la fecha y hora de creación del reporte.</p>
+ * 
+ * <ul>
+ *   <li><b>fechaHora</b>: Fecha y hora en que se crea el reporte.</li>
+ *   <li><b>efectoObservado</b>: Descripción del efecto observado al finalizar la misión.</li>
+ *   <li><b>dispersion</b>: Información sobre la dispersión observada.</li>
+ *   <li><b>danos</b>: Detalles sobre los daños detectados.</li>
+ *   <li><b>movimiento</b>: Observaciones sobre el movimiento registrado.</li>
+ *   <li><b>observaciones</b>: Comentarios adicionales relevantes al reporte.</li>
+ * </ul>
+ * 
+ * @author [Matias Leonel Juarez]
+ */
 public class ReporteFinMision {
 
     private LocalDateTime fechaHora;

@@ -33,6 +33,67 @@ import util.DialogFactory;
 import util.FabricaComponentes;
 import util.GestorSonido;
 	
+/**
+ * SituacionTacticaTopografica es un panel principal para la gestión táctica topográfica en una aplicación Swing.
+ * 
+ * <p>
+ * Esta clase proporciona una interfaz gráfica avanzada para la visualización, edición y transmisión de blancos,
+ * puntos y poligonales sobre un mapa raster (GeoTIFF), integrando herramientas de cálculo topográfico, generación
+ * de informes PDF, y comunicación IP para la transmisión de datos tácticos.
+ * </p>
+ * 
+ * <h2>Características principales:</h2>
+ * <ul>
+ *   <li>Visualización y gestión de listas de blancos y poligonales.</li>
+ *   <li>Integración con un panel de mapa interactivo (PanelMapa) para marcar y editar elementos geográficos.</li>
+ *   <li>Herramientas topográficas: triangulación, radiación, intersección, trilateración, nivelación, etc.</li>
+ *   <li>Generación de informes PDF de los cálculos realizados.</li>
+ *   <li>Comunicación IP para envío de blancos y puntos a través de un protocolo definido.</li>
+ *   <li>Personalización de la designación de blancos (prefijo y contador).</li>
+ *   <li>Soporte para cambio dinámico de cartografía raster.</li>
+ *   <li>PopUp contextuales para acciones rápidas sobre listas.</li>
+ *   <li>Interfaz optimizada para uso táctil y operación en campo.</li>
+ * </ul>
+ * 
+ * <h2>Componentes principales:</h2>
+ * <ul>
+ *   <li>Listas de blancos y poligonales con renderizado personalizado.</li>
+ *   <li>Panel de herramientas topográficas y HUD flotante.</li>
+ *   <li>Panel de botones de acción rápida (agregar, eliminar, refrescar, configuración, PDF, herramientas).</li>
+ *   <li>Integración con gestor de sonido y mensajería para feedback al usuario.</li>
+ *   <li>Soporte para edición y marcado de elementos mediante diálogos modales (DialogFactory).</li>
+ * </ul>
+ * 
+ * <h2>Interacción:</h2>
+ * <ul>
+ *   <li>Permite agregar, editar y eliminar blancos y puntos tanto desde la lista como desde el mapa.</li>
+ *   <li>Permite marcar nuevos elementos directamente sobre el mapa mediante arrastre y selección contextual.</li>
+ *   <li>Permite modificar en tiempo real la cartografía y la secuencia de designación de blancos.</li>
+ *   <li>Permite enviar información táctica a través de la red IP integrada.</li>
+ * </ul>
+ * 
+ * <h2>Dependencias:</h2>
+ * <ul>
+ *   <li>PanelMapa, Blanco, Punto, Poligonal, GestorSonido, Mensajeria, DialogFactory, RenderizadorListas, etc.</li>
+ *   <li>Librerías externas: iText para generación de PDF.</li>
+ * </ul>
+ * 
+ * <h2>Implementa:</h2>
+ * <ul>
+ *   <li>DesignacionProvider: para gestión de prefijo y contador de designación de blancos.</li>
+ * </ul>
+ * 
+ * <h2>Uso:</h2>
+ * <pre>
+ * SituacionTacticaTopografica panel = new SituacionTacticaTopografica(listaDeBlancos, observador);
+ * JFrame frame = new JFrame();
+ * frame.add(panel);
+ * frame.setVisible(true);
+ * </pre>
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class SituacionTacticaTopografica extends JPanel implements DesignacionProvider{
 
 	private static final long serialVersionUID = 789462013392544798L;

@@ -1,16 +1,40 @@
 package app;
 
+import comunicaciones.GestorEnlaceOperativo;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
 import javax.swing.*;
 
-import comunicaciones.GestorEnlaceOperativo;
-
+/**
+ * A JDialog for configuring network settings in a topographic application.
+ * 
+ * This dialog allows users to:
+ * - Select a local network interface from available interfaces
+ * - Configure the TCP port for server communication
+ * - Manage a list of destination IP addresses
+ * - Apply or cancel configuration changes
+ * 
+ * The UI features a dark theme with touch-friendly components and styled buttons.
+ * All changes are applied through the {@link GestorEnlaceOperativo} communication manager.
+ * 
+ * <p><b>Key Features:</b></p>
+ * <ul>
+ *   <li>Network interface selection from active, non-virtual interfaces</li>
+ *   <li>Dynamic list management for destination IP addresses</li>
+ *   <li>Input validation for IP addresses and port numbers</li>
+ *   <li>Dark-themed UI with Arial and Consolas fonts</li>
+ *   <li>ESC key binding to close the dialog</li>
+ * </ul>
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ * @see GestorEnlaceOperativo
+ * @see NetworkInterfaceWrapper
+ */
 public class Red extends JDialog {
 
     private static final long serialVersionUID = 1218128306633571285L;

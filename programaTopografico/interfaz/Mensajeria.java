@@ -7,6 +7,35 @@ import javax.swing.border.TitledBorder;
 import comunicaciones.GestorEnlaceOperativo;
 import app.ConsolaMensajes;
 
+/**
+ * La clase {@code Mensajeria} representa un panel de mensajería para una interfaz gráfica Swing,
+ * permitiendo el envío y recepción de mensajes de chat, archivos y el acceso a formularios predefinidos.
+ * 
+ * <p>Incluye:
+ * <ul>
+ *   <li>Panel lateral con botones para abrir diferentes formularios y enviar mensajes.</li>
+ *   <li>Área central para escribir mensajes manualmente y visualizar un log local de mensajes enviados y recibidos.</li>
+ *   <li>Consola de mensajes global para mostrar transmisiones y estados generales.</li>
+ * </ul>
+ * 
+ * <p>Permite la integración con un {@code GestorEnlaceOperativo} para gestionar la comunicación real,
+ * y utiliza una instancia de {@code ConsolaMensajes} para mostrar mensajes globales.
+ * 
+ * <p>Principales funcionalidades:
+ * <ul>
+ *   <li>Enviar mensajes de chat a todos los destinos.</li>
+ *   <li>Recibir y mostrar mensajes de chat y mensajes globales.</li>
+ *   <li>Enviar archivos a un destino seleccionado.</li>
+ *   <li>Acceso rápido a formularios específicos mediante botones laterales.</li>
+ *   <li>Registro local y global de mensajes transmitidos y recibidos.</li>
+ * </ul>
+ * 
+ * <p>Esta clase está diseñada para ser utilizada como parte de una interfaz de usuario más amplia,
+ * proporcionando capacidades de mensajería y registro de eventos en aplicaciones topográficas o militares.
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class Mensajeria extends JPanel {
 
     private static final long serialVersionUID = 6622634837519332429L;

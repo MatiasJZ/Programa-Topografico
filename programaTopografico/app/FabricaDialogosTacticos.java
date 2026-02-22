@@ -16,6 +16,82 @@ import org.locationtech.jts.geom.Coordinate;
 import dominio.*;
 import util.*;
 
+/**
+ * FabricaDialogosTacticos
+ * 
+ * Implementación de la interfaz DialogFactory que proporciona un conjunto completo
+ * de diálogos especializados para operaciones topográficas y tácticas militares.
+ * 
+ * Características principales:
+ * - Gestión completa de blancos (agregar, editar, información)
+ * - Herramientas de cálculo topográfico avanzado (triangulación, radiación, intersección)
+ * - Módulos de nivelación trigonométrica y actualización magnética
+ * - Mesa de plotting táctica con soporte multi-base
+ * - Generación de reportes y registros de cálculos
+ * - Interfaz escalada para tablets tácticas (fuentes grandes, botones amplios)
+ * - Validación robusta de entrada de datos con manejo de excepciones
+ * - Integración con sistema de sonidos para retroalimentación auditiva
+ * 
+ * Los diálogos implementados incluyen:
+ * 
+ * GESTIÓN DE OBJETOS POSICIONABLES:
+ * - AgregarBlancoDialog: Interfaz completa para registro de nuevos blancos con naturaleza táctica
+ * - AgregarPuntoDialog: Creación de puntos geográficos de referencia
+ * - EditarBlancoDialog: Modificación de propiedades y coordenadas de blancos existentes
+ * - InfoBlancoDialog: Visualización detallada de información de blancos
+ * - InfoPuntoDialog: Presentación de datos de puntos de referencia
+ * 
+ * CÁLCULOS TOPOGRÁFICOS DIRECTOS:
+ * - AgregarEnPolaresDialog: Posicionamiento relativo mediante coordenadas polares
+ * - RadiacionDialog: Determinación de objetivos mediante azimut y distancia
+ * - TriangulacionDialog: Localización por ángulos desde dos estaciones conocidas
+ * - TrilateracionDialog: Cálculo de posición usando distancias desde dos puntos
+ * - InterseccionDirectaMDialog: Intersección de líneas de visión observadas
+ * 
+ * CÁLCULOS TOPOGRÁFICOS INVERSOS (POSICIONAMIENTO PROPIO):
+ * - InterseccionInversa2PDialog: Determinación de posición propia con dos referencias
+ * - InterseccionInversa3PDialog: Método de Potenot (tres referencias visibles)
+ * - AnguloBaseDialog: Radiación con referencia topográfica conocida
+ * 
+ * HERRAMIENTAS ESPECIALIZADAS:
+ * - MesaPlottingDialog: Intersección de tres líneas de observación simultáneas
+ * - MedirDialog: Cálculo de distancia y azimut entre dos posiciones
+ * - CierrePoligonalDialog: Control de precisión en levantamientos cerrados
+ * - NivelTrigonometricoDialog: Actualización de cotas mediante ángulos verticales
+ * - RegistroCoordModDialog: Corrección de coordenadas existentes
+ * - ActualizacionMagneticaDialog: Conversión de declinaciones magnéticas
+ * 
+ * CONFIGURACIÓN Y EXPORTACIÓN:
+ * - ConfiguracionDialog: Gestión de cartografía y designación de blancos
+ * - RegistroPPALDialog: Generación de reportes PDF de sesión táctica
+ * 
+ * DEPENDENCIAS:
+ * - SituacionTacticaTopografica: Contenedor principal de datos tácticos
+ * - CalculadorTopografico: Motor de cálculos matemáticos y trigonométricos
+ * - GestorSonido: Sistema de retroalimentación auditiva
+ * - FabricaComponentes: Utilidades para creación de componentes Swing
+ * - RegistroCalculos: Persistencia de operaciones realizadas
+ * 
+ * CARACTERÍSTICAS DE DISEÑO:
+ * - Escalado automático de fuentes (150-200%) para legibilidad táctica
+ * - Colores de alto contraste (tema oscuro militar)
+ * - Dimensiones aumentadas de botones (mínimo 60-70px altura)
+ * - Validación preventiva con mensajes de error claros
+ * - Barras de desplazamiento anchas (30-40px) para uso en dispositivos táctiles
+ * - Soporte para operaciones asincrónicas en hilo separado (redibujado de mapas)
+ * 
+ * NOTAS IMPORTANTES:
+ * - Los diálogos no capturan eventos de teclado directamente; usan JComboBox y JTextField
+ * - Los callbacks permiten retorno de información al componente padre
+ * - Algunos cálculos requieren puntos coplanares para validación geométrica
+ * - Se recomienda validación de entrada en aplicaciones de misión crítica
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ * @see DialogFactory
+ * @see SituacionTacticaTopografica
+ * @see CalculadorTopografico
+ */
 public class FabricaDialogosTacticos implements DialogFactory{
 
 	private final Component padre;

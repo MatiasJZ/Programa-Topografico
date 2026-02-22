@@ -2,6 +2,32 @@ package dominio;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * La clase GestorCodigosSIDC gestiona la obtención de códigos SIDC (Symbol Identification Coding)
+ * a partir de claves alfanuméricas que representan diferentes tipos de unidades, funciones y afiliaciones
+ * militares, siguiendo el estándar MIL-STD-2525.
+ * 
+ * <p>La clase mantiene un mapa estático que asocia claves descriptivas (por ejemplo, "INFANTERIA_ALIADO")
+ * con sus correspondientes códigos SIDC de 20 caracteres. Además, permite la generación automática de
+ * variantes de SIDC para diferentes escalones (echelon) de unidad, como pelotón, compañía, sección, grupo y batallón.</p>
+ * 
+ * <p>Principales funcionalidades:</p>
+ * <ul>
+ *   <li>Obtención de un código SIDC a partir de una clave alfanumérica mediante el método {@link #obtenerSIDC(String)}.</li>
+ *   <li>Generación automática de códigos SIDC para diferentes escalones de unidad.</li>
+ *   <li>Soporte para múltiples tipos de unidades, afiliaciones y funciones militares.</li>
+ * </ul>
+ * 
+ * <p>Uso típico:</p>
+ * <pre>
+ *     String sidc = GestorCodigosSIDC.obtenerSIDC("INFANTERIA_ALIADO");
+ * </pre>
+ * 
+ * <p>Nota: Las claves deben proporcionarse en mayúsculas o serán convertidas internamente.</p>
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class GestorCodigosSIDC {
 
     private static final Map<String, String> mapa = new HashMap<>();

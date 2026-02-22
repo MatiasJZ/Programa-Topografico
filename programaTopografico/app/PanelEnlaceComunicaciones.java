@@ -8,6 +8,33 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * PanelEnlaceComunicaciones is a JPanel component that provides a graphical user interface
+ * for configuring network communication settings for a Harris IP radio system.
+ * 
+ * This panel allows users to:
+ * - Select a local network interface from available network adapters
+ * - Configure the TCP port for communication (default: 5056)
+ * - Add and remove destination IP addresses to a list
+ * - Apply the configuration changes
+ * 
+ * The panel is organized into three sections:
+ * - North: Interface and port selection controls
+ * - Center: Destination IP list with add/remove functionality
+ * - South: Apply configuration button
+ * 
+ * Network interfaces are automatically discovered and filtered to include only:
+ * - Active interfaces (isUp == true)
+ * - Non-loopback interfaces
+ * - Non-virtual interfaces
+ * - IPv4 addresses only
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ * @see javax.swing.JPanel
+ * @see java.net.NetworkInterface
+ * @see java.net.InetAddress
+ */
 public class PanelEnlaceComunicaciones extends JPanel {
 
     private static final long serialVersionUID = 1L;

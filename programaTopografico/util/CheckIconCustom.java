@@ -2,6 +2,31 @@ package util;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A custom icon implementation that displays a square with a border and a check mark
+ * when used in a selected {@link AbstractButton}. The icon's size, border color,
+ * fill color, and check mark color are customizable via the constructor.
+ *
+ * <p>
+ * The icon is rendered as follows:
+ * <ul>
+ *   <li>A filled square as the background.</li>
+ *   <li>A border around the square.</li>
+ *   <li>A green check mark is drawn if the associated component is an
+ *       {@link AbstractButton} and is selected.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * <pre>
+ * JCheckBox checkBox = new JCheckBox("Option");
+ * checkBox.setIcon(new CheckIconCustom(16));
+ * </pre>
+ * </p>
+ *
+ * @author [Matias Leonel Juarez]
+ */
 public class CheckIconCustom implements Icon {
 
     private final int size;

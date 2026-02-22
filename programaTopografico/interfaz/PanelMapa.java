@@ -69,6 +69,53 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/**
+ * PanelMapa is a custom JPanel for displaying and interacting with a tactical map using GeoTools.
+ * It supports rendering raster backgrounds (GeoTIFF), vector features (points, lines, and custom "Blanco" objects),
+ * and provides interactive controls for zooming and panning.
+ *
+ * <p>Main Features:</p>
+ * <ul>
+ *   <li>Loads a raster map from a GeoTIFF file and displays it as the map background.</li>
+ *   <li>Supports adding and removing vector features:
+ *     <ul>
+ *       <li><b>Poligonal</b>: Can be a point or a line, rendered with custom styles and labels.</li>
+ *       <li><b>Blanco</b>: Custom point features with military symbology, orientation, and labels.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Provides zoom and pan controls as overlay buttons, with keyboard shortcuts for zooming.</li>
+ *   <li>Allows creation of a secondary, read-only map view for observation purposes.</li>
+ *   <li>Manages feature layers and collections for efficient addition/removal and map refresh.</li>
+ * </ul>
+ *
+ * <p>Usage:</p>
+ * <pre>
+ *     PanelMapa panel = new PanelMapa("ruta/al/archivo.tif");
+ *     panel.agregarPoligonal(poligonal);
+ *     panel.agregarBlanco(blanco);
+ *     panel.eliminarPoligonal(poligonal);
+ *     panel.eliminarBlanco(blanco);
+ * </pre>
+ *
+ * <p>Dependencies:</p>
+ * <ul>
+ *   <li>GeoTools library (map rendering, feature and style management)</li>
+ *   <li>Custom domain classes: Poligonal, Blanco, Linea, CoordenadasRectangulares, GestorCodigosSIDC, ProveedorSimbologiaMilitarizada</li>
+ * </ul>
+ *
+ * <p>Thread Safety:</p>
+ * <ul>
+ *   <li>UI updates are dispatched on the Event Dispatch Thread (EDT) as needed.</li>
+ * </ul>
+ *
+ * <p>Note:</p>
+ * <ul>
+ *   <li>Some methods rely on external resources (e.g., "/arrastrar.png" for pan icon).</li>
+ *   <li>Military symbology rendering uses temporary files for image-based symbols.</li>
+ * </ul>
+ *
+ * @author [Matias Leonel Juarez]
+ */
 public class PanelMapa extends JPanel {
 
 	private static final long serialVersionUID = -6801957143279809848L;

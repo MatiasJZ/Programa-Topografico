@@ -9,10 +9,35 @@ import java.net.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+/**
+ * GestorEnlaceOperativo es una clase encargada de gestionar la comunicación TCP entre diferentes nodos
+ * en una red local, permitiendo el envío y recepción de mensajes de texto y archivos.
+ * 
+ * <p>Características principales:</p>
+ * <ul>
+ *   <li>Permite configurar la interfaz local, el puerto de escucha y la lista de destinos.</li>
+ *   <li>Implementa un servidor TCP que acepta conexiones entrantes para recibir mensajes o archivos.</li>
+ *   <li>Proporciona métodos para enviar mensajes de texto o archivos a destinos individuales o a todos los destinos configurados.</li>
+ *   <li>Utiliza un callback (ProtocoloCallback) para notificar eventos relevantes a la lógica de la aplicación.</li>
+ *   <li>Incluye mecanismos para manejar la recepción de archivos, incluyendo la opción de abrirlos automáticamente.</li>
+ *   <li>Gestiona la concurrencia mediante sincronización en la lista de destinos y el uso de hilos para operaciones de red.</li>
+ * </ul>
+ * 
+ * <p>Uso típico:</p>
+ * <ol>
+ *   <li>Configurar la interfaz local, el puerto y los destinos.</li>
+ *   <li>Establecer el callback para recibir notificaciones y mensajes.</li>
+ *   <li>Iniciar el servidor para comenzar a aceptar conexiones entrantes.</li>
+ *   <li>Utilizar los métodos de envío para comunicar mensajes o archivos a otros nodos.</li>
+ * </ol>
+ * 
+ * <p>Nota: Esta clase está diseñada para aplicaciones de escritorio Java y utiliza Swing para algunas interacciones de usuario.</p>
+ * 
+ * @author [Matias Leonel Juarez]
+ */
 public class GestorEnlaceOperativo {
 
     // Configuración

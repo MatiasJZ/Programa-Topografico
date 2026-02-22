@@ -1,4 +1,25 @@
 package dominio;
+/**
+ * La clase {@code CoordenadasPolares} representa un punto en el espacio utilizando coordenadas polares
+ * relativas a una referencia de tipo {@link CoordenadasRectangulares}. 
+ * 
+ * <p>Las coordenadas polares se definen por una dirección (en milésimos, 0–6399), una distancia (en metros)
+ * y una cota (ángulo vertical, en milésimos). La clase permite convertir estas coordenadas a coordenadas
+ * rectangulares (cartesianas) y calcular distancias a otros puntos.
+ * 
+ * <ul>
+ *   <li><b>direccion</b>: Dirección en milésimos (0–6399), donde 6400 milésimos equivalen a 360 grados.</li>
+ *   <li><b>distancia</b>: Distancia al punto desde la referencia, en metros.</li>
+ *   <li><b>cota</b>: Ángulo vertical en milésimos.</li>
+ *   <li><b>referencia</b>: Punto de referencia en coordenadas rectangulares desde el cual se mide la posición polar.</li>
+ * </ul>
+ * 
+ * <p>Incluye métodos para obtener los valores de dirección, distancia y cota, así como para convertir a coordenadas
+ * rectangulares y calcular la distancia a otro punto.
+ * 
+ * @author [Matias Leonel Juarez]
+ * @version 1.0
+ */
 public class CoordenadasPolares extends Coordenadas {
     private double direccion;   // milésimos (0–6399)
     private double distancia;   // metros
