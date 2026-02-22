@@ -145,45 +145,54 @@ public class ProcesadorMensajes {
     }
     
     private void procesarBlanco(String msg) {
-        String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
-        
-        double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
-        double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
-        CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, 0);
+        try {
+            String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
+            
+            double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
+            double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
+            CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, 0);
 
-        Blanco blancoObjetivo = null;
-        for (Blanco b : listaDeBlancos) {
-            if (b.getNombre().equalsIgnoreCase(nombre)) {
-                blancoObjetivo = b;
-                break;
+            Blanco blancoAnterior = null;
+            for (Blanco b : listaDeBlancos) {
+                if (b.getNombre().equalsIgnoreCase(nombre)) {
+                    blancoAnterior = b;
+                    break;
+                }
             }
-        }
 
-        boolean esNuevo = (blancoObjetivo == null);
-        if (esNuevo) {
+            if (blancoAnterior != null) {
+                listaDeBlancos.remove(blancoAnterior);
+                panelTactico.getModeloListaBlancos().removeElement(blancoAnterior);
+                panelTactico.getPanelMapa().eliminarBlanco(blancoAnterior);
+                
+                consola.agregarMensaje("[SISTEMA] Reemplazando blanco existente: " + nombre);
+            }
+
             String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
             String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
-            blancoObjetivo = new Blanco(nombre, coords, nat, fecha);
-        }
-        
-        mapearDatosBlanco(blancoObjetivo, msg, coords);
+            
+            Blanco nuevoBlanco = new Blanco(nombre, coords, nat, fecha);
+            
+            mapearDatosBlanco(nuevoBlanco, msg, coords);
+            panelTactico.agregarBlanco(nuevoBlanco);
 
-        if (esNuevo) {
-            listaDeBlancos.add(blancoObjetivo);
-            panelTactico.agregarBlanco(blancoObjetivo);
-            consola.agregarMensaje("[SISTEMA] Nuevo blanco detectado: " + nombre);
-        } else {
-            panelTactico.actualizarBlanco(blancoObjetivo);
-            consola.agregarMensaje("[SISTEMA] Actualización de datos para: " + nombre);
-        }
+            if (blancoAnterior == null) {
+                consola.agregarMensaje("[SISTEMA] Nuevo blanco detectado: " + nombre);
+            }
 
-        mostrarPopupBlanco(esNuevo ? "NUEVO BLANCO RECIBIDO" : "BLANCO ACTUALIZADO", blancoObjetivo, coords);
+            mostrarPopupBlanco(blancoAnterior == null ? "NUEVO BLANCO" : "BLANCO ACTUALIZADO", nuevoBlanco, coords);
+            
+        } catch (Exception e) {
+            consola.agregarMensaje("[ERROR] Datos de blanco corruptos: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     private void mapearDatosBlanco(Blanco b, String msg, CoordenadasRectangulares coords) {
         // 1. Datos Geográficos y Temporales
-        b.setCoordenadas(coords);
-        b.setFecha(ProtocoloMensajes.obtenerCampo(msg, "FECHA"));
+    	b.setCoordenadas(coords);
+        String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
+        if (fecha != null) b.setFecha(fecha);
         
         // 2. Atributos de Identificación Militar (Campos que faltaban)
         String entidad = ProtocoloMensajes.obtenerCampo(msg, "ENTIDAD");

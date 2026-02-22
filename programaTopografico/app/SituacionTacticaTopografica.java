@@ -861,7 +861,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     public void enviarBlanco(Blanco b) {
         if (b == null) return;
 
-        // Construyo el mensaje siguiendo el protocolo técnico al pie de la letra
+        // Construyo el mensaje siguiendo el protocolo técnico
         StringBuilder sb = new StringBuilder();
         sb.append("BLANCO|");
         sb.append("NOMBRE=").append(b.getNombre()).append("|");
@@ -869,7 +869,10 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         sb.append("FECHA=").append(b.getFechaDeActualizacion()).append("|");
         sb.append("ORI=").append((int)b.getOrientacion()).append("|");
         
-        // Verifico que la info adicional no sea nula o vacía para cumplir el estándar
+        sb.append("ENTIDAD=").append(b.getUltEntidad() != null ? b.getUltEntidad() : "DESCONOCIDO").append("|");
+        sb.append("AFILIACION=").append(b.getUltAfiliacion() != null ? b.getUltAfiliacion() : "DESCONOCIDO").append("|");
+        sb.append("ECHELON=").append(b.getUltEchelon() != null ? b.getUltEchelon() : "Por Defecto").append("|");
+
         String info = b.getInformacionAdicional();
         if (info == null || info.trim().isEmpty()) {
             info = "Sin Informacion Adicional";
@@ -883,12 +886,10 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         String mensajeFinal = sb.toString();
 
-        // Envío el paquete a través del observador de comunicaciones IP
-        // Asumo que observador tiene acceso al gestor de red (Harris/IP)
+        // Envío el paquete
         if (observador != null && observador.getComunicacionIP() != null) {
             observador.getComunicacionIP().enviarATodos(mensajeFinal);
             
-            // Registro la salida en mi consola táctica para que el operador sepa que salió
             System.out.println("Transmisión Táctica Saliente: " + mensajeFinal);
         } else {
             sonidos.clickError();
@@ -897,7 +898,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
                 "FALLO DE TRANSMISIÓN", 
                 JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }	
     
     private void configurarHerramientasMapa() {
         panelMapa.getMapPane().setCursorTool(new CursorTool() {

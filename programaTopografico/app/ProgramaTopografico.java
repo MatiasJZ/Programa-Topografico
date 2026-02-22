@@ -5,6 +5,9 @@ import comunicaciones.ProtocoloCallback;
 import dominio.Blanco;
 import interfaz.Mensajeria;
 import java.awt.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import javax.swing.*;
 import mensajes.ProcesadorMensajes;
@@ -164,6 +167,43 @@ public class ProgramaTopografico extends JPanel {
         });
         
         mensajeriaPanel.setComunicacion(comunicacionIP);
+        
+        try {
+            LinkedList<String> ipsGuardadas = new LinkedList<>();
+            
+            ipsGuardadas.add("192.168.1.100"); 
+            ipsGuardadas.add("192.168.1.105");
+            ipsGuardadas.add("192.168.0.22");
+
+            comunicacionIP.setDestinos(ipsGuardadas);
+            InetAddress ipLocal = null;
+            Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+            while (nets.hasMoreElements() && ipLocal == null) {
+                NetworkInterface ni = nets.nextElement();
+                if (!ni.isUp() || ni.isLoopback() || ni.isVirtual()) continue;
+                Enumeration<InetAddress> addrs = ni.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    InetAddress addr = addrs.nextElement();
+                    if (addr.getAddress().length == 4 && !addr.isLoopbackAddress()) { // Solo IPv4
+                        ipLocal = addr;
+                        break;
+                    }
+                }
+            }
+
+            if (ipLocal != null) {
+                comunicacionIP.setInterfazLocal(ipLocal);
+                comunicacionIP.setPuerto(5056); 
+                comunicacionIP.iniciarServidor();
+              
+                System.out.println(">> AUTO-START RED: " + ipLocal.getHostAddress());
+            } else {
+                System.err.println(">> AUTO-START FALLIDO: No se detectó red.");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public GestorEnlaceOperativo getComunicacionIP() {
