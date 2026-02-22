@@ -2682,7 +2682,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	public void RegistroCoordModDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback) {
 	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
 	    JDialog dialog = new JDialog(parentFrame, "MODIFICAR COORDENADAS EXISTENTES", true);
-	    dialog.setSize(600, 650);
+	    dialog.setSize(600, 700);
 	    dialog.setLocationRelativeTo(padre);
 
 	    // Panel Principal
