@@ -4,50 +4,78 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * DispatcherNotificacionesTacticas
- * 
- * A utility class for displaying tactical notification dialogs with a distinctive
+ * * A utility class for displaying tactical notification dialogs with a distinctive
  * dark theme and red flashing border animation.
- * 
- * This class provides a static method to show modal dialog windows with a tactical
- * aesthetic, featuring a black background, red accents, and a blinking border effect.
- * The dialogs are undecorated (no system window borders) and centered on screen.
- * 
- * Visual Features:
- * - Black background with red 3-pixel border
- * - Red flashing animation on the border and header text (400ms interval)
- * - Monospaced font typography for a technical appearance
- * - Non-editable text area for message content
- * - Confirmation button to close the dialog
- * 
- * @author [Matias Leonel Juarez]
+ * * @author [Matias Leonel Juarez]
  * @version 1.0
- * @since [Date]
  */
 public class DispatcherNotificacionesTacticas {
 
     /**
      * Displays a modal dialog with a tactical notification.
-     * 
-     * Creates and shows a centered, undecorated dialog window containing:
-     * - A title header (displayed in uppercase, red color)
-     * - A visual separator line
-     * - A content label and message text area
-     * - A confirmation button to dismiss the dialog
-     * - A red flashing animation that cycles every 400 milliseconds
-     * 
-     * The dialog is modal, blocking interaction with other windows until closed.
-     * The message text wraps automatically and is displayed in a non-editable format.
-     * 
-     * @param titulo the title text displayed at the top of the dialog (converted to uppercase)
+     * * @param titulo  the title text displayed at the top of the dialog
      * @param mensaje the main message content displayed in the text area
      */
     public static void mostrar(String titulo, String mensaje) {
-        // Implementation...
-    }
-}
+        
+        JDialog dialog = new JDialog((Frame) null, "Notificación Táctica", true);
+        dialog.setUndecorated(true); 
+        dialog.setSize(500, 350);
+        dialog.setLocationRelativeTo(null); 
+
+        JPanel panelPrincipal = new JPanel(new GridBagLayout());
+        panelPrincipal.setBackground(Color.BLACK);
+        panelPrincipal.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 20, 5, 20);
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+
+        JLabel lblHeader = new JLabel(">> " + titulo.toUpperCase() + " <<");
+        lblHeader.setFont(new Font("Monospaced", Font.BOLD, 22));
+        lblHeader.setForeground(Color.RED);
+        lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        gbc.gridy = 0;
+        panelPrincipal.add(lblHeader, gbc);
+
+        JSeparator separador = new JSeparator();
+        separador.setForeground(Color.RED);
+        separador.setBackground(Color.BLACK);
+        
+        gbc.gridy = 1;
+        gbc.insets = new Insets(5, 0, 15, 0); 
+        panelPrincipal.add(separador, gbc);
+
+        JTextArea txtMensaje = new JTextArea(mensaje);
+        txtMensaje.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        txtMensaje.setForeground(Color.WHITE);
+        txtMensaje.setBackground(Color.BLACK);
+        txtMensaje.setLineWrap(true);
+        txtMensaje.setWrapStyleWord(true);
+        txtMensaje.setEditable(false);
+        txtMensaje.setHighlighter(null); 
+
+        JScrollPane scroll = new JScrollPane(txtMensaje);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(Color.BLACK);
+        
+        gbc.gridy = 2;
+        gbc.weighty = 1.0; 
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 30, 0, 30); 
+        panelPrincipal.add(scroll, gbc);
+
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         // BOTÓN DE CIERRE MINIMALISTA
         JButton btnOk = new JButton("[ CONFIRMAR LECTURA ]");
         btnOk.setFont(new Font("Monospaced", Font.BOLD, 16));
@@ -56,32 +84,52 @@ public class DispatcherNotificacionesTacticas {
         btnOk.setFocusPainted(false);
         btnOk.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
         btnOk.setPreferredSize(new Dimension(0, 50));
+        
+        btnOk.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                btnOk.setBackground(new Color(40, 0, 0));
+            }
+            public void mouseExited(MouseEvent evt) {
+                btnOk.setBackground(Color.BLACK);
+            }
+        });
+
         btnOk.addActionListener(e -> dialog.dispose());
-        gbc.gridy = 4;
+        
+        gbc.gridy = 4; 
         gbc.insets = new Insets(20, 20, 20, 20);
         panelPrincipal.add(btnOk, gbc);
 
-        // LÓGICA DE TITILEO ROJO
         Timer timerTitileo = new Timer(400, new ActionListener() {
             boolean toggle = true;
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {           
+                if (!dialog.isVisible()) {
+                    ((Timer)e.getSource()).stop();
+                    return;
+                }
+
                 if (toggle) {
                     panelPrincipal.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
                     lblHeader.setForeground(Color.RED);
                     btnOk.setForeground(Color.RED);
+                    btnOk.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
                 } else {
-                    panelPrincipal.setBorder(BorderFactory.createLineBorder(new Color(60, 0, 0), 3));
-                    lblHeader.setForeground(new Color(60, 0, 0));
-                    btnOk.setForeground(new Color(60, 0, 0));
+                    Color rojoOscuro = new Color(80, 0, 0);
+                    panelPrincipal.setBorder(BorderFactory.createLineBorder(rojoOscuro, 3));
+                    lblHeader.setForeground(rojoOscuro);
+                    btnOk.setForeground(rojoOscuro);
+                    btnOk.setBorder(BorderFactory.createLineBorder(rojoOscuro, 1));
                 }
                 toggle = !toggle;
             }
         });
 
         dialog.add(panelPrincipal);
+        
         timerTitileo.start();
         dialog.setVisible(true);
-        timerTitileo.stop(); // Limpieza al cerrar
+        
+        timerTitileo.stop(); 
     }
 }

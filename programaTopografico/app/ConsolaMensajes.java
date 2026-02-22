@@ -27,37 +27,8 @@ import javax.swing.SwingConstants;
  * @version 1.0
  */
 public class ConsolaMensajes extends JPanel {
-
-    /**
-     * Adds a message to the console text area and scrolls to the bottom.
-     * 
-     * @param mensaje the message text to be displayed
-     */
-    public void agregarMensaje(String mensaje) { }
-
-    /**
-     * Displays a status message with [ESTADO] prefix.
-     * 
-     * @param estado the status message to be displayed
-     */
-    public void mostrarEstado(String estado) { }
-
-    /**
-     * Displays a transmission message with [TX] prefix.
-     * 
-     * @param msg the transmission message to be displayed
-     */
-    public void mostrarTx(String msg) { }
-
-    /**
-     * Displays a reception message with [RX] prefix.
-     * 
-     * @param msg the reception message to be displayed
-     */
-    public void mostrarRx(String msg) { }
-}
-
-    private static final long serialVersionUID = 1L;
+	
+	private static final long serialVersionUID = 1L;
     private JPanel header;
     private JTextArea area;
     private JScrollPane scroll;
