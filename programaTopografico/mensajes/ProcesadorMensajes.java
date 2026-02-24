@@ -150,7 +150,8 @@ public class ProcesadorMensajes {
             
             double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
             double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
-            CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, 0);
+            double z = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Z"));
+            CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, z);
 
             Blanco blancoAnterior = null;
             for (Blanco b : listaDeBlancos) {

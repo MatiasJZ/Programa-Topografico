@@ -2,6 +2,7 @@ package app;
 
 import comunicaciones.GestorEnlaceOperativo;
 import comunicaciones.ProtocoloCallback;
+import comunicaciones.ReceptorGPS;
 import dominio.Blanco;
 import interfaz.Mensajeria;
 import java.awt.*;
@@ -171,9 +172,8 @@ public class ProgramaTopografico extends JPanel {
         try {
             LinkedList<String> ipsGuardadas = new LinkedList<>();
             
-            ipsGuardadas.add("192.168.1.100"); 
-            ipsGuardadas.add("192.168.1.105");
-            ipsGuardadas.add("192.168.0.22");
+            ipsGuardadas.add("192.168.1.2");
+            ipsGuardadas.add("192.168.2.2");
 
             comunicacionIP.setDestinos(ipsGuardadas);
             InetAddress ipLocal = null;
@@ -193,10 +193,9 @@ public class ProgramaTopografico extends JPanel {
 
             if (ipLocal != null) {
                 comunicacionIP.setInterfazLocal(ipLocal);
-                comunicacionIP.setPuerto(5056); 
+                comunicacionIP.setPuerto(10011); 
                 comunicacionIP.iniciarServidor();
               
-                System.out.println(">> AUTO-START RED: " + ipLocal.getHostAddress());
             } else {
                 System.err.println(">> AUTO-START FALLIDO: No se detectó red.");
             }
@@ -204,6 +203,11 @@ public class ProgramaTopografico extends JPanel {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
+        int puertoGPS = 4001; 
+
+        ReceptorGPS receptorSA = new ReceptorGPS(puertoGPS, situacionTactica);
+        receptorSA.iniciar();
     }
 
     public GestorEnlaceOperativo getComunicacionIP() {

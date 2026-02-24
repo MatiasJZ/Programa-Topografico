@@ -882,7 +882,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         sb.append("SIMID=").append(b.getSimID()).append("|");
         sb.append("SIT=").append(b.getSituacionMovimiento()).append("|");
         sb.append("X=").append(b.getCoordenadas().getX()).append("|");
-        sb.append("Y=").append(b.getCoordenadas().getY());
+        sb.append("Y=").append(b.getCoordenadas().getY()).append("|");
+        sb.append("Z=").append(b.getCoordenadas().getCota());
 
         String mensajeFinal = sb.toString();
 

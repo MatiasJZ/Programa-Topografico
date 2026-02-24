@@ -7,10 +7,10 @@
 	</classpathentry>
 	<classpathentry kind="src" path="programaTopografico"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GeoTools"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/jsvg-1.4.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/mil-sym-java-2.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/jSerialComm-2.11.4.jar"/>
 	<classpathentry kind="src" path="imagenes"/>
-	<classpathentry kind="lib" path="C:/Users/54293/Desktop/Archivos SARGO/itextpdf-5.5.9.jar"/>
+	<classpathentry kind="lib" path="Lib/itextpdf-5.5.9.jar"/>
+	<classpathentry kind="lib" path="Lib/jSerialComm-2.11.4.jar"/>
+	<classpathentry kind="lib" path="Lib/jsvg-1.4.0.jar"/>
+	<classpathentry kind="lib" path="Lib/mil-sym-java-2.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
