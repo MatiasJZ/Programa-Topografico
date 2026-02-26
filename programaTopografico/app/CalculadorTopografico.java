@@ -3,8 +3,10 @@ package app;
 import dominio.Posicionable;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Map;
 
 import org.locationtech.jts.geom.Coordinate;
 
@@ -410,4 +412,16 @@ public class CalculadorTopografico {
     private static double milsToRadians(double mils) {
         return (mils * 2 * Math.PI) / 6400.0;
     }
+
+	public static void calcularCierreYArea(LinkedList<Posicionable> camino, Map<Posicionable, Posicionable> mapeo) {
+		Iterator<Posicionable> it = camino.iterator();
+		Posicionable proximo = camino.getFirst();
+		int distanciaTotal = 0;
+		while(it.hasNext()) {
+			distanciaTotal += proximo.distanciaA(mapeo.get(proximo));
+			proximo = it.next();
+		}
+		distanciaTotal += proximo.distanciaA(camino.getFirst());
+		System.out.println("Resultado: " +distanciaTotal);
+	}
 }

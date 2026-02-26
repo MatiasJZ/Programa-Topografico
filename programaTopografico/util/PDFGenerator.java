@@ -1,5 +1,10 @@
 package util;
 
+import app.PedidoDeFuego;
+import dominio.PIF;
+import dominio.ReporteFinMision;
+
 public interface PDFGenerator {
-	public void generarPDF();
+	void generarPDF();
+	void generarPDF(PedidoDeFuego panelPIF, PIF pif, ReporteFinMision rep);
 }

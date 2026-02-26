@@ -3,26 +3,14 @@ package app;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
-import java.util.Map;
-
 import javax.swing.*;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import comunicaciones.ConsolaMensajes;
 import comunicaciones.GestorEnlaceOperativo;
 import dominio.Blanco;
+import dominio.GeneradorPDF;
 import dominio.PIF;
 import dominio.ReporteFinMision;
 import interfaz.DatosBlanco;
@@ -47,6 +35,7 @@ public class PedidoDeFuego extends JPanel {
     private JList<PIF> listaHistorial;
     private ConsolaMensajes consolaMensajes;
 
+    private GeneradorPDF generadorPDF;
     private GestorEnlaceOperativo comunicacionIP;
 
     private JButton btnDatos;
@@ -62,6 +51,7 @@ public class PedidoDeFuego extends JPanel {
 
         this.idOAA = idOAA;
         this.listaDeBlancos = listaDeBlancos;
+        this.generadorPDF = new GeneradorPDF(this);
 
         setBackground(Color.BLACK);
         setLayout(new BorderLayout());
@@ -109,7 +99,7 @@ public class PedidoDeFuego extends JPanel {
         });
     }
 
-    private void crearCardLayout() {
+    private void crearCardLayout() {  //REFACTORIZABLE
 
         cardLayout = new CardLayout();
         pifCardPanel = new JPanel(cardLayout);
@@ -149,8 +139,8 @@ public class PedidoDeFuego extends JPanel {
         panelMapaObsHolder.repaint();
     }
 
-    private void crearPanelDeBotones() {
-
+    private void crearPanelDeBotones() {  //REFACTORIZABLE
+ 
         JPanel panel = new JPanel(new GridLayout(1, 2, 5, 5));
         panel.setBackground(Color.BLACK);
 
@@ -179,7 +169,7 @@ public class PedidoDeFuego extends JPanel {
         btnMetodo.setBackground(indiceActual == 1 ? activo : inactivo);
     }
 
-    private void crearPanelHistorial() {
+    private void crearPanelHistorial() {   //REFACTORIZABLE
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.BLACK);
@@ -326,7 +316,7 @@ public class PedidoDeFuego extends JPanel {
             PIF pif = modeloHistorial.lastElement();
             pif.setReporteFin(reporte);
             
-            generarPDFFinMision(pif, reporte);
+            generadorPDF.generarPDF(this, pif, reporte);
 
             // Mensaje de red opcional
             String msg = "FIN_MISION|BLANCO=" + 
@@ -354,117 +344,7 @@ public class PedidoDeFuego extends JPanel {
         corr.getBtnEnviar().addActionListener(e -> enviarCorreccion());
     }
     
-    private void generarPDFFinMision(PIF pif, ReporteFinMision rep) {
-        try {
-
-        	CorreccionesPanel corr = metodoYTiroPanel.getCorreccionesPanel();
-        	Map<String, String> historial = corr.getHistorialCorrecciones();
-        	
-        	String desktop = System.getProperty("user.home") + File.separator + "Desktop";
-            String nombreArchivo = desktop + File.separator + "FinMision_" + pif.getId() + ".pdf";
-
-            Document doc = new Document();
-            PdfWriter.getInstance(doc, new FileOutputStream(nombreArchivo));
-            
-            doc.open();
-
-            Paragraph titulo = new Paragraph("REPORTE DE FIN DE MISIÓN");
-
-            titulo.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
-            titulo.setSpacingAfter(20);
-
-            doc.add(titulo);
-
-            doc.add(new Paragraph("DATOS DEL PIF"));
-            doc.add(Chunk.NEWLINE);
-
-            String datosPifTxt = pif.mostrarDatosDePIF();
-            if (datosPifTxt == null) datosPifTxt = "(Sin datos disponibles)";
-
-            doc.add(new Paragraph(datosPifTxt));
-            doc.add(Chunk.NEWLINE);
-
-
-            doc.add(new Paragraph("REPORTE DE FIN DE MISIÓN"));
-            doc.add(com.itextpdf.text.Chunk.NEWLINE);
-
-            PdfPTable tabla = new PdfPTable(2);
-            tabla.setWidthPercentage(100);
-
-            agregarFilaPDF("Efecto Observado", rep.getEfectoObservado(), tabla);
-            agregarFilaPDF("Dispersión", rep.getDispersion(), tabla);
-            agregarFilaPDF("Daños Observados", rep.getDanos(), tabla);
-            agregarFilaPDF("Movimiento", rep.getMovimiento(), tabla);
-            agregarFilaPDF("Observaciones", rep.getObservaciones(), tabla);
-
-            doc.add(tabla);
-            
-            doc.add(Chunk.NEWLINE);
-            doc.add(new Paragraph("HISTORIAL DE DISPAROS Y CORRECCIONES"));
-            doc.add(Chunk.NEWLINE);
-
-            if (historial.isEmpty()) {
-                doc.add(new Paragraph("(No se registraron correcciones)"));
-            } else {
-
-                PdfPTable tablaHist = new PdfPTable(2);
-                tablaHist.setWidthPercentage(100);
-                tablaHist.setWidths(new float[]{1, 4});
-
-                PdfPCell h1 = new PdfPCell(new Phrase("Disparo"));
-                PdfPCell h2 = new PdfPCell(new Phrase("Detalle"));
-
-                h1.setBackgroundColor(BaseColor.GRAY);
-                h2.setBackgroundColor(BaseColor.GRAY);
-
-                tablaHist.addCell(h1);
-                tablaHist.addCell(h2);
-
-                historial.forEach((id, texto) -> {
-                    tablaHist.addCell(new PdfPCell(new Phrase(id)));
-                    tablaHist.addCell(new PdfPCell(new Phrase(texto)));
-                });
-
-                doc.add(tablaHist);
-            }
-            
-            doc.close();
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "PDF generado:\n" + nombreArchivo,
-                    "PDF Fin de Misión",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error generando PDF:\n" + ex.getMessage(),
-                    "ERROR",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-    
-    private void agregarFilaPDF(String titulo, String valor,PdfPTable tabla) {
-
-		PdfPCell c1 =
-		new PdfPCell(new Phrase(titulo));
-		
-		PdfPCell c2 =
-		new PdfPCell(new Phrase(valor));
-		
-		c1.setBackgroundColor(BaseColor.LIGHT_GRAY);
-		c1.setPadding(6);
-		c2.setPadding(6);
-		
-		tabla.addCell(c1);
-		tabla.addCell(c2);
-	}
-    
-    private ReporteFinMision mostrarDialogoFinMision() {
+    private ReporteFinMision mostrarDialogoFinMision() {   //REFACTORIZABLE
 
         JDialog dlg = new JDialog(
                 SwingUtilities.getWindowAncestor(this),
@@ -609,7 +489,7 @@ public class PedidoDeFuego extends JPanel {
         );
     }
 
-    private void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) {
+    private void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) {  //REFACTORIZABLE
         gbc.gridy = gridy;
         
         // Label
@@ -719,7 +599,7 @@ public class PedidoDeFuego extends JPanel {
         JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void mostrarPIFSeleccionado() {
+    private void mostrarPIFSeleccionado() {   //REFACTORIZABLE
         PIF p = listaHistorial.getSelectedValue();
         if (p == null) return;
 
@@ -822,7 +702,7 @@ public class PedidoDeFuego extends JPanel {
         dialogo.setVisible(true);
     }
 
-    private void crearBotonesDeNavegacion() {
+    private void crearBotonesDeNavegacion() {   //REFACTORIZABLE
 
         JButton prev = new JButton("<");
         prev.setBackground(new Color(28, 122, 33));

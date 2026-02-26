@@ -4,6 +4,7 @@ import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.*;
@@ -1489,7 +1490,30 @@ public class FabricaDialogosTacticos implements DialogFactory{
         //////////////////////////////////////////////// IMPLEMENTACION DE CIERRE DE POLIGONAL
         
         // ACCIONES
-        btnCalcular.addActionListener(e -> {});
+        btnCalcular.addActionListener(e -> {
+        	
+        	Posicionable Primero = puntoInicio;
+			Posicionable Segundo = sit.getMapeoVertices().get(puntoInicio);
+			boolean cierra = false;
+			LinkedList<Posicionable> camino = new LinkedList<Posicionable>();
+			camino.addLast(Primero);
+			camino.addLast(Segundo);
+
+			while(!cierra){
+				Posicionable siguiente = sit.getMapeoVertices().get(Segundo);
+				camino.addLast(siguiente);
+				if(sit.getMapeoVertices().get(siguiente) == Primero)
+					cierra = true;
+			}
+
+			if(!cierra){
+				JOptionPane.showMessageDialog(dialog, "EL PUNTO SELECCIONADO NO ESTA CONECTADO A UNA POLIGONAL O NO CIERRA UNA");
+			}
+			else{
+				CalculadorTopografico.calcularCierreYArea(camino, sit.getMapeoVertices());
+			}
+        	dialog.dispose();
+        });
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         

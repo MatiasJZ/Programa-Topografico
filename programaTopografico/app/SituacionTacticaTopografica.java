@@ -752,7 +752,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         });
         itemCerrarP.addActionListener(e -> {
             Posicionable selec = (Posicionable) listaUIPoligonales.getSelectedValue();
-            if (selec != null && selec instanceof Punto) {
+            if (selec != null && selec.soportaCierrePoligonal()) {
                 dialogFactory.CierrePoligonalDialog((Punto) selec, (resultado, informe) -> {
                     RegistroCalculos.guardar("CIERRE DE POLIGONAL", informe);
                     JOptionPane.showMessageDialog(this, "Control de precisión registrado con éxito.");
