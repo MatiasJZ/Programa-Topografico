@@ -1,8 +1,7 @@
 package app;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.FileOutputStream;
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -11,26 +10,21 @@ import javax.swing.*;
 import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-
+import comunicaciones.Red;
 import dominio.Blanco;
 import dominio.Posicionable;
 import dominio.Punto;
+import dominio.RegistroCalculos;
+import dominio.RenderizadorListas;
 import dominio.CoordenadasRectangulares;
+import dominio.GeneradorPDF;
 import dominio.Poligonal;
 import interfaz.Mensajeria;
 import interfaz.PanelMapa;
 import util.DesignacionProvider;
 import util.DialogFactory;
 import util.FabricaComponentes;
+import util.FabricaDialogosTacticos;
 import util.GestorSonido;
 	
 /**
@@ -101,6 +95,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     private JList<Blanco> listaUIBlancos;
     protected LinkedList<Blanco> listaDeBlancos;
     protected LinkedList<Punto> listaDePuntos;
+    protected Map<Posicionable,Posicionable> mapeoDeVertices;
     private PanelMapa panelMapa;
     protected LinkedList<Poligonal> listaDePoligonales;
     private DefaultListModel<Poligonal> modeloListaPoligonales;
@@ -113,14 +108,16 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     private JPanel panelGlobalTopografico;
     protected JLabel tooltipLabel;
     private Mensajeria mensajeria;
+    protected PedidoDeFuego panelPIF;
     private RenderizadorListas RenderListas;
     private JPopupMenu popupMenu;    
     private JPopupMenu popupMenuPunto;
     private JSplitPane splitPanePrincipal;
     private DialogFactory dialogFactory;
+    private GeneradorPDF generadorDoc;
 
 	@SuppressWarnings("deprecation")
-	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,ProgramaTopografico obs) { 
+	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
     	
     	//	Settings iniciales de Tamaño y Aspecto
     	setSize(900, 600);
@@ -135,6 +132,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		
 		this.listaDePuntos = new LinkedList<>();
 		
+		mapeoDeVertices = new HashMap<Posicionable,Posicionable>();
+		
 		this.RenderListas = new RenderizadorListas();
 		
 		this.modeloListaBlancos = new DefaultListModel<>();		
@@ -147,10 +146,13 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		listaUIPoligonales = new JList<>(modeloListaPoligonales); listaUIPoligonales.setFont(new Font("Arial", Font.BOLD, 20)); listaUIPoligonales.setBackground(Color.BLACK); listaUIPoligonales.setFixedCellHeight(40);	
 		listaUIPoligonales.setCellRenderer(RenderListas);
 		
+		panelPIF = pif;
+		
 		sonidos = new GestorSonido();
 		
 		this.dialogFactory = new FabricaDialogosTacticos(this, sonidos);  
 		
+		generadorDoc = new GeneradorPDF(this);
 		//	
 		
 		//	Declaracion de elementos visuales que maneja la clase
@@ -235,7 +237,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		            "SISTEMA DE REGISTRO", 
 		            JOptionPane.WARNING_MESSAGE);
 		    } else {
-		        generarInformePDF();
+		        generadorDoc.generarPDF();
 		    }
 		});
 
@@ -636,10 +638,11 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
                 }
             }
         });
+        
+        panelPIF.setMapaObservacion(panelMapa);
     }
     
-    private void configurarPopUpMenus() {
-    	
+    private void configurarPopUpMenus() {  	
     	this.popupMenu = new JPopupMenu();
         popupMenu.setPreferredSize(new Dimension(250,200));
         JMenuItem itemEditar = new JMenuItem("Editar Blanco Seleccionado");
@@ -721,7 +724,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         itemEnviarPunto.setBackground(Color.BLACK);
         itemEnviarPunto.setForeground(Color.WHITE);
         itemEnviarPunto.setFont(new Font("Arial", Font.BOLD, 15));
-        JMenuItem itemCerrarP = new JMenuItem("Cerrar Poligonal (Cálculo de Error)");
+        JMenuItem itemCerrarP = new JMenuItem("Cerrar Poligonal");
         itemCerrarP.setBackground(new Color(45, 45, 85)); // Azul oscuro táctico
         itemCerrarP.setForeground(Color.WHITE);
         itemCerrarP.setFont(new Font("Arial", Font.BOLD, 15));
@@ -750,7 +753,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         itemCerrarP.addActionListener(e -> {
             Posicionable selec = (Posicionable) listaUIPoligonales.getSelectedValue();
             if (selec != null && selec instanceof Punto) {
-                dialogFactory.CierrePoligonalDialog((Punto) selec, listaDePuntos, (resultado, informe) -> {
+                dialogFactory.CierrePoligonalDialog((Punto) selec, (resultado, informe) -> {
                     RegistroCalculos.guardar("CIERRE DE POLIGONAL", informe);
                     JOptionPane.showMessageDialog(this, "Control de precisión registrado con éxito.");
                 });	
@@ -772,13 +775,10 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         // Verificación de enlace y envío
         if (observador != null && observador.getComunicacionIP() != null) {
-            // Usamos el método enviarATodos que ya tienes implementado en el gestor Harris/IP
             observador.getComunicacionIP().enviarATodos(mensajeFinal);
             
-            // Log de auditoría en consola
             System.out.println("TX Táctica (PUNTO): " + mensajeFinal);
             
-            // Feedback visual rápido (opcional, podrías usar un Snackbar o similar)
             mensajeria.getConsolaMensajes().agregarMensaje("[TX] Punto " + p.getNombre() + " transmitido.");
         } else {
             sonidos.clickError();
@@ -786,75 +786,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
                 "FALLO DE COMUNICACIONES:\nNo se detectó el enlace IP para el envío.", 
                 "SISTEMA", 
                 JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-    private void generarInformePDF() {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        FileDialog fd = new FileDialog(parentFrame, "GUARDAR REGISTRO TOPOGRÁFICO", FileDialog.SAVE);
-        fd.setFile("Reporte_Topografico.pdf");
-        fd.setVisible(true);
-
-        if (fd.getFile() != null) {
-            String rutaCompleta = fd.getDirectory() + fd.getFile();
-            if (!rutaCompleta.toLowerCase().endsWith(".pdf")) rutaCompleta += ".pdf";
-
-            // Definimos las fuentes de iText correctamente
-            com.itextpdf.text.Font fuenteCabeceraTabla = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD);
-            com.itextpdf.text.Font fuenteTexto = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
-
-            Document documento = new Document();
-            try {
-                PdfWriter.getInstance(documento, new FileOutputStream(rutaCompleta));
-                documento.open();
-
-                // Encabezado
-                Paragraph titulo = new Paragraph("BATALLÓN DE ARTILLERÍA DE CAMPAÑA N°1\nSECCIÓN ADQUISICIÓN DE BLANCOS");
-                titulo.setAlignment(Element.ALIGN_CENTER);
-                documento.add(titulo);
-                
-                documento.add(new Paragraph("\nFECHA DE OPERACIÓN: " + LocalDateTime.now().toString()));
-                documento.add(new Paragraph("------------------------------------------------------------------------------------------"));
-
-                Map<String, String> datos = RegistroCalculos.getBitacora();
-
-                String[] funcionesPDF = {
-                    "TRIANGULACIÓN", "RADIACIÓN", "TRILATERACIÓN", 
-                    "INTERSECCIÓN INVERSA 3P", "INTERSECCIÓN INVERSA 2P", 
-                    "INTERSECCIÓN DIRECTA", "POLIGONAL", "MESA PLOTTING", 
-                    "ÁNGULO BASE", "ACTUALIZACIÓN MAGNÉTICA", 
-                    "REGISTRO COORD. MODIFICADAS", "NIVELACIÓN TRIGONOMÉTRICA",
-                    "MEDICIÓN AYD"
-                };
-
-                for (String funcion : funcionesPDF) {
-                    if (datos.containsKey(funcion)) {
-                        PdfPTable tabla = new PdfPTable(1);
-                        tabla.setWidthPercentage(100);
-                        tabla.setSpacingBefore(10f);
-
-                        // Celda de título de la función
-                        PdfPCell celdaTitulo = new PdfPCell(new Phrase(funcion, fuenteCabeceraTabla));
-                        celdaTitulo.setBackgroundColor(new BaseColor(192, 192, 192));
-                        celdaTitulo.setPadding(5);
-                        tabla.addCell(celdaTitulo);
-                        
-                        // Celda de contenido del cálculo
-                        PdfPCell celdaContenido = new PdfPCell(new Phrase(datos.get(funcion), fuenteTexto));
-                        celdaContenido.setPadding(10);
-                        tabla.addCell(celdaContenido);
-
-                        documento.add(tabla);
-                    }
-                }
-
-                documento.close();
-                JOptionPane.showMessageDialog(this, "Informe PDF generado con éxito.");
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error al generar PDF: " + ex.getMessage());
-            }
         }
     }
         
@@ -987,11 +918,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         btnBlanco.addActionListener(e -> {
             dialog.dispose();
-            // Llamas a la Factory para que abra el diálogo de Blanco
             dialogFactory.AgregarBlancoDialog(coord, nuevoBlanco -> {
-                agregarBlanco(nuevoBlanco); // Tu método original de Sit. Tac.
-                
-                // Lógica de autoincremento si el nombre coincide con el patrón
+                agregarBlanco(nuevoBlanco); 
                 String sugerido = getPrefijo() + " " + getContador();
                 if (nuevoBlanco.getNombre().equals(sugerido)) {
                     designacionBlancoContador++;
@@ -1478,6 +1406,10 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 	@Override
 	public int getContador() {
 		return this.designacionBlancoContador;
+	}
+	
+	public Map<Posicionable,Posicionable> getMapeoVertices(){
+		return mapeoDeVertices;
 	}
 	
 	@Override

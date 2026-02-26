@@ -1,4 +1,4 @@
-package app;
+package dominio;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

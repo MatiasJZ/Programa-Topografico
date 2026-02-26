@@ -3,9 +3,9 @@ import java.util.LinkedList;
 
 import javax.swing.SwingUtilities;
 
-import app.ConsolaMensajes;
-import app.DispatcherNotificacionesTacticas;
 import app.SituacionTacticaTopografica;
+import comunicaciones.ConsolaMensajes;
+import comunicaciones.DispatcherNotificacionesTacticas;
 import dominio.Blanco;
 import dominio.Punto;
 import dominio.SituacionMovimiento;

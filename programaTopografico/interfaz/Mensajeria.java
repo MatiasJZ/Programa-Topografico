@@ -4,8 +4,9 @@ import java.awt.*;
 import java.io.File;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+
+import comunicaciones.ConsolaMensajes;
 import comunicaciones.GestorEnlaceOperativo;
-import app.ConsolaMensajes;
 
 /**
  * La clase {@code Mensajeria} representa un panel de mensajería para una interfaz gráfica Swing,

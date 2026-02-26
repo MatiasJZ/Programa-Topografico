@@ -1,4 +1,4 @@
-package app;
+package comunicaciones;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

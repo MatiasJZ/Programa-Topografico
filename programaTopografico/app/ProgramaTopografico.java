@@ -2,7 +2,6 @@ package app;
 
 import comunicaciones.GestorEnlaceOperativo;
 import comunicaciones.ProtocoloCallback;
-import comunicaciones.ReceptorGPS;
 import dominio.Blanco;
 import interfaz.Mensajeria;
 import java.awt.*;
@@ -65,12 +64,13 @@ public class ProgramaTopografico extends JPanel {
 
     private GestorEnlaceOperativo comunicacionIP;
     private Mensajeria mensajeriaPanel;
+    private PedidoDeFuego pedidoDeFuego;
     private SituacionTacticaTopografica situacionTactica;
 
     public static void main(String[] args) {
 
         LinkedList<Blanco> listaDeBlancos = new LinkedList<>();
-        JFrame ventana = new JFrame("Sistema de Artillería de Reconocimiento y Gestión Operacional - GRUPO TOPOGRAFICO");
+        JFrame ventana = new JFrame("Sistema de Artillería de Reconocimiento y Gestión Operacional - SAB");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setExtendedState(JFrame.MAXIMIZED_BOTH);
         ventana.setLocationRelativeTo(null);
@@ -94,7 +94,7 @@ public class ProgramaTopografico extends JPanel {
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
         menuSuperior.setPreferredSize(new Dimension(0, 40));
         menuSuperior.setBackground(Color.DARK_GRAY);
-        String[] secciones = {"SITUACION TACTICA", "MENSAJERIA"};
+        String[] secciones = {"SITUACION TACTICA","PEDIDO DE FUEGO","MENSAJERIA"};
 
         botonesMenu = new JButton[secciones.length];
 
@@ -111,8 +111,9 @@ public class ProgramaTopografico extends JPanel {
             btn.addActionListener(e -> {
                 panelActual = idx;
                 switch (idx) {
-                    case 0 -> cardLayout.show(cards, "SITUACION");
-                    case 1 -> cardLayout.show(cards, "MENSAJERIA");
+	                case 0 -> cardLayout.show(cards, "SITUACION");
+	                case 1 -> cardLayout.show(cards, "PEDIDO");
+	                case 2 -> cardLayout.show(cards, "MENSAJERIA");
                 }
                 actualizarBotonesMenu();
             });
@@ -125,11 +126,13 @@ public class ProgramaTopografico extends JPanel {
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        situacionTactica = new SituacionTacticaTopografica(listaDeBlancos, this); 
+        pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
+        situacionTactica = new SituacionTacticaTopografica(listaDeBlancos,pedidoDeFuego, this); 
         mensajeriaPanel = new Mensajeria();
         situacionTactica.setPanelMensajeria(mensajeriaPanel);
        
         cards.add(situacionTactica, "SITUACION");
+        cards.add(pedidoDeFuego, "PEDIDO");
         cards.add(mensajeriaPanel, "MENSAJERIA");
 
         add(cards, BorderLayout.CENTER);
@@ -203,11 +206,6 @@ public class ProgramaTopografico extends JPanel {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        
-        int puertoGPS = 4001; 
-
-        ReceptorGPS receptorSA = new ReceptorGPS(puertoGPS, situacionTactica);
-        receptorSA.iniciar();
     }
 
     public GestorEnlaceOperativo getComunicacionIP() {
@@ -231,13 +229,11 @@ public class ProgramaTopografico extends JPanel {
         sonidos = new GestorSonido();
 
         while (true) {
-            // 1. Crear el campo de texto con fuente grande
             JPasswordField passwordField = new JPasswordField(10);
-            passwordField.setEchoChar('●'); // Un carácter de punto suele verse más moderno que '*'
-            passwordField.setFont(new Font("Arial", Font.BOLD, 30)); // Letra MUY grande
-            passwordField.setHorizontalAlignment(JTextField.CENTER); // Centrar el texto ingresado
+            passwordField.setEchoChar('●');
+            passwordField.setFont(new Font("Arial", Font.BOLD, 30)); 
+            passwordField.setHorizontalAlignment(JTextField.CENTER); 
 
-            // 2. Crear un panel para controlar el tamaño y márgenes
             JPanel panelContenedor = new JPanel(new BorderLayout(0, 15));
             panelContenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             
@@ -247,7 +243,6 @@ public class ProgramaTopografico extends JPanel {
             panelContenedor.add(lblInstruccion, BorderLayout.NORTH);
             panelContenedor.add(passwordField, BorderLayout.CENTER);
 
-            // 3. Configurar el tamaño de los botones globalmente (solo para este diálogo)
             UIManager.put("OptionPane.buttonFont", new Font("Arial", Font.BOLD, 18));
             UIManager.put("Button.minimumSize", new Dimension(120, 50));
 
@@ -275,7 +270,6 @@ public class ProgramaTopografico extends JPanel {
 
             sonidos.ingresoError();
             
-            // El diálogo de error también con fuente grande
             JLabel lblError = new JLabel("ID INCORRECTO. REINTENTE.");
             lblError.setFont(new Font("Arial", Font.BOLD, 16));
             
@@ -293,6 +287,10 @@ public class ProgramaTopografico extends JPanel {
         for (int i = 0; i < botonesMenu.length; i++) {
             botonesMenu[i].setBackground(i == panelActual ? Color.BLUE : Color.GRAY);
         }
+    }
+    
+    public PedidoDeFuego getPedidoDeFuego() {
+    	return pedidoDeFuego;
     }
 
     public String getIdOAA() {

@@ -1,6 +1,5 @@
-package app;
+package comunicaciones;
 
-import comunicaciones.GestorEnlaceOperativo;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.net.InetAddress;

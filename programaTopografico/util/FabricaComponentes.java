@@ -1,6 +1,8 @@
 package util;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -10,14 +12,21 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 
 import dominio.Blanco;
 import dominio.Posicionable;
@@ -57,6 +66,44 @@ public class FabricaComponentes {
         return label;
     }
 
+	public static void agrupar(JRadioButton a, JRadioButton b) {
+        ButtonGroup g = new ButtonGroup();
+        g.add(a);
+        g.add(b);
+    }
+	
+	public static JPanel crearGrupoRadio(String titulo, Consumer<JPanel> consumer) {
+        JPanel p = crearFila();
+        JLabel l = new JLabel(titulo);
+        l.setForeground(Color.WHITE);
+        l.setFont(new Font("Arial", Font.BOLD, 15));
+        p.add(l);
+
+        JPanel radios = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        radios.setBackground(new Color(60,60,60));
+
+        consumer.accept(radios);
+        p.add(radios);
+        return p;
+    }
+	
+	public static JPanel crearFila() {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        p.setOpaque(false); // fondo transparente
+        p.setBorder(BorderFactory.createLineBorder(new Color(120, 120, 120), 1)); // marco rectangular
+        return p;
+    }
+
+    public static JPanel crearItem(String label, Component c) {
+        JPanel p = crearFila();
+        JLabel l = new JLabel(label);
+        l.setForeground(Color.WHITE);
+        l.setFont(new Font("Arial", Font.BOLD, 15));
+        p.add(l);
+        p.add(c);
+        return p;
+    }
+	
 	public static JTextField crearCampoTexto(Font fuente) {
         JTextField tf = new JTextField();
         tf.setFont(fuente);
@@ -68,6 +115,103 @@ public class FabricaComponentes {
         tf.setPreferredSize(new Dimension(200, 45));
         return tf;
     }
+	
+	public static TitledBorder crearBordeTitulo(String titulo) {
+        TitledBorder b = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                titulo,
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 20),
+                Color.WHITE
+        );
+        return b;
+    }
+	
+	public static JRadioButton crearRadio(String text, Icon icon) {
+        JRadioButton rb = new JRadioButton(text);
+        rb.setForeground(Color.WHITE);
+        rb.setBackground(new Color(60,60,60));
+        rb.setFont(new Font("Arial", Font.PLAIN, 14));
+        rb.setIcon(icon);
+        return rb;
+    }
+	
+	public static JPanel crearBlindado(String titulo) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(Color.BLACK);
+
+        TitledBorder b = BorderFactory.createTitledBorder(
+	        BorderFactory.createLineBorder(Color.GRAY, 2),
+	        titulo,
+	        TitledBorder.LEFT,
+	        TitledBorder.TOP,
+	        new Font("Arial", Font.BOLD, 17),
+	        Color.WHITE
+        );
+        p.setBorder(b);
+        return p;
+    }
+	
+	public static void configurarArea(JTextArea a){
+        a.setForeground(Color.WHITE);
+        a.setBackground(new Color(60,60,60));
+        a.setLineWrap(true);
+        a.setWrapStyleWord(true);
+    }
+	
+	public static JPanel crearLinea(String etiqueta, String valor, Font font) {
+        JPanel linea = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        linea.setBackground(Color.BLACK);
+
+        JLabel l1 = new JLabel(etiqueta);
+        l1.setForeground(Color.WHITE);
+        l1.setFont(font);
+
+        JLabel l2 = new JLabel(valor);
+        l2.setForeground(new Color(180, 255, 180));
+        l2.setFont(font);
+
+        linea.add(l1);
+        linea.add(l2);
+
+        return linea;
+    }
+	
+	public static void configurarCampo(JTextField t){
+        t.setBackground(new Color(60,60,60));
+        t.setForeground(Color.WHITE);
+    }
+	
+	public static JComboBox<String> crearCombo(String[] items, Dimension d) {
+        JComboBox<String> c = new JComboBox<>(items);
+        c.setFont(new Font("Arial", Font.PLAIN, 15));
+        c.setPreferredSize(d);
+        c.setBackground(Color.WHITE);
+        centrarCombo(c);
+        return c;
+    }
+	
+	public static JComboBox<String> crearCombo(String[] items) {
+        JComboBox<String> c = new JComboBox<>(items);
+        c.setBackground(new Color(60,60,60));
+        c.setForeground(Color.WHITE);
+        c.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        // Centrar texto en elementos
+        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+        c.setRenderer(renderer);
+
+        return c;
+    }
+	
+	public static void centrarCombo(JComboBox<String> combo) {
+        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+        combo.setRenderer(renderer);
+    }
+
     
     public static JComboBox<Posicionable> crearComboPuntosYBlancos(Font fuente, LinkedList<Punto> l1,LinkedList<Blanco> l2) {
         JComboBox<Posicionable> cb = new JComboBox<Posicionable>();

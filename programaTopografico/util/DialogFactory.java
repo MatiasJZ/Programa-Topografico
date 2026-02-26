@@ -48,6 +48,6 @@ public interface DialogFactory {
     void RegistroCoordModDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback);
     void NivelTrigonometricoDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback);
     void RegistroPPALDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback);
-	void CierrePoligonalDialog(Punto puntoCalculado, List<Punto> puntosReales, CalculoCallback callback);
+	void CierrePoligonalDialog(Punto puntoCalculado, CalculoCallback callback);
     
 }

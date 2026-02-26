@@ -52,21 +52,17 @@ public class CalculadorTopografico {
      * @return coordRectangulares del nuevo punto
      */
 	public static CoordenadasRectangulares triangulacion(Posicionable pA, Posicionable pB, double anguloA, double anguloB) {
-	    // Extraigo las coordenadas sin importar el tipo de objeto
+
 	    double x1 = pA.getCoordenadas().getX();
 	    double y1 = pA.getCoordenadas().getY();
 	    double x2 = pB.getCoordenadas().getX();
 	    double y2 = pB.getCoordenadas().getY();
 
-	    // El resto de la lógica matemática se mantiene igual...
 	    double distBase = pA.getCoordenadas().distanciaA(pB.getCoordenadas());
-	    double anguloC = 3200 - (anguloA + anguloB);
+	    double anguloC = 3200 - (anguloA + anguloB); 
 	    
-	    // ... (tu lógica de senos y azimut) ...
-	    
-	    // Uso el método milsToRadians que ya tenés definido abajo
 	    double distAC = (distBase * Math.sin(milsToRadians(anguloB))) / Math.sin(milsToRadians(anguloC));
-	    double azimutAB = calcularAzimut(x1, y1, x2, y2);
+	    double azimutAB = calcularAzimutEnMils(x1, y1, x2, y2);
 	    double azimutObjetivo = azimutAB + anguloA; 
 
 	    double nuevoX = x1 + distAC * Math.sin(milsToRadians(azimutObjetivo));
@@ -152,7 +148,7 @@ public class CalculadorTopografico {
 	    return new Coordinate(xRes, yRes);
 	}
 	
-	public double calcularAzimutEnMils(double x1, double y1, double x2, double y2) {
+	public static double calcularAzimutEnMils(double x1, double y1, double x2, double y2) {
         double dx = x2 - x1;
         double dy = y2 - y1;
         double radianes = Math.atan2(dx, dy);
@@ -272,7 +268,7 @@ public class CalculadorTopografico {
 	 * @return coordRectangulares del observador
 	 */
 	public static CoordenadasRectangulares interseccionInversa3P(Posicionable p1, Posicionable p2, Posicionable p3, double alfa, double beta) throws Exception {
-	    // 1. Coordenadas de los puntos de referencia
+	    
 	    double x1 = p1.getCoordenadas().getX();
 	    double y1 = p1.getCoordenadas().getY();
 	    double x2 = p2.getCoordenadas().getX();
@@ -282,7 +278,7 @@ public class CalculadorTopografico {
 
 	    double radAlfa = milsToRadians(alfa);
 	    double radBeta = milsToRadians(beta);
-	    // Angulo total entre P1 y P3
+	    
 	    double radGamma = radAlfa + radBeta;
 
 	    double az12 = calcularAzimutRadianes(x1, y1, x2, y2);
@@ -307,40 +303,6 @@ public class CalculadorTopografico {
 	    double nuevaCota = (p1.getCoordenadas().getCota() + p2.getCoordenadas().getCota() + p3.getCoordenadas().getCota()) / 3.0;
 
 	    return new CoordenadasRectangulares(nuevoX, nuevoY, nuevaCota);
-	}
-	
-	/**
-	 * Calcula el error de cierre lineal y la precisión relativa de una poligonal.
-	 * @param real Coordenadas verdaderas del punto de cierre.
-	 * @param calculado Coordenadas obtenidas mediante el cálculo itinerante.
-	 * @param distanciaTotal Sumatoria de todas las distancias medidas en la poligonal.
-	 * @return String formateado con el informe de precisión.
-	 */
-	public static String obtenerInformeError(CoordenadasRectangulares real, CoordenadasRectangulares calculado, double distanciaTotal) {
-	    double errorX = real.getX() - calculado.getX();
-	    double errorY = real.getY() - calculado.getY();
-	    
-	    // Error lineal total (Hipotenusa de los errores)
-	    double errorLineal = Math.sqrt(Math.pow(errorX, 2) + Math.pow(errorY, 2));
-	    
-	    // Precisión relativa (1 / (Distancia / Error))
-	    double precision = (errorLineal > 0) ? (distanciaTotal / errorLineal) : 0;
-
-	    StringBuilder sb = new StringBuilder();
-	    sb.append("--- INFORME DE PRECISIÓN ---\n");
-	    sb.append(String.format("Error en X (Derechas): %.3f m\n", errorX));
-	    sb.append(String.format("Error en Y (Arribas): %.3f m\n", errorY));
-	    sb.append(String.format("ERROR LINEAL TOTAL: %.3f m\n", errorLineal));
-	    sb.append(String.format("DISTANCIA TOTAL RECORRIDA: %.2f m\n", distanciaTotal));
-	    sb.append(String.format("PRECISIÓN RELATIVA: 1 / %.0f\n", precision));
-	    
-	    if (precision < 1000) {
-	        sb.append("ESTADO: PRECISIÓN INSUFICIENTE (Requiere repetir medición)");
-	    } else {
-	        sb.append("ESTADO: TOLERANCIA ACEPTABLE");
-	    }
-	    
-	    return sb.toString();
 	}
 
     public static String obtenerInformeError(CoordenadasRectangulares coordReal, CoordenadasRectangulares coordCalc, double perimetro, String idReal, String idCalc) {
@@ -368,8 +330,7 @@ public class CalculadorTopografico {
         sb.append("MÉTODO: CONTROL DE CIERRE DE POLIGONAL\n\n");
         
         sb.append("PUNTOS EVALUADOS:\n");
-        sb.append(String.format(" - ORIGEN VERDADERO (%s): X: %.2f | Y: %.2f | Z: %.2f\n", idReal, coordReal.getX(), coordReal.getY(), coordReal.getCota()));
-        sb.append(String.format(" - LLEGADA CALCULADA (%s): X: %.2f | Y: %.2f | Z: %.2f\n\n", idCalc, coordCalc.getX(), coordCalc.getY(), coordCalc.getCota()));
+        sb.append(String.format(" - ORIGEN  (%s): X: %.2f | Y: %.2f | Z: %.2f\n", idReal, coordReal.getX(), coordReal.getY(), coordReal.getCota()));
         
         sb.append("ERRORES LINEALES:\n");
         sb.append(String.format(" - ERROR EN DERECHAS (ΔX): %s%.2f m\n", (errorX > 0 ? "+" : ""), errorX));
@@ -384,10 +345,6 @@ public class CalculadorTopografico {
         return sb.toString();
     }
 
-    /**
-     * Navega por el grafo de poligonales (DFS) buscando el camino más directo 
-     * entre el punto de inicio y el destino, acumulando la distancia.
-     */
     public double calcularPerimetroRecursivo(CoordenadasRectangulares actual, CoordenadasRectangulares destino, LinkedList<Poligonal> poligonales, HashSet<String> visitados) {
         // Tolerancia de 10 cm (0.1m) para considerar que chocamos con el objetivo
         if (actual.distanciaA(destino) < 0.1) {
@@ -433,7 +390,7 @@ public class CalculadorTopografico {
 
         // Backtracking: liberamos el nodo si llegamos a un callejón sin salida
         visitados.remove(nodoClave);
-        return -1.0;
+        return -1;
     }
     
 	private static double cot(double angulo) {
@@ -452,12 +409,5 @@ public class CalculadorTopografico {
 
     private static double milsToRadians(double mils) {
         return (mils * 2 * Math.PI) / 6400.0;
-    }
-
-    private static double calcularAzimut(double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double az = Math.toDegrees(Math.atan2(dx, dy)) * (6400.0 / 360.0);
-        return (az < 0) ? az + 6400 : az;
     }
 }
