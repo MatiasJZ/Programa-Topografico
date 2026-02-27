@@ -20,19 +20,19 @@ package dominio;
 public class CoordenadasRectangulares extends Coordenadas {
     private double coordX; 
     private double coordY;
-    private double cotaXY; 
+    private double cota; 
 
     public CoordenadasRectangulares(double x, double y, double cota) {
         this.coordX = x;
         this.coordY = y;
-        this.cotaXY = cota;
+        this.cota = cota;
     }
 
     public double getX() { return coordX; }
     
     public double getY() { return coordY; }
     
-    public double getCota() { return cotaXY; }
+    public double getCota() { return cota; }
 
     @Override
     public double distanciaA(CoordenadasRectangulares otro) {
@@ -48,6 +48,11 @@ public class CoordenadasRectangulares extends Coordenadas {
 
 	@Override
 	public void setCota(double c) {
-		cotaXY = c;
+		cota = c;
+	}
+
+	@Override
+	public boolean equals(Coordenadas c) {
+		return (this.coordX == c.getX() && this.coordY == c.getY() && this.cota == c.getCota());
 	}
 }

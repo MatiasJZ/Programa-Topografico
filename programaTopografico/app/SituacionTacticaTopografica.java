@@ -18,6 +18,7 @@ import dominio.RegistroCalculos;
 import dominio.RenderizadorListas;
 import dominio.CoordenadasRectangulares;
 import dominio.GeneradorPDF;
+import dominio.Linea;
 import dominio.Poligonal;
 import interfaz.Mensajeria;
 import interfaz.PanelMapa;
@@ -275,35 +276,26 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
 		btnEliminar.addActionListener(e -> {
 		    Blanco selecB = listaUIBlancos.getSelectedValue();
-		    Poligonal selecP = listaUIPoligonales.getSelectedValue();
+		    Poligonal selecP = listaUIPoligonales.getSelectedValue(); 
 
 		    boolean borrarBlanco = false;
 		    boolean borrarPoligonal = false;
 
 		    if (selecB != null && selecP != null) {
 		        Object[] opciones = {"Eliminar Blanco", "Eliminar Linea/Punto", "Cancelar"};
-		        int eleccion = JOptionPane.showOptionDialog(this, // Usa 'padre' si 'this' no es el componente correcto aquí
+		        int eleccion = JOptionPane.showOptionDialog(this,
 		                "Tiene seleccionado un Blanco y una Poligonal al mismo tiempo.\n¿Cuál de los dos desea eliminar?",
 		                "Selección Múltiple",
 		                JOptionPane.YES_NO_CANCEL_OPTION,
 		                JOptionPane.QUESTION_MESSAGE,
-		                null,
-		                opciones,
-		                opciones[0]);
+		                null, opciones, opciones[0]);
 
-		        if (eleccion == 0) {
-		            borrarBlanco = true;
-		        } else if (eleccion == 1) {
-		            borrarPoligonal = true;
-		        } else {
-		            return;
-		        }
+		        if (eleccion == 0) borrarBlanco = true;
+		        else if (eleccion == 1) borrarPoligonal = true;
+		        else return;
 		    } 
-		    else if (selecB != null) {
-		        borrarBlanco = true;
-		    } else if (selecP != null) {
-		        borrarPoligonal = true;
-		    } 
+		    else if (selecB != null) borrarBlanco = true;
+		    else if (selecP != null) borrarPoligonal = true;
 		    else {
 		        sonidos.clickError();
 		        JOptionPane.showMessageDialog(this, "Seleccione un elemento para eliminar.", "SISTEMA", JOptionPane.WARNING_MESSAGE);
@@ -313,17 +305,44 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		        listaDeBlancos.remove(selecB);
 		        modeloListaBlancos.removeElement(selecB);
 		        panelMapa.eliminarBlanco(selecB);
+		        mapeoDeVertices.remove(selecB); 
 		    }
-
 		    if (borrarPoligonal) {
 		        listaDePoligonales.remove(selecP);
 		        modeloListaPoligonales.removeElement(selecP);
 		        panelMapa.eliminarPoligonal(selecP);
 		        listaDePuntos.removeIf(p -> p.getName().equals(selecP.getName()));
+
+		        if (selecP instanceof Punto) {
+		            mapeoDeVertices.remove((Posicionable) selecP);
+		            
+		            mapeoDeVertices.values().removeIf(val -> val.equals(selecP));
+		        } 
+		        else if (selecP instanceof Linea) {
+		            Linea linea = (Linea) selecP;
+		            Posicionable keyToRemove = null;
+
+		            for (Map.Entry<Posicionable, Posicionable> entry : mapeoDeVertices.entrySet()) {
+		                Posicionable origen = entry.getKey();
+		                Posicionable destino = entry.getValue();
+
+		                boolean mismoOrigen = origen.getCoordenadas().equals(linea.getC1()); 
+		                boolean mismoDestino = destino.getCoordenadas().equals(linea.getC2());
+
+		                if (mismoOrigen && mismoDestino) {
+		                    keyToRemove = origen;
+		                    break; 
+		                }
+		            }
+		            if (keyToRemove != null) {
+		                mapeoDeVertices.remove(keyToRemove);
+		                System.out.println("Conexión eliminada del mapa lógico: " + keyToRemove.getNombre());
+		            }
+		        }
 		    }
+
 		    listaUIBlancos.clearSelection();
 		    listaUIPoligonales.clearSelection();
-		    
 		    panelMapa.repaint();
 		});
 
@@ -375,7 +394,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
 		JLayeredPane layered = new JLayeredPane();
 		layered.setLayout(null);
-		splitPanePrincipal.setBounds(0, 0, getWidth(), getHeight());
 				
 		//	Boton de AJUSTES y su ActionListener
 		JButton btnConfig = new JButton("\u2699 AJUSTES");
@@ -435,12 +453,21 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		this.addComponentListener(new ComponentAdapter() {
 		    @Override
 		    public void componentResized(ComponentEvent e) {
-
+		    	int anchoTotal = getWidth();
+		    	
 		    	splitPanePrincipal.setBounds(0, 0, getWidth(), getHeight());
 
 		        hud.setLocation(getWidth() - hud.getWidth() - 20,getHeight() - hud.getHeight() - 20);
 
-		        panelGlobalTopografico.setLocation(370, 30);
+		        int xInicioMapa = splitPanePrincipal.getDividerLocation() + splitPanePrincipal.getDividerSize();
+		        int anchoMapa = anchoTotal - xInicioMapa;
+		        
+		        int anchoPanelTopo = panelGlobalTopografico.getWidth();
+		        if (anchoPanelTopo == 0) anchoPanelTopo = panelGlobalTopografico.getPreferredSize().width;
+
+		        int xCentradoMapa = xInicioMapa + (anchoMapa / 2) - (anchoPanelTopo / 2);
+
+		        panelGlobalTopografico.setLocation(xCentradoMapa + 50, 30);
 		        
 		        btnConfig.setLocation(270, getHeight() - 90);
 		    }

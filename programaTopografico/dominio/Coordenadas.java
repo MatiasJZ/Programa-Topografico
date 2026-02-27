@@ -9,4 +9,5 @@ public abstract class Coordenadas{
 	public abstract double getCota();
 	public abstract void setCota(double c);
     public abstract double distanciaA(CoordenadasRectangulares otro);
+    public abstract boolean equals(Coordenadas c);
 }

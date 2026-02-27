@@ -1,18 +1,11 @@
 package app;
 
 import dominio.Posicionable;
-
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Map;
-
 import org.locationtech.jts.geom.Coordinate;
-
 import dominio.CoordenadasRectangulares;
-import dominio.Linea;
-import dominio.Poligonal;
 
 /**
  * CalculadorTopografico
@@ -307,94 +300,6 @@ public class CalculadorTopografico {
 	    return new CoordenadasRectangulares(nuevoX, nuevoY, nuevaCota);
 	}
 
-    public static String obtenerInformeError(CoordenadasRectangulares coordReal, CoordenadasRectangulares coordCalc, double perimetro, String idReal, String idCalc) {
-        
-        // 1. Diferencias en ejes
-        double errorX = coordCalc.getX() - coordReal.getX();
-        double errorY = coordCalc.getY() - coordReal.getY();
-        double errorZ = coordCalc.getCota() - coordReal.getCota();
-
-        // 2. Error de Cierre Lineal (Planimétrico - Teorema de Pitágoras)
-        double errorLineal = Math.sqrt(Math.pow(errorX, 2) + Math.pow(errorY, 2));
-
-        // 3. Precisión Relativa (1 : X)
-        String precisionRelativa = "N/A";
-        if (perimetro > 0 && errorLineal > 0) {
-            double denominador = perimetro / errorLineal;
-            // Se suele redondear al entero más cercano en topografía
-            precisionRelativa = "1 : " + Math.round(denominador); 
-        } else if (errorLineal == 0) {
-            precisionRelativa = "CIERRE PERFECTO (Error 0)";
-        }
-
-        // 4. Construcción del informe táctico
-        StringBuilder sb = new StringBuilder();
-        sb.append("MÉTODO: CONTROL DE CIERRE DE POLIGONAL\n\n");
-        
-        sb.append("PUNTOS EVALUADOS:\n");
-        sb.append(String.format(" - ORIGEN  (%s): X: %.2f | Y: %.2f | Z: %.2f\n", idReal, coordReal.getX(), coordReal.getY(), coordReal.getCota()));
-        
-        sb.append("ERRORES LINEALES:\n");
-        sb.append(String.format(" - ERROR EN DERECHAS (ΔX): %s%.2f m\n", (errorX > 0 ? "+" : ""), errorX));
-        sb.append(String.format(" - ERROR EN ARRIBAS (ΔY): %s%.2f m\n", (errorY > 0 ? "+" : ""), errorY));
-        sb.append(String.format(" - ERROR EN COTA (ΔZ): %s%.2f m\n\n", (errorZ > 0 ? "+" : ""), errorZ));
-        
-        sb.append("RESULTADOS DE PRECISIÓN TÁCTICA:\n");
-        sb.append(String.format(" - LONGITUD TOTAL (PERÍMETRO): %.2f m\n", perimetro));
-        sb.append(String.format(" - ERROR DE CIERRE LINEAL (ECL): %.3f m\n", errorLineal));
-        sb.append(String.format(" - PRECISIÓN RELATIVA: %s", precisionRelativa));
-
-        return sb.toString();
-    }
-
-    public double calcularPerimetroRecursivo(CoordenadasRectangulares actual, CoordenadasRectangulares destino, LinkedList<Poligonal> poligonales, HashSet<String> visitados) {
-        // Tolerancia de 10 cm (0.1m) para considerar que chocamos con el objetivo
-        if (actual.distanciaA(destino) < 0.1) {
-            return 0.0;
-        }
-
-        // Usamos una clave String para el Set de visitados y así evitar ciclos infinitos
-        String nodoClave = String.format(Locale.US, "%.1f,%.1f", actual.getX(), actual.getY());
-        visitados.add(nodoClave);
-
-        for (Poligonal p : poligonales) {
-            // Filtramos solo las Líneas, ignorando los Puntos sueltos en el mapa
-            if (p.getClass().getSimpleName().equals("Linea")) {
-                Linea linea = (Linea) p;
-                
-                // NOTA: Ajusta "getC1()" y "getC2()" si tu clase Linea los llama diferente (ej: getInicio(), getFin())
-                Coordinate c1 = linea.getC1(); 
-                Coordinate c2 = linea.getC2(); 
-
-                CoordenadasRectangulares coord1 = new CoordenadasRectangulares(c1.x, c1.y, 0);
-                CoordenadasRectangulares coord2 = new CoordenadasRectangulares(c2.x, c2.y, 0);
-
-                CoordenadasRectangulares vecino = null;
-                
-                // Verificamos si nuestro punto "actual" toca alguno de los extremos de esta línea
-                if (actual.distanciaA(coord1) < 0.1) vecino = coord2;
-                else if (actual.distanciaA(coord2) < 0.1) vecino = coord1;
-
-                if (vecino != null) {
-                    String vecinoClave = String.format(Locale.US, "%.1f,%.1f", vecino.getX(), vecino.getY());
-                    
-                    if (!visitados.contains(vecinoClave)) {
-                        // Navegamos más profundo por este camino (Recursividad)
-                        double distRestante = calcularPerimetroRecursivo(vecino, destino, poligonales, visitados);
-                        
-                        if (distRestante != -1.0) { // Si este camino nos llevó al destino
-                            return linea.getDistancia() + distRestante; // Sumamos la distancia de esta línea y regresamos
-                        }
-                    }
-                }
-            }
-        }
-
-        // Backtracking: liberamos el nodo si llegamos a un callejón sin salida
-        visitados.remove(nodoClave);
-        return -1;
-    }
-    
 	private static double cot(double angulo) {
 	    return 1.0 / Math.tan(angulo);
 	}
@@ -413,15 +318,101 @@ public class CalculadorTopografico {
         return (mils * 2 * Math.PI) / 6400.0;
     }
 
-	public static void calcularCierreYArea(LinkedList<Posicionable> camino, Map<Posicionable, Posicionable> mapeo) {
-		Iterator<Posicionable> it = camino.iterator();
-		Posicionable proximo = camino.getFirst();
-		int distanciaTotal = 0;
-		while(it.hasNext()) {
-			distanciaTotal += proximo.distanciaA(mapeo.get(proximo));
-			proximo = it.next();
-		}
-		distanciaTotal += proximo.distanciaA(camino.getFirst());
-		System.out.println("Resultado: " +distanciaTotal);
-	}
+    public static String calcularCierrePoligonal(LinkedList<Posicionable> camino) {
+        if (camino == null || camino.size() < 3) return "Datos insuficientes (Mínimo 3 vértices).";
+
+        StringBuilder sb = new StringBuilder();
+
+        try (Formatter fmt = new Formatter(sb, Locale.US)) {
+            
+            int n = camino.size();
+            double perimetroTotal = 0.0;
+            double[] distanciasAcumuladas = new double[n]; 
+            distanciasAcumuladas[0] = 0.0;
+            
+            double suma1 = 0.0; 
+            double suma2 = 0.0; 
+
+            for (int i = 0; i < n - 1; i++) {
+                Posicionable actual = camino.get(i);
+                Posicionable siguiente = camino.get(i+1);
+
+                double distTramo = actual.distanciaA(siguiente);
+                perimetroTotal += distTramo;
+                distanciasAcumuladas[i+1] = perimetroTotal;
+
+                suma1 += actual.getCoordenadas().getX() * siguiente.getCoordenadas().getY();
+                suma2 += actual.getCoordenadas().getY() * siguiente.getCoordenadas().getX();
+            }
+
+            double areaMetros = Math.abs(suma1 - suma2) / 2.0;
+            double areaHectareas = areaMetros / 10000.0;
+
+            Posicionable pInicial = camino.getFirst();
+            Posicionable pFinalCalculado = camino.getLast();
+
+            double eX = pFinalCalculado.getCoordenadas().getX() - pInicial.getCoordenadas().getX();
+            double eY = pFinalCalculado.getCoordenadas().getY() - pInicial.getCoordenadas().getY();
+            double eZ = pFinalCalculado.getCoordenadas().getCota() - pInicial.getCoordenadas().getCota();
+            
+            double errorLineal = Math.sqrt(eX * eX + eY * eY);
+
+            long precisionDenominador = (long) (errorLineal > 0.001 ? perimetroTotal / errorLineal : 0);
+            String precisionTexto = (errorLineal < 0.01) ? "CIERRE PERFECTO" : "1 : " + precisionDenominador;
+
+            sb.append("================================================================\n");
+            sb.append("       REPORTE DE CIERRE DE POLIGONAL (MÉTODO TAF)\n");
+            sb.append("================================================================\n\n");
+            
+            sb.append("1. CONTROL DE PRECISIÓN:\n");
+            fmt.format(" - Perímetro Total:         %,12.3f m\n", perimetroTotal);
+            fmt.format(" - Error Lineal (ECL):      %,12.3f m\n", errorLineal);
+            fmt.format(" - Precisión Relativa:      %s\n", precisionTexto);
+            sb.append("\n");
+            fmt.format(" - Error en X (ΔX):         %+.3f m\n", eX);
+            fmt.format(" - Error en Y (ΔY):         %+.3f m\n", eY);
+            fmt.format(" - Error en Z (ΔZ):         %+.3f m\n", eZ);
+            sb.append("\n");
+
+            sb.append("2. CÁLCULO DE SUPERFICIE (ÁREA):\n");
+            sb.append("----------------------------------------------------------------\n");
+            fmt.format(" - SUPERFICIE EN M²:        %,12.2f m²\n", areaMetros);
+            fmt.format(" - SUPERFICIE EN HECTÁREAS: %,12.4f ha\n", areaHectareas);
+            sb.append("----------------------------------------------------------------\n\n");
+
+            sb.append("3. TABLA DE COORDENADAS COMPENSADAS (AJUSTADAS):\n");
+            sb.append("----------------------------------------------------------------\n");
+            sb.append(String.format("%-10s | %-14s | %-14s | %-10s\n", "PUNTO", "ESTE (X)", "NORTE (Y)", "COTA (Z)"));
+            sb.append("----------------------------------------------------------------\n");
+
+            for (int i = 0; i < n; i++) {
+                Posicionable p = camino.get(i);
+                double xCrudo = p.getCoordenadas().getX();
+                double yCrudo = p.getCoordenadas().getY();
+                double zCrudo = p.getCoordenadas().getCota();
+
+                double ratio = (perimetroTotal > 0) ? (distanciasAcumuladas[i] / perimetroTotal) : 0;
+
+                double xCompensada = xCrudo - (eX * ratio);
+                double yCompensada = yCrudo - (eY * ratio);
+                double zCompensada = zCrudo - (eZ * ratio);
+
+                if (i == n - 1) {
+                    xCompensada = pInicial.getCoordenadas().getX();
+                    yCompensada = pInicial.getCoordenadas().getY();
+                    zCompensada = pInicial.getCoordenadas().getCota();
+                }
+
+                fmt.format("%-10s | %,14.3f | %,14.3f | %,10.3f\n", 
+                           p.getNombre(), xCompensada, yCompensada, zCompensada);
+            }
+            sb.append("----------------------------------------------------------------\n");
+            sb.append("NOTA: Coordenadas ajustadas por Método de la Brújula (Bowditch).\n");
+
+        } catch (Exception e) {
+            return "Error en cálculo: " + e.getMessage();
+        }
+
+        return sb.toString();
+    }
 }

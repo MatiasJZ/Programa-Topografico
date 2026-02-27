@@ -1438,93 +1438,178 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
 	@Override
 	public void CierrePoligonalDialog(Punto puntoInicio, CalculoCallback callback) {
-		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
-        JDialog dialog = new JDialog(parentFrame, "CONTROL DE PRECISIÓN: CIERRE DE POLIGONAL", true);
-        dialog.setSize(480, 300); 
-        dialog.setLocationRelativeTo(padre);
+	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+	    JDialog dialog = new JDialog(parentFrame, "OPERACIÓN DE CIERRE TOPOGRÁFICO", true);
+	    dialog.setSize(550, 380);
+	    dialog.setLocationRelativeTo(padre);
+	    dialog.setUndecorated(true); 
+	    dialog.getRootPane().setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(30, 30, 30));
-        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
+	    Color colorFondo = new Color(30, 30, 30);
+	    Color colorPanelDatos = new Color(45, 45, 45);
+	    Color colorAcento = new Color(0, 255, 0); 
+	    Font fuenteTitulo = new Font("SansSerif", Font.BOLD, 18);
 
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setOpaque(false);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+	    JPanel mainPanel = new JPanel(new BorderLayout());
+	    mainPanel.setBackground(colorFondo);
+	    
+	    JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+	    headerPanel.setBackground(new Color(20, 20, 20));
+	    headerPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, colorAcento));
+	    JLabel lblTitulo = new JLabel("CONTROL DE CIERRE DE POLIGONAL");
+	    lblTitulo.setForeground(colorAcento);
+	    lblTitulo.setFont(fuenteTitulo);
+	    headerPanel.add(lblTitulo);
+	    mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        Font fLabel = new Font("Arial", Font.BOLD, 16);
+	    JPanel bodyPanel = new JPanel(new GridBagLayout());
+	    bodyPanel.setBackground(colorFondo);
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(10, 10, 10, 10);
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	    
+	    JPanel infoCard = new JPanel(new GridLayout(3, 1, 5, 5));
+	    infoCard.setBackground(colorPanelDatos);
+	    infoCard.setBorder(BorderFactory.createCompoundBorder(
+	            BorderFactory.createLineBorder(new Color(80, 80, 80), 1),
+	            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+	    ));
 
-        // 1. Info del Punto Calculado (Llegada)
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        JLabel lblInfo = new JLabel("<html><center>PUNTO DE CIERRE EVALUADO:<br><font color='#00FF00' size='5'>" + puntoInicio.getNombre() + "</font></center></html>");
-        lblInfo.setFont(fLabel);
-        lblInfo.setForeground(Color.WHITE);
-        lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
-        formPanel.add(lblInfo, gbc);
+	    JLabel lblSub = new JLabel("PUNTO DE INICIO / CIERRE:");
+	    lblSub.setForeground(Color.GRAY);
+	    lblSub.setHorizontalAlignment(SwingConstants.CENTER);
+	    
+	    JLabel lblNombre = new JLabel(puntoInicio.getNombre());
+	    lblNombre.setForeground(Color.WHITE);
+	    lblNombre.setFont(new Font("Arial", Font.BOLD, 28));
+	    lblNombre.setHorizontalAlignment(SwingConstants.CENTER);
+	    
+	    JLabel lblCoord = new JLabel(String.format("X: %.2f | Y: %.2f", 
+	            puntoInicio.getCoordenadas().getX(), puntoInicio.getCoordenadas().getY()));
+	    lblCoord.setForeground(colorAcento);
+	    lblCoord.setFont(new Font("Consolas", Font.PLAIN, 14));
+	    lblCoord.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Separador
-        gbc.gridy = 1; 
-        formPanel.add(new JSeparator(), gbc);
-        gbc.gridwidth = 1;
+	    infoCard.add(lblSub);
+	    infoCard.add(lblNombre);
+	    infoCard.add(lblCoord);
 
-        // PANEL DE BOTONES
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
-        buttonPanel.setOpaque(false);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
+	    gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0;
+	    bodyPanel.add(infoCard, gbc);
 
-        JButton btnCalcular = new JButton("EVALUAR ERROR");
-        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); 
-        
-        JButton btnCancelar = new JButton("CANCELAR");
-        FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(85, 45, 45));
+	    JLabel lblInstruccion = new JLabel("<html><center>El sistema rastreará la poligonal completa desde este punto<br>y calculará el error lineal y el área.</center></html>");
+	    lblInstruccion.setForeground(Color.GRAY);
+	    lblInstruccion.setHorizontalAlignment(SwingConstants.CENTER);
+	    gbc.gridy = 1;
+	    bodyPanel.add(lblInstruccion, gbc);
 
-        buttonPanel.add(btnCalcular);
-        buttonPanel.add(btnCancelar);
+	    mainPanel.add(bodyPanel, BorderLayout.CENTER);
 
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.add(mainPanel);        
-        
-        //////////////////////////////////////////////// IMPLEMENTACION DE CIERRE DE POLIGONAL
-        
-        // ACCIONES
-        btnCalcular.addActionListener(e -> {
-        	
-        	Posicionable Primero = puntoInicio;
-			Posicionable Segundo = sit.getMapeoVertices().get(puntoInicio);
-			boolean cierra = false;
-			LinkedList<Posicionable> camino = new LinkedList<Posicionable>();
-			camino.addLast(Primero);
-			camino.addLast(Segundo);
+	    JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+	    buttonPanel.setBackground(colorFondo);
+	    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
 
-			while(!cierra){
-				Posicionable siguiente = sit.getMapeoVertices().get(Segundo);
-				camino.addLast(siguiente);
-				if(sit.getMapeoVertices().get(siguiente) == Primero)
-					cierra = true;
-			}
+	    JButton btnCalcular = new JButton("CALCULAR CIERRE");
+	    FabricaComponentes.estilizarBotonTactico(btnCalcular, new Color(0, 100, 200), Color.WHITE);
+	    
+	    JButton btnCancelar = new JButton("CANCELAR");
+	    FabricaComponentes.estilizarBotonTactico(btnCancelar, new Color(120, 40, 40), Color.WHITE);
 
-			if(!cierra){
-				JOptionPane.showMessageDialog(dialog, "EL PUNTO SELECCIONADO NO ESTA CONECTADO A UNA POLIGONAL O NO CIERRA UNA");
-			}
-			else{
-				CalculadorTopografico.calcularCierreYArea(camino, sit.getMapeoVertices());
-			}
-        	dialog.dispose();
-        });
+	    buttonPanel.add(btnCalcular);
+	    buttonPanel.add(btnCancelar);
 
-        btnCancelar.addActionListener(e -> dialog.dispose());
-        
-        dialog.setVisible(true);
+	    mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.add(mainPanel);
+
+	    btnCalcular.addActionListener(e -> {
+	        try {
+	            Posicionable primero = puntoInicio;
+	            
+	            if (!sit.getMapeoVertices().containsKey(primero)) {
+	                sonidos.clickError();
+	                JOptionPane.showMessageDialog(dialog, 
+	                    "<html><b style='color:red'>ERROR DE TOPOLOGÍA</b><br>El punto seleccionado no tiene conexiones salientes.</html>", 
+	                    "Error", JOptionPane.ERROR_MESSAGE);
+	                return;
+	            }
+
+	            Posicionable segundo = sit.getMapeoVertices().get(primero);
+	            LinkedList<Posicionable> camino = new LinkedList<>();
+	            camino.addLast(primero);
+	            camino.addLast(segundo);
+
+	            boolean cierra = false;
+	            Posicionable actual = segundo;
+	            int iteraciones = 0; 
+	            int MAX_ITERACIONES = 50; 
+
+	            while (!cierra && iteraciones < MAX_ITERACIONES) {
+	                Posicionable siguiente = sit.getMapeoVertices().get(actual);
+	                if (siguiente == null) break;
+
+	                camino.addLast(siguiente);
+
+	                if (sit.getMapeoVertices().get(siguiente) == primero) {
+	                    cierra = true;
+	                    camino.addLast(primero); 
+	                }
+	                actual = siguiente;
+	                iteraciones++;
+	            }
+
+	            if (!cierra) {
+	                sonidos.clickError();
+	                JOptionPane.showMessageDialog(dialog, 
+	                    "No se detectó un cierre de poligonal.\nLa línea queda abierta.", 
+	                    "Error de Cierre", JOptionPane.WARNING_MESSAGE);
+	            } else {
+	                String informe = CalculadorTopografico.calcularCierrePoligonal(camino); 
+	                
+	                JTextArea textArea = new JTextArea(informe);
+	                textArea.setFont(new Font("Monospaced", Font.BOLD, 16));
+	                textArea.setEditable(false);
+	                textArea.setBackground(new Color(20, 20, 20)); 
+	                textArea.setForeground(new Color(0, 255, 0));  
+	                textArea.setCaretPosition(0);
+	                textArea.setMargin(new Insets(15, 15, 15, 15)); 
+
+	                JScrollPane scrollPane = new JScrollPane(textArea);
+	                scrollPane.setPreferredSize(new Dimension(600, 400));
+	                scrollPane.setBorder(null);
+	                scrollPane.getViewport().setBackground(new Color(20, 20, 20)); 
+	                
+	                JPanel containerPanel = new JPanel(new BorderLayout());
+	                containerPanel.add(scrollPane, BorderLayout.CENTER);
+	                containerPanel.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60), 1)); 
+
+	                int confirm = JOptionPane.showConfirmDialog(dialog, containerPanel, 
+	                        "REPORTE PRELIMINAR DE CIERRE", 
+	                        JOptionPane.OK_CANCEL_OPTION, 
+	                        JOptionPane.PLAIN_MESSAGE); 
+
+	                if (confirm == JOptionPane.OK_OPTION) {
+	                    if (callback != null) {
+	                        callback.onCalculationComplete((Punto) primero, informe);
+	                    }
+	                    dialog.dispose();
+	                }
+	            }
+
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	            JOptionPane.showMessageDialog(dialog, "Error interno: " + ex.getMessage());
+	        }
+	    });
+
+	    btnCancelar.addActionListener(e -> dialog.dispose());
+	    dialog.setVisible(true);
 	}
 
 	@Override
 	public void RadiacionDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback) {
 	    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
 	    JDialog dialog = new JDialog(parentFrame, "MÓDULO DE RADIACIÓN (PUNTO Y DISTANCIA)", true);
-	    dialog.setSize(500, 550); // Aumenté un poco el alto para el nuevo campo
+	    dialog.setSize(500, 550); 
 	    dialog.setLocationRelativeTo(padre);
 
 	    JPanel mainPanel = new JPanel(new BorderLayout());
@@ -1654,10 +1739,10 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	public void TriangulacionDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback) {
 		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
         JDialog dialog = new JDialog(parentFrame, "MÓDULO DE TRIANGULACIÓN TÁCTICA", true);
-        dialog.setSize(650, 600); // Tamaño más contenido y equilibrado
+        dialog.setSize(650, 600); 
         dialog.setLocationRelativeTo(padre);
 
-        // Panel Principal con un degradado o color sólido oscuro
+        // Panel Principal 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(30, 30, 30));
         mainPanel.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80), 2));
@@ -1712,7 +1797,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
         txtNombre.setForeground(new Color(255, 200, 0)); // Color distintivo
         gbc.gridx = 1; formPanel.add(txtNombre, gbc);
 	    
-	    // Configuración inicial del nombre
 	    txtNombre.setText("RAD-P-" + (sit.getListaDePuntos().size() + 1));
 	    gbc.gridx = 1; formPanel.add(txtNombre, gbc);
 
@@ -1736,7 +1820,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JTextField txtAngB = FabricaComponentes.crearCampoTexto(fInput);
         gbc.gridx = 1; formPanel.add(txtAngB, gbc);
 
-        // --- PANEL DE BOTONES (Inferior) ---
+        // PANEL DE BOTONES (Inferior)
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 30));

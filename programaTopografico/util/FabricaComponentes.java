@@ -72,6 +72,26 @@ public class FabricaComponentes {
         g.add(b);
     }
 	
+	public static void estilizarBotonTactico(JButton btn, Color fondo, Color texto) {
+	    btn.setBackground(fondo);
+	    btn.setForeground(texto);
+	    btn.setFont(new Font("Arial", Font.BOLD, 14));
+	    btn.setFocusPainted(false);
+	    btn.setBorder(BorderFactory.createCompoundBorder(
+	            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+	            BorderFactory.createEmptyBorder(10, 20, 10, 20)
+	    ));
+	    // Efecto Hover simple
+	    btn.addMouseListener(new MouseAdapter() {
+	        public void mouseEntered(MouseEvent evt) {
+	            btn.setBackground(fondo.brighter());
+	        }
+	        public void mouseExited(MouseEvent evt) {
+	            btn.setBackground(fondo);
+	        }
+	    });
+	}
+	
 	public static JPanel crearGrupoRadio(String titulo, Consumer<JPanel> consumer) {
         JPanel p = crearFila();
         JLabel l = new JLabel(titulo);

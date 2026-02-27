@@ -75,7 +75,7 @@ public class GeneradorPDF implements PDFGenerator{
                     "INTERSECCIÓN DIRECTA", "POLIGONAL", "MESA PLOTTING", 
                     "ÁNGULO BASE", "ACTUALIZACIÓN MAGNÉTICA", 
                     "REGISTRO COORD. MODIFICADAS", "NIVELACIÓN TRIGONOMÉTRICA",
-                    "MEDICIÓN AYD"
+                    "MEDICIÓN AYD", "CIERRE DE POLIGONAL"
                 };
 
                 for (String funcion : funcionesPDF) {

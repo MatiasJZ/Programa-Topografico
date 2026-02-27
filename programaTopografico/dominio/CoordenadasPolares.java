@@ -76,4 +76,8 @@ public class CoordenadasPolares extends Coordenadas {
 	public void setCota(double c) {
 		cota = c; 
 	}
+	@Override
+	public boolean equals(Coordenadas c) {
+		return (this.getX() == c.getX() && this.getY() == c.getY() && this.cota == c.getCota());
+	}
 }
