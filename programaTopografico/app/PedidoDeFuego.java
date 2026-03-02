@@ -5,15 +5,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+
 import javax.swing.*;
 
-import comunicaciones.ConsolaMensajes;
 import comunicaciones.GestorEnlaceOperativo;
 import dominio.Blanco;
 import dominio.GeneradorPDF;
 import dominio.PIF;
 import dominio.ReporteFinMision;
 import interfaz.DatosBlanco;
+import interfaz.Mensajeria;
 import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.CorreccionesPanel;
 import interfaz.PanelMapa;
@@ -33,9 +34,9 @@ public class PedidoDeFuego extends JPanel {
     private JPanel panelMapaObsHolder;
     private DefaultListModel<PIF> modeloHistorial;
     private JList<PIF> listaHistorial;
-    private ConsolaMensajes consolaMensajes;
-
+    private Mensajeria PanelMensajeria;
     private GeneradorPDF generadorPDF;
+
     private GestorEnlaceOperativo comunicacionIP;
 
     private JButton btnDatos;
@@ -65,7 +66,7 @@ public class PedidoDeFuego extends JPanel {
         crearBotonesDeNavegacion();
         crearPanelHistorial();
 
-        inicializarAcciones();
+        inicializarAccionesMT();
         inicializarAccionesCorrecciones();
 
         add(pifPanel, BorderLayout.CENTER);
@@ -99,7 +100,7 @@ public class PedidoDeFuego extends JPanel {
         });
     }
 
-    private void crearCardLayout() {  //REFACTORIZABLE
+    private void crearCardLayout() {
 
         cardLayout = new CardLayout();
         pifCardPanel = new JPanel(cardLayout);
@@ -139,8 +140,8 @@ public class PedidoDeFuego extends JPanel {
         panelMapaObsHolder.repaint();
     }
 
-    private void crearPanelDeBotones() {  //REFACTORIZABLE
- 
+    private void crearPanelDeBotones() {
+
         JPanel panel = new JPanel(new GridLayout(1, 2, 5, 5));
         panel.setBackground(Color.BLACK);
 
@@ -169,7 +170,7 @@ public class PedidoDeFuego extends JPanel {
         btnMetodo.setBackground(indiceActual == 1 ? activo : inactivo);
     }
 
-    private void crearPanelHistorial() {   //REFACTORIZABLE
+    private void crearPanelHistorial() {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.BLACK);
@@ -243,15 +244,12 @@ public class PedidoDeFuego extends JPanel {
         cont.setBackground(Color.BLACK);
         cont.add(btnVer, BorderLayout.NORTH);
 
-        consolaMensajes = new ConsolaMensajes();
-        cont.add(consolaMensajes, BorderLayout.SOUTH);
-
         panel.add(cont, BorderLayout.SOUTH);
 
         add(panel, BorderLayout.EAST);
     }
 
-    private void inicializarAcciones() {
+    private void inicializarAccionesMT() {
 
     	btnDatos.addActionListener(e -> {
     	    indiceActual = 0;
@@ -273,7 +271,7 @@ public class PedidoDeFuego extends JPanel {
 			        if (comunicacionIP != null) {
 			            String msg = "FUEGO";
 			            comunicacionIP.enviarATodos(msg);
-			            consolaMensajes.mostrarTx(msg);
+			            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
 			        }
 		       });
         
@@ -282,7 +280,7 @@ public class PedidoDeFuego extends JPanel {
 			        if (comunicacionIP != null) {
 			            String msg = "FUEGO";
 			            comunicacionIP.enviarATodos(msg);
-			            consolaMensajes.mostrarTx(msg);
+			            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
 			        }
 		       });
     }
@@ -297,7 +295,7 @@ public class PedidoDeFuego extends JPanel {
         });
 
         corr.getBtnNuevoPIF().addActionListener(e -> {
-            consolaMensajes.agregarMensaje("[INFO] Nuevo PIF solicitado");
+        	PanelMensajeria.getConsolaMensajes().agregarMensaje("[INFO] Nuevo PIF solicitado");
             volverASituacionTactica();
             metodoYTiroPanel.mostrarPanelPrincipal();
             metodoYTiroPanel.getPanelMisionDeFuego().setVisible(true);
@@ -308,7 +306,7 @@ public class PedidoDeFuego extends JPanel {
             ReporteFinMision reporte = mostrarDialogoFinMision();
 
             if (reporte == null) {
-                consolaMensajes.agregarMensaje("[CANCELADO] Fin de misión sin reporte.");
+            	PanelMensajeria.getConsolaMensajes().agregarMensaje("[CANCELADO] Fin de misión sin reporte.");
                 return;
             }
 
@@ -316,7 +314,7 @@ public class PedidoDeFuego extends JPanel {
             PIF pif = modeloHistorial.lastElement();
             pif.setReporteFin(reporte);
             
-            generadorPDF.generarPDF(this, pif, reporte);
+			generadorPDF.generarPDF(this, pif, reporte);
 
             // Mensaje de red opcional
             String msg = "FIN_MISION|BLANCO=" + 
@@ -331,7 +329,7 @@ public class PedidoDeFuego extends JPanel {
             metodoYTiroPanel.getCorreccionesPanel().reiniciarCuadricula();
             metodoYTiroPanel.getCorreccionesPanel().getLblUltima().setText("");
             
-            consolaMensajes.mostrarTx(msg);
+            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
 
             JOptionPane.showMessageDialog(
                     this,
@@ -344,7 +342,7 @@ public class PedidoDeFuego extends JPanel {
         corr.getBtnEnviar().addActionListener(e -> enviarCorreccion());
     }
     
-    private ReporteFinMision mostrarDialogoFinMision() {   //REFACTORIZABLE
+    private ReporteFinMision mostrarDialogoFinMision() {
 
         JDialog dlg = new JDialog(
                 SwingUtilities.getWindowAncestor(this),
@@ -489,7 +487,7 @@ public class PedidoDeFuego extends JPanel {
         );
     }
 
-    private void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) {  //REFACTORIZABLE
+    private void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) {
         gbc.gridy = gridy;
         
         // Label
@@ -536,7 +534,7 @@ public class PedidoDeFuego extends JPanel {
             comunicacionIP.enviarATodos(msg);
         }
 
-        consolaMensajes.mostrarTx(msg);
+        PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
         
         corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
     }
@@ -547,8 +545,8 @@ public class PedidoDeFuego extends JPanel {
         while (parent != null && !(parent instanceof ProgramaTopografico))
             parent = parent.getParent();
 
-        if (parent instanceof ProgramaTopografico topo)
-        	topo.mostrarPanel("SITUACION");
+        if (parent instanceof ProgramaTopografico obs)
+            obs.mostrarPanel("SITUACION");
     }
 
     private void registrarNuevoPIF() {
@@ -593,13 +591,13 @@ public class PedidoDeFuego extends JPanel {
             		+ "|ORDEN=" + nuevo.getOrden();
 
             comunicacionIP.enviarATodos(msg);
-            consolaMensajes.mostrarTx(msg);
+            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
         }
 
         JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void mostrarPIFSeleccionado() {   //REFACTORIZABLE
+    private void mostrarPIFSeleccionado() {
         PIF p = listaHistorial.getSelectedValue();
         if (p == null) return;
 
@@ -702,7 +700,7 @@ public class PedidoDeFuego extends JPanel {
         dialogo.setVisible(true);
     }
 
-    private void crearBotonesDeNavegacion() {   //REFACTORIZABLE
+    private void crearBotonesDeNavegacion() {
 
         JButton prev = new JButton("<");
         prev.setBackground(new Color(28, 122, 33));
@@ -746,9 +744,9 @@ public class PedidoDeFuego extends JPanel {
     public MetodoAtaqueYTiroPanel getMetodoYTiroPanel() {
     	return metodoYTiroPanel;
     }
-
-    public ConsolaMensajes getConsolaMensajes() {
-        return consolaMensajes;
+    
+    public void setPanelMensajeria(Mensajeria m) {
+    	PanelMensajeria = m;
     }
 
     public DatosBlanco getDatosDeBlancoPanel() {

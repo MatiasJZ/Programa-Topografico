@@ -8,7 +8,6 @@ import java.io.File;
  */
 public interface ProtocoloCallback {
 
-	    // Texto (ya existente)
 	    void recibir(String mensaje);
 
 	    // NUEVO: archivo recibido

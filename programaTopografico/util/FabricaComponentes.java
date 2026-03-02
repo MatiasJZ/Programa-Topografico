@@ -7,6 +7,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -26,6 +27,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 
 import dominio.Blanco;
@@ -109,8 +112,8 @@ public class FabricaComponentes {
 	
 	public static JPanel crearFila() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        p.setOpaque(false); // fondo transparente
-        p.setBorder(BorderFactory.createLineBorder(new Color(120, 120, 120), 1)); // marco rectangular
+        p.setOpaque(false); 
+        p.setBorder(BorderFactory.createLineBorder(new Color(120, 120, 120), 1)); 
         return p;
     }
 
@@ -218,7 +221,6 @@ public class FabricaComponentes {
         c.setForeground(Color.WHITE);
         c.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        // Centrar texto en elementos
         DefaultListCellRenderer renderer = new DefaultListCellRenderer();
         renderer.setHorizontalAlignment(SwingConstants.CENTER);
         c.setRenderer(renderer);
@@ -232,7 +234,6 @@ public class FabricaComponentes {
         combo.setRenderer(renderer);
     }
 
-    
     public static JComboBox<Posicionable> crearComboPuntosYBlancos(Font fuente, LinkedList<Punto> l1,LinkedList<Blanco> l2) {
         JComboBox<Posicionable> cb = new JComboBox<Posicionable>();
         for(Punto p : l1) {
@@ -255,13 +256,11 @@ public class FabricaComponentes {
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Borde lateral de color (el detalle estético)
         btn.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 5, 0, 0, accentColor),
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
 
-        // Efecto de hover
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 btn.setBackground(new Color(60, 60, 60));
@@ -273,7 +272,6 @@ public class FabricaComponentes {
     }
     
     public static JPanel crearLinea2(String etiqueta, String valor, Font f) {
-        // Usamos FlowLayout con alineación a la izquierda
         JPanel linea = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         linea.setBackground(Color.BLACK);
 
@@ -281,8 +279,6 @@ public class FabricaComponentes {
         lblEtiqueta.setFont(f);
         lblEtiqueta.setForeground(Color.LIGHT_GRAY);
         
-        // AUMENTADO: De 180 a 280 para evitar que el texto pise al valor
-        // La altura sube a 30 para acomodar el tamaño de la fuente de 21px
         lblEtiqueta.setPreferredSize(new Dimension(280, 30)); 
 
         JLabel lblValor = new JLabel(valor);
@@ -351,5 +347,64 @@ public class FabricaComponentes {
                 }
             }
         });
+    }
+    
+    public static void estilizarBotonLateral(JButton btn, Color colorFondo) {
+        btn.setBackground(colorFondo);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.BLACK),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+        ));
+    }
+
+    public static void estilizarBotonAccion(JButton btn, Color colorFondo) {
+        btn.setBackground(colorFondo);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        btn.setBorder(BorderFactory.createLineBorder(colorFondo.darker()));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    public static Border crearBordeTactico(String titulo) {
+        Color colorBorde = new Color(80, 80, 80);
+        
+        return new CompoundBorder(
+                BorderFactory.createLineBorder(colorBorde, 1, true),
+                
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createEmptyBorder(), 
+                        titulo,
+                        TitledBorder.DEFAULT_JUSTIFICATION,
+                        TitledBorder.DEFAULT_POSITION,
+                        new Font("Monospaced", Font.BOLD, 12),
+                        Color.GRAY
+                )
+        );
+    }
+
+    public static void configurarTextAreaLog(JTextArea txt) {
+        txt.setEditable(false);
+        txt.setBackground(new Color(10, 10, 12)); 
+        txt.setForeground(new Color(0, 255, 100)); 
+        txt.setFont(new Font("Consolas", Font.PLAIN, 16));
+        txt.setMargin(new Insets(10, 10, 10, 10));
+        txt.setLineWrap(true);
+        txt.setWrapStyleWord(true);
+    }
+
+    public static void configurarInputChat(JTextArea txt) {
+    	txt.setLineWrap(true);
+        txt.setWrapStyleWord(true);
+        txt.setBackground(new Color(40, 40, 40));
+        txt.setForeground(Color.WHITE);
+        txt.setCaretColor(Color.WHITE);
+        txt.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        txt.setMargin(new Insets(5, 5, 5, 5));
     }
 }

@@ -227,7 +227,7 @@ public class GestorEnlaceOperativo {
         new Thread(() -> {
             try (Socket socket = new Socket()) {
 
-                socket.connect(new InetSocketAddress(ipDestino, puerto), 5000);
+                socket.connect(new InetSocketAddress(ipDestino, puerto), 10000);
 
                 DataOutputStream dos =
                         new DataOutputStream(socket.getOutputStream());
@@ -258,7 +258,7 @@ public class GestorEnlaceOperativo {
         new Thread(() -> {
             try (Socket socket = new Socket()) {
 
-                socket.connect(new InetSocketAddress(ipDestino, puerto), 5000);
+                socket.connect(new InetSocketAddress(ipDestino, puerto), 10000);
 
                 DataOutputStream dos =
                         new DataOutputStream(socket.getOutputStream());

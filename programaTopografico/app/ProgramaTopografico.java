@@ -128,7 +128,7 @@ public class ProgramaTopografico extends JPanel {
 
         pedidoDeFuego = new PedidoDeFuego(listaDeBlancos, getIdOAA());
         situacionTactica = new SituacionTacticaTopografica(listaDeBlancos,pedidoDeFuego, this); 
-        mensajeriaPanel = new Mensajeria();
+        mensajeriaPanel = new Mensajeria(idOAA);
         situacionTactica.setPanelMensajeria(mensajeriaPanel);
        
         cards.add(situacionTactica, "SITUACION");
@@ -206,6 +206,9 @@ public class ProgramaTopografico extends JPanel {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
+        pedidoDeFuego.setComunicacionIP(comunicacionIP);
+        pedidoDeFuego.setPanelMensajeria(mensajeriaPanel);
     }
 
     public GestorEnlaceOperativo getComunicacionIP() {

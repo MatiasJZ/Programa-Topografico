@@ -103,7 +103,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     private JList<Poligonal> listaUIPoligonales;
     protected String rutaArchivoMapa = "C:/Users/54293/Desktop/Archivos SARGO/mapaV1.TIF";
     private GestorSonido sonidos;
-    private ProgramaTopografico observador;
+    private ProgramaTopografico main;
     protected String designacionBlancoPrefijo = "AF"; // Prefijo de designación 
     protected int designacionBlancoContador = 6400;	// Contador de designación
     private JPanel panelGlobalTopografico;
@@ -118,7 +118,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     private GeneradorPDF generadorDoc;
 
 	@SuppressWarnings("deprecation")
-	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico obs) { 
+	public SituacionTacticaTopografica(LinkedList<Blanco> listaDeBlancos,PedidoDeFuego pif,ProgramaTopografico main) { 
     	
     	//	Settings iniciales de Tamaño y Aspecto
     	setSize(900, 600);
@@ -127,7 +127,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		//
     			
 		//	Inicializacion de todos los atributos de clase y sus caracteristicas
-		this.observador = obs;
+		this.main = main;
 		
 		this.listaDeBlancos = listaDeBlancos;
 		
@@ -254,7 +254,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		});
 
 		btnConfigIP.addActionListener(e -> {
-		    Red dlg = new Red(SwingUtilities.getWindowAncestor(this),observador.getComunicacionIP());
+		    Red dlg = new Red(SwingUtilities.getWindowAncestor(this),main.getComunicacionIP());
 		    dlg.setVisible(true);
 		});
 		
@@ -599,6 +599,20 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 			    }
 			});
 		}
+
+		JButton PIFbtn = new JButton("PIF"); botoneraPanelTopo.addLast(PIFbtn);
+		PIFbtn.setBackground(new Color(180, 40, 40));
+		PIFbtn.setForeground(Color.WHITE);
+		PIFbtn.setFont(new Font("Arial", Font.BOLD, 12)); 
+		PIFbtn.setPreferredSize(new Dimension(98, 60)); 
+		PIFbtn.setFocusPainted(false);
+		panelGlobalTopografico.add(PIFbtn);
+		
+		PIFbtn.addActionListener(e -> {
+			armarPIF(listaUIBlancos.getSelectedValue());        
+        	panelPIF.mostrarDatosDeBlanco();
+        	panelPIF.getMetodoYTiroPanel().mostrarPanelPrincipal();
+		});
 		//
 
 		//	Configuración de la etiqueta que muestra las coordenadas con el arrastre del click 
@@ -787,6 +801,18 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
             }
         });
     }
+    
+    private void armarPIF(Blanco b) {
+        panelPIF.getDatosDeBlancoPanel().setDatosBlanco(b);
+        panelPIF.getMetodoYTiroPanel().actualizar();
+        Container parent = this.getParent();
+        while (parent != null && !(parent instanceof ProgramaTopografico)) {
+            parent = parent.getParent();
+        }
+        if (parent instanceof ProgramaTopografico obs) {
+            obs.mostrarPanel("PEDIDO");
+        }
+    }
 
     public void enviarPunto(Posicionable p) {
         if (p == null) return;
@@ -801,8 +827,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         String mensajeFinal = sb.toString();
 
         // Verificación de enlace y envío
-        if (observador != null && observador.getComunicacionIP() != null) {
-            observador.getComunicacionIP().enviarATodos(mensajeFinal);
+        if (main != null && main.getComunicacionIP() != null) {
+        	main.getComunicacionIP().enviarATodos(mensajeFinal);
             
             System.out.println("TX Táctica (PUNTO): " + mensajeFinal);
             
@@ -846,10 +872,9 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         String mensajeFinal = sb.toString();
 
         // Envío el paquete
-        if (observador != null && observador.getComunicacionIP() != null) {
-            observador.getComunicacionIP().enviarATodos(mensajeFinal);
-            
-            System.out.println("Transmisión Táctica Saliente: " + mensajeFinal);
+        if (main != null && main.getComunicacionIP() != null) {
+        	main.getComunicacionIP().enviarATodos(mensajeFinal);
+        
         } else {
             sonidos.clickError();
             JOptionPane.showMessageDialog(this, 
