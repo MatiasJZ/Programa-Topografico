@@ -54,6 +54,7 @@ public class Mensajeria extends JPanel {
     protected String idOAA;
 
     private final Color COLOR_FONDO = new Color(18, 18, 18);
+    
     public Mensajeria(String idOAA) {
         setBackground(COLOR_FONDO);
         setLayout(new BorderLayout());
@@ -255,7 +256,6 @@ public class Mensajeria extends JPanel {
     }
 
     private void abrirDialogo(String nombre) {
-        consolaMensajes.mostrarEstado("Abriendo formulario: " + nombre);
         JOptionPane.showMessageDialog(this, "Formulario " + nombre + " en construcción.");
     }
 }

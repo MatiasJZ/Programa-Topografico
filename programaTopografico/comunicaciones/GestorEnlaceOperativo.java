@@ -108,7 +108,7 @@ public class GestorEnlaceOperativo {
 
                     Socket cli = servidor.accept();
 
-                    new Thread(() -> manejarCliente(cli),
+                    new Thread(() -> manejarArchivo(cli),
                             "RX-Cliente-" + cli.getRemoteSocketAddress()
                     ).start();
                 }
@@ -122,12 +122,12 @@ public class GestorEnlaceOperativo {
         }, "ServidorTCP-Harris").start();
     }
 
-    private void manejarCliente(Socket cli) {
+    private void manejarArchivo(Socket cli) {
 
         try (DataInputStream dis =
                      new DataInputStream(cli.getInputStream())) {
 
-            String tipo = dis.readUTF(); // TEXT | FILE
+            String tipo = dis.readUTF(); 
 
             if ("TEXT".equals(tipo)) {
 
@@ -139,8 +139,13 @@ public class GestorEnlaceOperativo {
                 String nombre = dis.readUTF();
                 long size = dis.readLong();
 
-                File dir = new File("recibidos");
-                dir.mkdirs();
+                String userHome = System.getProperty("user.home");
+                File desktop = new File(userHome, "Desktop"); 
+                File dir = new File(desktop, "archivos recibidos");
+
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
 
                 File out = new File(dir, nombre);
 
@@ -158,13 +163,11 @@ public class GestorEnlaceOperativo {
                     }
                 }
 
-                callback.log("[RX-FILE] " + out.getName() +
-                             " (" + size + " bytes)");
+                callback.log("[RX-FILE] " + out.getName() + " (" + size + " bytes)");
 
                 SwingUtilities.invokeLater(() ->
-                	preguntarApertura(out)
+                    preguntarApertura(out)
                 );
-
             }
 
         } catch (Exception e) {
