@@ -94,7 +94,7 @@ public class ProgramaTopografico extends JPanel {
         JPanel menuSuperior = new JPanel(new GridLayout(1, 3));
         menuSuperior.setPreferredSize(new Dimension(0, 40));
         menuSuperior.setBackground(Color.DARK_GRAY);
-        String[] secciones = {"SITUACION TACTICA","PEDIDO DE FUEGO","MENSAJERIA"};
+        String[] secciones = {"SITUACION TACTICA","PEDIDO DE FUEGO","COMUNICACIONES"};
 
         botonesMenu = new JButton[secciones.length];
 
@@ -113,7 +113,7 @@ public class ProgramaTopografico extends JPanel {
                 switch (idx) {
 	                case 0 -> cardLayout.show(cards, "SITUACION");
 	                case 1 -> cardLayout.show(cards, "PEDIDO");
-	                case 2 -> cardLayout.show(cards, "MENSAJERIA");
+	                case 2 -> cardLayout.show(cards, "COMUNICACIONES");
                 }
                 actualizarBotonesMenu();
             });
@@ -133,7 +133,7 @@ public class ProgramaTopografico extends JPanel {
        
         cards.add(situacionTactica, "SITUACION");
         cards.add(pedidoDeFuego, "PEDIDO");
-        cards.add(mensajeriaPanel, "MENSAJERIA");
+        cards.add(mensajeriaPanel, "COMUNICACIONES");
 
         add(cards, BorderLayout.CENTER);
         cardLayout.show(cards, "SITUACION");
@@ -187,7 +187,7 @@ public class ProgramaTopografico extends JPanel {
                 Enumeration<InetAddress> addrs = ni.getInetAddresses();
                 while (addrs.hasMoreElements()) {
                     InetAddress addr = addrs.nextElement();
-                    if (addr.getAddress().length == 4 && !addr.isLoopbackAddress()) { // Solo IPv4
+                    if (addr.getAddress().length == 4 && !addr.isLoopbackAddress()) {
                         ipLocal = addr;
                         break;
                     }
@@ -218,7 +218,8 @@ public class ProgramaTopografico extends JPanel {
     public void mostrarPanel(String nombreCard) {
         switch (nombreCard) {
             case "SITUACION" -> panelActual = 0;
-            case "MENSAJERIA" -> panelActual = 1;
+            case "PEDIDO" -> panelActual = 1;
+            case "COMUNICACIONES" -> panelActual = 2;
         }
         cardLayout.show(cards, nombreCard);
         actualizarBotonesMenu();
@@ -226,7 +227,7 @@ public class ProgramaTopografico extends JPanel {
 
     private void pedirID() {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource("/LOGOBIAC.png"));
-        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(100, 110, Image.SCALE_SMOOTH); // Un poco más grande para acompañar
+        Image imgEscalada = iconoOriginal.getImage().getScaledInstance(100, 110, Image.SCALE_SMOOTH); 
         ImageIcon icono = new ImageIcon(imgEscalada);
 
         sonidos = new GestorSonido();

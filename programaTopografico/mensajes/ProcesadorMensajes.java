@@ -165,6 +165,14 @@ public class ProcesadorMensajes {
                 listaDeBlancos.remove(blancoAnterior);
                 panelTactico.getModeloListaBlancos().removeElement(blancoAnterior);
                 panelTactico.getPanelMapa().eliminarBlanco(blancoAnterior);
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(150);
+                        SwingUtilities.invokeLater(() -> {
+                            panelTactico.getPanelMapa().refrescar();
+                        });
+                    } catch (InterruptedException ignored) {}
+                }).start();
                 
                 consola.agregarMensaje("[SISTEMA] Reemplazando blanco existente: " + nombre);
             }
