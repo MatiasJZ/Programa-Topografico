@@ -209,6 +209,7 @@ public class ProgramaTopografico extends JPanel {
         
         pedidoDeFuego.setComunicacionIP(comunicacionIP);
         pedidoDeFuego.setPanelMensajeria(mensajeriaPanel);
+        pedidoDeFuego.setDialogFactory(situacionTactica.getDialogFactory());
     }
 
     public GestorEnlaceOperativo getComunicacionIP() {

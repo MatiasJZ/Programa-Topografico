@@ -92,7 +92,7 @@ public class Red extends JDialog {
         panelForm.add(txtPuerto, gbc);
 
         int puertoActual = (comunicacion != null ? comunicacion.getPuerto() : 0);
-        txtPuerto.setText(String.valueOf(puertoActual > 0 ? puertoActual : 5056));
+        txtPuerto.setText(String.valueOf(puertoActual > 0 ? puertoActual : 10011));
 
         modeloDestinos = new DefaultListModel<>();
         listaDestinos = new JList<>(modeloDestinos);

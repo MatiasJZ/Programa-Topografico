@@ -678,7 +678,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     
     private void configurarPopUpMenus() {  	
     	this.popupMenu = new JPopupMenu();
-        popupMenu.setPreferredSize(new Dimension(250,200));
+        popupMenu.setPreferredSize(new Dimension(260,220));
         JMenuItem itemEditar = new JMenuItem("Editar Blanco Seleccionado");
         itemEditar.setBackground(Color.BLACK);
         itemEditar.setForeground(Color.WHITE);
@@ -1461,5 +1461,9 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 	@Override
 	public void setContador(int i) {
 		this.designacionBlancoContador = i;
+	}
+	
+	public DialogFactory getDialogFactory() {
+		return dialogFactory;
 	}
 }

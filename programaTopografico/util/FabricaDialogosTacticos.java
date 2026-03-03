@@ -861,83 +861,80 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	@Override
 	public void AgregarEnPolaresDialog(Blanco blanco, BlancoCallback callback) {
 		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
-        JDialog dialog = new JDialog(parentFrame, "Marcado en Polares ", true);
-        dialog.setSize(800, 740);
+        JDialog dialog = new JDialog(parentFrame, "Marcado en Polares", true);
+        dialog.setSize(800, 760);
         dialog.setLocationRelativeTo(padre);
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(new Color(50, 50, 50));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         dialog.setContentPane(panel);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 6, 4, 6);
+        gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        Font fuenteLabel = new Font("Arial", Font.BOLD, 18);
+        Font fuenteInput = new Font("Arial", Font.PLAIN, 18);
 
         // TÍTULO
         JLabel lblTitulo = new JLabel("BLANCO DE REFERENCIA: " + blanco.getNombre());
         lblTitulo.setForeground(Color.RED);
-        lblTitulo.setFont(lblTitulo.getFont().deriveFont(Font.BOLD, 15f));
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 20, 0);
         panel.add(lblTitulo, gbc);
+        
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 5, 8, 5);
 
+        // ORIENTACIÓN Y NOMBRE
+        JPanel panelTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        panelTop.setOpaque(false);
+        
         JLabel lblOrient = new JLabel("Orientación:");
         lblOrient.setForeground(Color.WHITE);
+        lblOrient.setFont(fuenteLabel);
 
-        JTextField txtOrient = new JTextField("0");
-        txtOrient.setPreferredSize(new Dimension(80, 26));
+        JTextField txtOrient = new JTextField();
+        FabricaComponentes.addPlaceholder(txtOrient, "0");
+        txtOrient.setPreferredSize(new Dimension(150, 40));
         txtOrient.setBackground(new Color(70, 70, 70));
         txtOrient.setForeground(Color.WHITE);
+        txtOrient.setFont(fuenteInput);
+        txtOrient.setHorizontalAlignment(SwingConstants.CENTER); 
+
+        JLabel lblNombre = new JLabel("Nombre:");
+        lblNombre.setForeground(Color.WHITE);
+        lblNombre.setFont(fuenteLabel);
 
         JTextField txtNombre = new JTextField();
-        txtNombre.setPreferredSize(new Dimension(180, 26));
+        String nombreSugerido = sit.getPrefijo() + " " + sit.getContador(); 
+        FabricaComponentes.addPlaceholder(txtNombre, nombreSugerido);
+        txtNombre.setPreferredSize(new Dimension(150, 40)); 
         txtNombre.setBackground(new Color(70, 70, 70));
         txtNombre.setForeground(Color.WHITE);
+        txtNombre.setFont(fuenteInput);
+        txtNombre.setHorizontalAlignment(SwingConstants.CENTER); 
 
-        JPanel panelNombre = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        panelNombre.setBackground(new Color(50, 50, 50));
-        panelNombre.add(lblOrient);
-        panelNombre.add(txtOrient);
-        panelNombre.add(txtNombre);
+        panelTop.add(lblOrient);
+        panelTop.add(txtOrient);
+        panelTop.add(Box.createHorizontalStrut(20));
+        panelTop.add(lblNombre);
+        panelTop.add(txtNombre);
 
-        // POLARES (DIR, DISTANCIA, ANGULO)
-        JLabel lblDir = new JLabel("Dirección (mil):");
-        JLabel lblDist = new JLabel("Distancia (m):");
-        JLabel lblAng = new JLabel("Cota (mil):");
-        for (JLabel l : new JLabel[]{lblDir, lblDist, lblAng}) l.setForeground(Color.WHITE);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        panel.add(panelTop, gbc);
 
-        JTextField txtDir = new JTextField();
-        JTextField txtDist = new JTextField();
-        JTextField txtAng = new JTextField("0");
-
-        for (JTextField t : new JTextField[]{txtDir, txtDist, txtAng}) {
-            t.setPreferredSize(new Dimension(160, 26));
-            t.setBackground(new Color(70, 70, 70));
-            t.setForeground(Color.WHITE);
-        }
-
-        // COMBOS
+        // OPCIONES DE NATURALEZA
         String[] entidades = {
             "INFANTERIA", "INFANTERIA-MOTORIZADA", "INFANTERIA-ANFIBIA",
-            "INFANTERIA-MECANIZADA", "INFANTERIA-FORTIFICADA",
-            "INFANTERIA-RECONOCIMIENTO", "INFANTERIA-REC-MOTORIZADA",
-            "ANTITANQUE", "ANTITANQUE-BLINDADO", "ANTITANQUE-MOTORIZADO",
-            "ARTILLERIA", "ARTILLERIA-AUTOPROPULSADA", "ARTILLERIA-ADQ-BLANCOS",
-            "DEFENSA-AEREA", "MORTERO", "MORTERO-MOTORIZADO", "MORTERO-ACORAZADO",
-            "INGENIEROS", "COMUNICACIONES", "GUERRA-ELECTRONICA",
-            "COMANDO-Y-CONTROL", "GRUPO-LOGISTICO/APOYO",
-            "OBSERVADOR", "OBSERVADOR-ARTILLERIA",
-            "DRON-TERRESTRE", "INSTALACION-MEDICA"
+            "INFANTERIA-MECANIZADA", "INFANTERIA-FORTIFICADA", "ARTILLERIA", "MORTERO"
         };
-
-        String[] afiliaciones = {
-            "HOSTIL", "ALIADO", "NEUTRO", "DESCONOCIDO",
-            "ASUMIDO-ENEMIGO", "PENDIENTE", "ASUMIDO-AMIGO"
-        };
-
-        String[] escalafones = {
-                "Por Defecto", "PELOTON", "COMPANIA", "GRUPO", "SECCION", "BATALLON"
-        };
+        String[] afiliaciones = { "HOSTIL", "ALIADO", "NEUTRO", "DESCONOCIDO" };
+        String[] escalafones = { "Por Defecto", "PELOTON", "COMPANIA", "GRUPO", "SECCION" };
 
         JComboBox<String> cbEntidad = new JComboBox<>(entidades);
         JComboBox<String> cbAfiliacion = new JComboBox<>(afiliaciones);
@@ -945,95 +942,146 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JComboBox<SituacionMovimiento> cbSituacion = new JComboBox<>(SituacionMovimiento.values());
 
         for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbEchelon, cbSituacion}) {
-            cb.setPreferredSize(new Dimension(220, 26));
+            cb.setPreferredSize(new Dimension(0, 40));
             cb.setBackground(new Color(70, 70, 70));
             cb.setForeground(Color.WHITE);
+            cb.setFont(fuenteInput);
         }
-
         cbSituacion.setSelectedItem(SituacionMovimiento.FIJO);
 
-        JLabel lblSituacion = new JLabel("Estado:");
-        lblSituacion.setForeground(Color.WHITE);
-
-        // PANEL NATURALEZA (Tipo + Afiliación + Magnitud + Estado)
+        // PANEL NATURALEZA
         JPanel panelNaturaleza = new JPanel(new GridBagLayout());
-        panelNaturaleza.setBackground(new Color(50, 50, 50));
+        panelNaturaleza.setOpaque(false);
+        panelNaturaleza.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.WHITE, 1),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
 
         GridBagConstraints g2 = new GridBagConstraints();
-        g2.insets = new Insets(2, 4, 2, 4);
+        g2.insets = new Insets(6, 0, 6, 15);
         g2.anchor = GridBagConstraints.WEST;
+        g2.fill = GridBagConstraints.HORIZONTAL;
 
-        g2.gridx = 0; g2.gridy = 0;
-        panelNaturaleza.add(new JLabel("Tipo:") {{ setForeground(Color.WHITE); }}, g2);
-        g2.gridx = 1;
+        g2.gridx = 0; g2.gridy = 0; g2.weightx = 0.0;
+        panelNaturaleza.add(new JLabel("Tipo:") {{ setForeground(Color.WHITE); setFont(fuenteLabel); }}, g2);
+        g2.gridx = 1; g2.weightx = 1.0;
         panelNaturaleza.add(cbEntidad, g2);
 
-        g2.gridx = 0; g2.gridy++;
-        panelNaturaleza.add(new JLabel("Afiliación:") {{ setForeground(Color.WHITE); }}, g2);
-        g2.gridx = 1;
+        g2.gridx = 0; g2.gridy++; g2.weightx = 0.0;
+        panelNaturaleza.add(new JLabel("Afiliación:") {{ setForeground(Color.WHITE); setFont(fuenteLabel); }}, g2);
+        g2.gridx = 1; g2.weightx = 1.0;
         panelNaturaleza.add(cbAfiliacion, g2);
 
-        g2.gridx = 0; g2.gridy++;
-        panelNaturaleza.add(new JLabel("Magnitud:") {{ setForeground(Color.WHITE); }}, g2);
-        g2.gridx = 1;
+        g2.gridx = 0; g2.gridy++; g2.weightx = 0.0;
+        panelNaturaleza.add(new JLabel("Magnitud:") {{ setForeground(Color.WHITE); setFont(fuenteLabel); }}, g2);
+        g2.gridx = 1; g2.weightx = 1.0;
         panelNaturaleza.add(cbEchelon, g2);
 
-        g2.gridx = 0; g2.gridy++;
-        panelNaturaleza.add(lblSituacion, g2);
-
-        g2.gridx = 1;
+        g2.gridx = 0; g2.gridy++; g2.weightx = 0.0;
+        panelNaturaleza.add(new JLabel("Estado:") {{ setForeground(Color.WHITE); setFont(fuenteLabel); }}, g2);
+        g2.gridx = 1; g2.weightx = 1.0;
         panelNaturaleza.add(cbSituacion, g2);
 
-        // INFORMACIÓN ADICIONAL
-        JLabel lblInfo = new JLabel("Información adicional:");
-        lblInfo.setForeground(Color.WHITE);
+        JLabel lblNaturalezaMain = new JLabel("Naturaleza:");
+        lblNaturalezaMain.setForeground(Color.WHITE);
+        lblNaturalezaMain.setFont(fuenteLabel);
+        
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1; gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(lblNaturalezaMain, gbc);
+        
+        gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(panelNaturaleza, gbc);
 
+        // DATOS POLARES
+        JPanel panelPolares = new JPanel(new GridBagLayout());
+        panelPolares.setOpaque(false);
+        GridBagConstraints gPol = new GridBagConstraints();
+        gPol.insets = new Insets(0, 0, 5, 20); 
+        gPol.fill = GridBagConstraints.NONE;
+        gPol.anchor = GridBagConstraints.WEST;
+
+        JLabel lblDir = new JLabel("Dirección (mil):");
+        JLabel lblDist = new JLabel("Distancia (m):");
+        JLabel lblAng = new JLabel("Cota (mil):");
+        for (JLabel l : new JLabel[]{lblDir, lblDist, lblAng}) {
+            l.setForeground(Color.WHITE);
+            l.setFont(fuenteLabel);
+        }
+
+        JTextField txtDir = new JTextField();
+        FabricaComponentes.addPlaceholder(txtDir, "0");
+        
+        JTextField txtDist = new JTextField();
+        FabricaComponentes.addPlaceholder(txtDist, "0");
+        
+        JTextField txtAng = new JTextField();
+        FabricaComponentes.addPlaceholder(txtAng, "0");
+
+        for (JTextField t : new JTextField[]{txtDir, txtDist, txtAng}) {
+            t.setPreferredSize(new Dimension(140, 40)); 
+            t.setBackground(new Color(70, 70, 70));
+            t.setForeground(Color.WHITE);
+            t.setFont(fuenteInput);
+            t.setHorizontalAlignment(SwingConstants.CENTER); 
+        }
+
+        gPol.gridy = 0;
+        gPol.gridx = 0; panelPolares.add(lblDir, gPol);
+        gPol.gridx = 1; panelPolares.add(lblDist, gPol);
+        gPol.gridx = 2; gPol.insets = new Insets(0, 0, 5, 0); panelPolares.add(lblAng, gPol);
+
+        gPol.gridy = 1; gPol.insets = new Insets(0, 0, 0, 20);
+        gPol.gridx = 0; panelPolares.add(txtDir, gPol);
+        gPol.gridx = 1; panelPolares.add(txtDist, gPol);
+        gPol.gridx = 2; gPol.insets = new Insets(0, 0, 0, 0); panelPolares.add(txtAng, gPol);
+
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(20, 5, 10, 5);
+        panel.add(panelPolares, gbc);
+
+        // INFORMACIÓN ADICIONAL
         JTextArea txtInfo = new JTextArea();
-        FabricaComponentes.addPlaceholder(txtInfo, "Información adicional necesaria");
+        FabricaComponentes.addPlaceholder(txtInfo, "Información adicional necesaria...");
         txtInfo.setLineWrap(true);
         txtInfo.setWrapStyleWord(true);
         txtInfo.setBackground(new Color(70, 70, 70));
         txtInfo.setForeground(Color.WHITE);
         txtInfo.setCaretColor(Color.WHITE);
-        txtInfo.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-        txtInfo.setPreferredSize(new Dimension(240, 120));
+        txtInfo.setFont(fuenteInput);
+        txtInfo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); 
+        
+        JScrollPane scrollInfo = new JScrollPane(txtInfo);
+        scrollInfo.setPreferredSize(new Dimension(0, 110)); 
+        scrollInfo.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // GRILLA PRINCIPAL
-        gbc.gridx = 0; gbc.gridy = 1;
-        panel.add(new JLabel("Nombre:") {{ setForeground(Color.WHITE); }}, gbc);
-        gbc.gridx = 1;
-        panel.add(panelNombre, gbc);
-
-        gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Naturaleza:") {{ setForeground(Color.WHITE); }}, gbc);
-        gbc.gridx = 1;
-        panel.add(panelNaturaleza, gbc);
-
-        gbc.gridx = 0; gbc.gridy++; panel.add(lblDir, gbc);
-        gbc.gridx = 1; panel.add(txtDir, gbc);
-
-        gbc.gridx = 0; gbc.gridy++; panel.add(lblDist, gbc);
-        gbc.gridx = 1; panel.add(txtDist, gbc);
-
-        gbc.gridx = 0; gbc.gridy++; panel.add(lblAng, gbc);
-        gbc.gridx = 1; panel.add(txtAng, gbc);
-
-        gbc.gridx = 0; gbc.gridy++; panel.add(lblInfo, gbc);
-        gbc.gridx = 1; panel.add(new JScrollPane(txtInfo), gbc);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(10, 5, 10, 5);
+        panel.add(scrollInfo, gbc);
 
         // BOTONES
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
 
-        JPanel botones = new JPanel(new GridLayout(1, 2, 10, 0));
+        JPanel botones = new JPanel(new GridLayout(1, 2, 20, 0));
         botones.setBackground(new Color(50, 50, 50));
+        for(JButton b : new JButton[]{btnAceptar, btnCancelar}) {
+            b.setFont(new Font("Arial", Font.BOLD, 18));
+            b.setPreferredSize(new Dimension(0, 55));
+            b.setFocusPainted(false);
+        }
         botones.add(btnAceptar);
         botones.add(btnCancelar);
 
-        gbc.gridx = 0; gbc.gridy++; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(20, 10, 10, 10);
         panel.add(botones, gbc);
 
-        // ACCIÓN ACEPTAR
+        // LÓGICA DE ACEPTAR 
         btnAceptar.addActionListener(e -> {
             try {
                 double direccion = Double.parseDouble(txtDir.getText().trim());
@@ -1045,6 +1093,11 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 CoordenadasRectangulares nuevas = polar.toRectangulares();
 
                 String nombre = txtNombre.getText().trim();
+                
+                if (nombre.equals(nombreSugerido) || nombre.isEmpty()) {
+                    nombre = nombreSugerido;
+                    sit.setContador(sit.getContador() + 1); 
+                }
 
                 String entidad = (String) cbEntidad.getSelectedItem();
                 String afiliacion = (String) cbAfiliacion.getSelectedItem();
@@ -1063,7 +1116,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 nuevo.setUltEchelon(echelon);
 
                 String info = txtInfo.getText().trim();
-                if (info.equals("Información adicional necesaria")) info = "";
+                if (info.equals("Información adicional necesaria...")) info = "";
                 nuevo.setInformacionAdicional(info);
 
                 sit.getListaBlancos().add(nuevo);
