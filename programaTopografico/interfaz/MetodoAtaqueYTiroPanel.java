@@ -194,7 +194,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         splitMision.setBackground(Color.BLACK);
 
         // PANEL IZQUIERDO 
-
         JPanel panelSwitches = new JPanel(new GridBagLayout());
         panelSwitches.setBackground(Color.BLACK);
         panelSwitches.setBorder(BorderFactory.createTitledBorder(
@@ -231,7 +230,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         gbc.gridy = 1; panelSwitches.add(rbSupresionInmediata, gbc);
 
         // PANEL FASES
-
         panelFases = new JPanel(new GridBagLayout());
         panelFases.setBackground(Color.BLACK);
         panelFases.setVisible(false);
@@ -278,7 +276,7 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         gbcF.gridx = 1;
         panelFases.add(btnFaseTiempo, gbcF);
 
-        // Fila inferior (centrada)
+        // Fila inferior 
         gbcF.gridx = 0;
         gbcF.gridy = 1;
         gbcF.gridwidth = 2;
@@ -293,7 +291,6 @@ public class MetodoAtaqueYTiroPanel extends JPanel {
         panelSwitches.add(panelFases, gbc);
 
         // LÓGICA DE VISIBILIDAD 
-
         ActionListener ocultarReglaje = e -> {
             panelFases.setVisible(false);
             rbReglajeSelector.setEnabled(false);

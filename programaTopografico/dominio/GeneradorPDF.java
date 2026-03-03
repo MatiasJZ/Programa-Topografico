@@ -50,7 +50,6 @@ public class GeneradorPDF implements PDFGenerator{
             String rutaCompleta = fd.getDirectory() + fd.getFile();
             if (!rutaCompleta.toLowerCase().endsWith(".pdf")) rutaCompleta += ".pdf";
 
-            // Definimos las fuentes de iText correctamente
             com.itextpdf.text.Font fuenteCabeceraTabla = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD);
             com.itextpdf.text.Font fuenteTexto = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
 
@@ -84,13 +83,11 @@ public class GeneradorPDF implements PDFGenerator{
                         tabla.setWidthPercentage(100);
                         tabla.setSpacingBefore(10f);
 
-                        // Celda de título de la función
                         PdfPCell celdaTitulo = new PdfPCell(new Phrase(funcion, fuenteCabeceraTabla));
                         celdaTitulo.setBackgroundColor(new BaseColor(192, 192, 192));
                         celdaTitulo.setPadding(5);
                         tabla.addCell(celdaTitulo);
                         
-                        // Celda de contenido del cálculo
                         PdfPCell celdaContenido = new PdfPCell(new Phrase(datos.get(funcion), fuenteTexto));
                         celdaContenido.setPadding(10);
                         tabla.addCell(celdaContenido);

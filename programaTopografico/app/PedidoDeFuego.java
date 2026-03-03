@@ -1,8 +1,6 @@
 package app;
 	
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 
@@ -12,12 +10,12 @@ import comunicaciones.GestorEnlaceOperativo;
 import dominio.Blanco;
 import dominio.GeneradorPDF;
 import dominio.PIF;
-import dominio.ReporteFinMision;
 import interfaz.DatosBlanco;
 import interfaz.Mensajeria;
 import interfaz.MetodoAtaqueYTiroPanel;
 import interfaz.CorreccionesPanel;
 import interfaz.PanelMapa;
+import util.DialogFactory;
 import util.FabricaComponentes;
 	
 public class PedidoDeFuego extends JPanel {
@@ -36,6 +34,7 @@ public class PedidoDeFuego extends JPanel {
     private JList<PIF> listaHistorial;
     private Mensajeria PanelMensajeria;
     private GeneradorPDF generadorPDF;
+    private DialogFactory dialogFactory; 
 
     private GestorEnlaceOperativo comunicacionIP;
 
@@ -74,6 +73,10 @@ public class PedidoDeFuego extends JPanel {
         actualizarBotones();
     }
 
+    public void setDialogFactory(DialogFactory dialogFactory) {
+        this.dialogFactory = dialogFactory;
+    }
+
     public void setComunicacionIP(GestorEnlaceOperativo com) {
         this.comunicacionIP = com;
     }
@@ -86,7 +89,7 @@ public class PedidoDeFuego extends JPanel {
     
     public void mostrarDatosDeBlanco() {
         SwingUtilities.invokeLater(() -> {
-            indiceActual = 0; // índice de DATOS BLANCO
+            indiceActual = 0; 
             cardLayout.show(pifCardPanel, "datos");
             actualizarBotones();
         });
@@ -94,7 +97,7 @@ public class PedidoDeFuego extends JPanel {
 
     public void mostrarMetodoYAtaque() {
         SwingUtilities.invokeLater(() -> {
-            indiceActual = 1; // índice de METODO / ATAQUE
+            indiceActual = 1; 
             cardLayout.show(pifCardPanel, "metodoTiro");
             actualizarBotones();
         });
@@ -106,7 +109,6 @@ public class PedidoDeFuego extends JPanel {
         pifCardPanel = new JPanel(cardLayout);
         pifCardPanel.setBackground(Color.BLACK);
 
-        // PRIMERO crear el panel que contendrá el mapa
         panelMapaObsHolder = new JPanel(new BorderLayout());
         panelMapaObsHolder.setBackground(Color.BLACK);
 
@@ -238,7 +240,16 @@ public class PedidoDeFuego extends JPanel {
         btnVer.setForeground(Color.WHITE);
         btnVer.setPreferredSize(new Dimension(0, 50));
         btnVer.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVer.addActionListener(e -> mostrarPIFSeleccionado());
+        
+        // Uso de la DialogFactory para mostrar el detalle
+        btnVer.addActionListener(e -> {
+            PIF p = listaHistorial.getSelectedValue();
+            if (p != null && dialogFactory != null) {
+                dialogFactory.DetallePIFDialog(p);
+            } else if (dialogFactory == null) {
+                JOptionPane.showMessageDialog(this, "Error de Sistema: Factory no inicializada.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         JPanel cont = new JPanel(new BorderLayout());
         cont.setBackground(Color.BLACK);
@@ -301,213 +312,49 @@ public class PedidoDeFuego extends JPanel {
             metodoYTiroPanel.getPanelMisionDeFuego().setVisible(true);
         });
 
+        // Uso de la DialogFactory para el reporte de Fin de Misión
         corr.getBtnFin().addActionListener(e -> { 
+            if (dialogFactory != null) {
+                dialogFactory.ReporteFinMisionDialog(reporte -> {
+                    if (reporte == null) {
+                        PanelMensajeria.getConsolaMensajes().agregarMensaje("[CANCELADO] Fin de misión sin reporte.");
+                        return;
+                    }
 
-            ReporteFinMision reporte = mostrarDialogoFinMision();
+                    // Asociar al último PIF creado
+                    PIF pif = modeloHistorial.isEmpty() ? null : modeloHistorial.lastElement();
+                    if (pif != null) {
+                        pif.setReporteFin(reporte);
+                        generadorPDF.generarPDF(this, pif, reporte);
+                    }
 
-            if (reporte == null) {
-            	PanelMensajeria.getConsolaMensajes().agregarMensaje("[CANCELADO] Fin de misión sin reporte.");
-                return;
+                    String msg = "FIN_MISION|BLANCO=" + 
+                                  datosDeBlancoPanel.getBlancoActual().getNombre() +
+                                 "|EFECTO=" + reporte.getEfectoObservado() +
+                                 "|OBSERVACIONES=" + reporte.getObservaciones();
+
+                    if (comunicacionIP != null) {
+                        comunicacionIP.enviarATodos(msg);
+                    }
+
+                    metodoYTiroPanel.getCorreccionesPanel().reiniciarCuadricula();
+                    metodoYTiroPanel.getCorreccionesPanel().getLblUltima().setText("");
+                    
+                    PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Fin de misión registrado.\nReporte guardado.",
+                            "Confirmado",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                });
+            } else {
+                JOptionPane.showMessageDialog(this, "Error de Sistema: Factory no inicializada.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
-            // Asociar al último PIF creado
-            PIF pif = modeloHistorial.lastElement();
-            pif.setReporteFin(reporte);
-            
-			generadorPDF.generarPDF(this, pif, reporte);
-
-            // Mensaje de red opcional
-            String msg = "FIN_MISION|BLANCO=" + 
-                          datosDeBlancoPanel.getBlancoActual().getNombre() +
-                         "|EFECTO=" + reporte.getEfectoObservado() +
-                         "|OBSERVACIONES=" + reporte.getObservaciones();
-
-            if (comunicacionIP != null) {
-                comunicacionIP.enviarATodos(msg);
-            }
-
-            metodoYTiroPanel.getCorreccionesPanel().reiniciarCuadricula();
-            metodoYTiroPanel.getCorreccionesPanel().getLblUltima().setText("");
-            
-            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Fin de misión registrado.\nReporte guardado.",
-                    "Confirmado",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
         });
         
         corr.getBtnEnviar().addActionListener(e -> enviarCorreccion());
-    }
-    
-    private ReporteFinMision mostrarDialogoFinMision() {
-
-        JDialog dlg = new JDialog(
-                SwingUtilities.getWindowAncestor(this),
-                "Reporte de Fin de Misión",
-                Dialog.ModalityType.APPLICATION_MODAL
-        );
-        dlg.setSize(750, 800); 
-        dlg.setLocationRelativeTo(this);
-
-        Font fTitulo = new Font("Segoe UI", Font.BOLD, 28);
-        Font fLabel = new Font("Segoe UI", Font.BOLD, 20);
-        Font fInput = new Font("Segoe UI", Font.PLAIN, 22);
-        Color colorTextoLabel = new Color(160, 255, 160);
-        int alturaComponentes = 60; 
-        // Panel principal
-        JPanel p = new JPanel(new GridBagLayout());
-        p.setBackground(new Color(20, 20, 20));
-        p.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(70, 130, 70), 3), 
-                BorderFactory.createEmptyBorder(30, 30, 30, 30) 
-        ));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 10, 15, 10); 
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        
-        JComboBox<String> cbEfecto = FabricaComponentes.crearCombo(new String[]{"Neutralizado", "Suprimido", "Destruido"});
-        cbEfecto.setFont(fInput);
-        cbEfecto.setPreferredSize(new Dimension(0, alturaComponentes));
-
-        JComboBox<String> cbDispersion = FabricaComponentes.crearCombo(new String[]{
-                "Ajustado", "Dispersión baja", "Dispersión alta",
-                "Corto", "Largo", "Izquierda", "Derecha"
-        });
-        cbDispersion.setFont(fInput);
-        cbDispersion.setPreferredSize(new Dimension(0, alturaComponentes));
-
-        JComboBox<String> cbDanos = FabricaComponentes.crearCombo(new String[]{"Destrucción parcial", "Destrucción total"});
-        cbDanos.setFont(fInput);
-        cbDanos.setPreferredSize(new Dimension(0, alturaComponentes));
-
-        JTextField txtMovimiento = new JTextField();
-        FabricaComponentes.configurarCampo(txtMovimiento);
-        txtMovimiento.setFont(fInput);
-        txtMovimiento.setPreferredSize(new Dimension(0, alturaComponentes));
-
-        JTextArea txtObs = new JTextArea(5, 20);
-        FabricaComponentes.configurarArea(txtObs);
-        txtObs.setFont(fInput);
-        JScrollPane scrollObs = new JScrollPane(txtObs);
-        scrollObs.setBorder(txtObs.getBorder()); 
-        scrollObs.setPreferredSize(new Dimension(0, 150)); 
-        int y = 0;
-
-        JLabel tituloSec = new JLabel("INFORME FINAL");
-        tituloSec.setForeground(new Color(160, 255, 160));
-        tituloSec.setFont(fTitulo);
-        tituloSec.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        gbc.gridx = 0; gbc.gridy = y++; gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 10, 30, 10); 
-        p.add(tituloSec, gbc);
-
-        agregarFilaGigante(p, "Efecto Observado:", cbEfecto, gbc, y++, fLabel, colorTextoLabel);
-        agregarFilaGigante(p, "Dispersión:", cbDispersion, gbc, y++, fLabel, colorTextoLabel);
-        agregarFilaGigante(p, "Daños Observados:", cbDanos, gbc, y++, fLabel, colorTextoLabel);
-        agregarFilaGigante(p, "Movimiento del blanco:", txtMovimiento, gbc, y++, fLabel, colorTextoLabel);
-
-        JLabel lblObs = new JLabel("Observaciones:");
-        lblObs.setFont(fLabel);
-        lblObs.setForeground(colorTextoLabel);
-        
-        gbc.gridx = 0; gbc.gridy = y++; gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 10, 5, 10); 
-        p.add(lblObs, gbc);
-
-        gbc.gridy = y++;
-        gbc.insets = new Insets(5, 10, 20, 10);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weighty = 1.0; 
-        p.add(scrollObs, gbc);
-
-        JButton ok = new JButton("CONFIRMAR");
-        JButton cancel = new JButton("CANCELAR");
-
-        Font fBoton = new Font("Segoe UI", Font.BOLD, 18);
-        Dimension dimBoton = new Dimension(220, 65); 
-        
-        ok.setFont(fBoton);
-        ok.setPreferredSize(dimBoton);
-        ok.setBackground(new Color(40, 160, 40));
-        ok.setForeground(Color.WHITE);
-        ok.setFocusPainted(false);
-        ok.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(90, 220, 90), 2),
-                BorderFactory.createEmptyBorder(10, 30, 10, 30)
-        ));
-
-        cancel.setFont(fBoton);
-        cancel.setPreferredSize(dimBoton);
-        cancel.setBackground(new Color(140, 40, 40));
-        cancel.setForeground(Color.WHITE);
-        cancel.setFocusPainted(false);
-        cancel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 90, 90), 2),
-                BorderFactory.createEmptyBorder(10, 30, 10, 30)
-        ));
-
-        ok.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) { ok.setBackground(new Color(55, 190, 55)); }
-            public void mouseExited(MouseEvent evt) { ok.setBackground(new Color(40, 160, 40)); }
-        });
-
-        cancel.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) { cancel.setBackground(new Color(190, 50, 50)); }
-            public void mouseExited(MouseEvent evt) { cancel.setBackground(new Color(140, 40, 40)); }
-        });
-
-        JPanel pb = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 20)); // Más espacio entre botones
-        pb.setBackground(new Color(20, 20, 20));
-        pb.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
-        pb.add(ok);
-        pb.add(cancel);
-
-        final boolean[] confirmado = {false};
-        ok.addActionListener(e -> { confirmado[0] = true; dlg.dispose(); });
-        cancel.addActionListener(e -> dlg.dispose());
-
-        dlg.add(p, BorderLayout.CENTER);
-        dlg.add(pb, BorderLayout.SOUTH);
-        dlg.setVisible(true);
-
-        if (!confirmado[0]) return null;
-
-        return new ReporteFinMision(
-                cbEfecto.getSelectedItem().toString(),
-                cbDispersion.getSelectedItem().toString(),
-                cbDanos.getSelectedItem().toString(),
-                txtMovimiento.getText(),
-                txtObs.getText()
-        );
-    }
-
-    private void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) {
-        gbc.gridy = gridy;
-        
-        // Label
-        JLabel lbl = new JLabel(titulo);
-        lbl.setFont(fLabel);
-        lbl.setForeground(color);
-        
-        gbc.gridx = 0; 
-        gbc.gridwidth = 1; 
-        gbc.weightx = 0.3; // El label ocupa el 30% del ancho
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(15, 10, 15, 20); // Separación derecha
-        p.add(lbl, gbc);
-
-        // Componente
-        gbc.gridx = 1; 
-        gbc.weightx = 0.7; // El componente ocupa el 70%
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(15, 0, 15, 10);
-        p.add(comp, gbc);
     }
     
     private void enviarCorreccion() {
@@ -545,8 +392,8 @@ public class PedidoDeFuego extends JPanel {
         while (parent != null && !(parent instanceof ProgramaTopografico))
             parent = parent.getParent();
 
-        if (parent instanceof ProgramaTopografico obs)
-            obs.mostrarPanel("SITUACION");
+        if (parent instanceof ProgramaTopografico topo)
+            topo.mostrarPanel("SITUACION");
     }
 
     private void registrarNuevoPIF() {
@@ -575,7 +422,7 @@ public class PedidoDeFuego extends JPanel {
                     + "|FASE REGLAJE="+mt.getFaseReglaje()
                     + "|REGSOBRE=" + nuevo.getRegistroSobre()
                     + "|BARRFRENTE=" + nuevo.getBarreraFrente()
-                    + "|BARRINC=" + nuevo.getBarreraInclinacion()           
+                    + "|BARRINC=" + nuevo.getBarreraInclinacion()            
                     + "|EFECTO=" + nuevo.getEfectoDeseado()
                     + "|MODO DE FUEGO=" + nuevo.getModoFuego()
                     + "|CERCANO=" + (nuevo.isCercano() ? "SI" : "NO")
@@ -595,109 +442,6 @@ public class PedidoDeFuego extends JPanel {
         }
 
         JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void mostrarPIFSeleccionado() {
-        PIF p = listaHistorial.getSelectedValue();
-        if (p == null) return;
-
-        Blanco b = p.getBlanco();
-
-        JPanel contenido = new JPanel();
-        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
-        contenido.setBackground(Color.BLACK);
-        contenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        Font fTitulo = new Font("Arial", Font.BOLD, 18);
-        Font fTexto = new Font("Consolas", Font.PLAIN, 15);
-
-        JPanel panelBlanco = new JPanel();
-        panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
-        panelBlanco.setBackground(Color.BLACK);
-        panelBlanco.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY),
-                        "DATOS DEL BLANCO",
-                        0, 0, fTitulo, Color.WHITE
-                )
-        );
-
-        panelBlanco.add(FabricaComponentes.crearLinea("Nombre: ", b.getNombre(), fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("Naturaleza: ", b.getNaturaleza(), fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("Coordenadas: ", b.getCoordenadas().toString(), fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("Fecha/Hora PIF: ", p.getFechaHora().toString(), fTexto)); 
-        panelBlanco.add(FabricaComponentes.crearLinea("Situación: ", String.valueOf(b.getSituacionMovimiento()), fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("Orientación: ", b.getOrientacion() + "°", fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("Info adicional: ", b.getInformacionAdicional(), fTexto));
-        panelBlanco.add(FabricaComponentes.crearLinea("PIF ID: ", p.getId(), fTexto));
-
-        contenido.add(panelBlanco);
-        contenido.add(Box.createVerticalStrut(15));
-
-        JPanel panelMetodo = new JPanel();
-        panelMetodo.setLayout(new BoxLayout(panelMetodo, BoxLayout.Y_AXIS));
-        panelMetodo.setBackground(Color.BLACK);
-        panelMetodo.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY),
-                        "MÉTODO DE ATAQUE / TIRO Y CONTROL",
-                        0, 0, fTitulo, Color.WHITE
-                )
-        );
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("--- Misión y Ajustes ---", "", fTitulo));
-        panelMetodo.add(FabricaComponentes.crearLinea("Misión (Modo): ", p.getModoMision(), fTexto)); 
-        panelMetodo.add(FabricaComponentes.crearLinea("Reg. Sobre: ", p.getRegistroSobre(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Barrera Frente: ", p.getBarreraFrente(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Barrera Incl: ", p.getBarreraInclinacion(), fTexto));
-        panelMetodo.add(Box.createVerticalStrut(8));
-        		
-        panelMetodo.add(FabricaComponentes.crearLinea("--- Método de Ataque ---", "", fTitulo));
-        panelMetodo.add(FabricaComponentes.crearLinea("Efecto Deseado: ", p.getEfectoDeseado(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Granada: ", p.getGranada(), fTexto)); 
-        panelMetodo.add(FabricaComponentes.crearLinea("Espoleta: ", p.getEspoleta(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Volumen: ", p.getVolumen(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Haz: ", p.getHaz(), fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Cercano: ", p.isCercano() ? "Sí" : "No", fTexto));
-        panelMetodo.add(FabricaComponentes.crearLinea("Gran Ángulo: ", p.isGranAngulo() ? "Sí" : "No", fTexto));
-        panelMetodo.add(Box.createVerticalStrut(8));
-
-        panelMetodo.add(FabricaComponentes.crearLinea("--- Tiro y Control ---", "", fTitulo));
-        panelMetodo.add(FabricaComponentes.crearLinea("Piezas: ", p.getPiezas(), fTexto));
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("Rondas (Vol.): ", p.getVolumen(), fTexto)); 
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("Sección: ", p.getSeccion(), fTexto));
-
-        int piezas = 0; 
-        try {
-            piezas = Integer.parseInt(p.getPiezas().trim());
-        } catch (NumberFormatException ignored) {
-        }
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("Modo Disparo: ", (piezas > 1 ? "RÁFAGA" : "DISPAROS"), fTexto));
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("Modo Fuego: ", p.getModoFuego(), fTexto)); 
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("FGO continuo: ", p.isFgoCont() ? "Sí" : "No", fTexto));
-        
-        panelMetodo.add(FabricaComponentes.crearLinea("TES: ", p.isTes() ? "Sí" : "No", fTexto));
-
-        contenido.add(panelMetodo);
-
-        JDialog dialogo = new JDialog(SwingUtilities.getWindowAncestor(this), "Detalle del PIF: " + p.getId());
-        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        JScrollPane scrollPane = new JScrollPane(contenido);
-
-        JScrollBar barraVertical = scrollPane.getVerticalScrollBar();
-        barraVertical.setPreferredSize(new Dimension(30, barraVertical.getPreferredSize().height));
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        dialogo.getContentPane().add(scrollPane);
-        dialogo.setSize(600, 800); 
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setVisible(true);
     }
 
     private void crearBotonesDeNavegacion() {

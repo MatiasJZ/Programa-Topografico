@@ -38,7 +38,7 @@ public class CoordenadasRectangulares extends Coordenadas {
     public double distanciaA(CoordenadasRectangulares otro) {
         double dx = otro.getX() - this.coordX;
         double dy = otro.getY() - this.coordY;
-        return Math.hypot(dx, dy); // equivalente a sqrt(dx² + dy²) pero numéricamente más estable
+        return Math.hypot(dx, dy);
     }
     
     @Override

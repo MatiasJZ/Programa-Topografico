@@ -51,7 +51,6 @@ public class ConsolaMensajes extends JPanel {
 
         add(header, BorderLayout.NORTH);
 
-        // area de texto con scroll
         area = new JTextArea();
         area.setEditable(false);
         area.setBackground(new Color(15, 15, 15));

@@ -109,7 +109,7 @@ public class CorreccionesPanel extends JPanel {
         txtEPA.setBounds(fieldX, 30, widthField, 30);
         panelParametros.add(txtEPA);
 
-        // 2) ANG. OB.
+        // ANG. OB.
         JLabel lblAngOb = new JLabel("ANG. OB.");
         lblAngOb.setForeground(Color.WHITE);
         lblAngOb.setFont(fontParam);
@@ -123,7 +123,7 @@ public class CorreccionesPanel extends JPanel {
         txtAngOb.setBounds(fieldX, 90, widthField, 30);
         panelParametros.add(txtAngOb);
 
-        // 3) T. VOLIDO
+        // T. VOLIDO
         JLabel lblTVolido = new JLabel("T. VOLIDO");
         lblTVolido.setForeground(Color.WHITE);
         lblTVolido.setFont(fontParam);
@@ -221,9 +221,9 @@ public class CorreccionesPanel extends JPanel {
             fuegoEstado = !fuegoEstado;
 
             if (fuegoEstado) {
-                btnFuego.setBackground(new Color(255, 60, 60)); // Rojo más brillante
+                btnFuego.setBackground(new Color(255, 60, 60)); 
             } else 
-                btnFuego.setBackground(new Color(180, 0, 0));   // Rojo más oscuro
+                btnFuego.setBackground(new Color(180, 0, 0));
         });
         
         for (JButton b : bs) {
@@ -360,7 +360,7 @@ public class CorreccionesPanel extends JPanel {
 		    panelCuadricula.zoomOut()
 		);
         
-        setPreferredSize(new Dimension(1100, 900)); // Aumentado de 500 a 900
+        setPreferredSize(new Dimension(1100, 900)); 
         
         String nombreBlanco = (blanco != null && blanco.getNombre() != null) ? blanco.getNombre() : "Blanco";
         panelCuadricula = new PanelCuadricula(ESCALA_METROS_POR_CUADRICULA, nombreBlanco);
@@ -426,8 +426,8 @@ public class CorreccionesPanel extends JPanel {
     class PanelCuadricula extends JPanel {
 
         private static final long serialVersionUID = 1L;
-        private int metrosPorPunto = 200;           // A
-        private static final int PUNTOS_SEMIEJE = 4; // fijo
+        private int metrosPorPunto = 200;           
+        private static final int PUNTOS_SEMIEJE = 4; 
         @SuppressWarnings("unused")
 		private static final int TAM_PUNTO = 10;
 

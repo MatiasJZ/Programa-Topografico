@@ -37,11 +37,9 @@ class RadioButtonCustom implements Icon {
         AbstractButton button = (AbstractButton) c;
         ButtonModel model = button.getModel();
 
-        // circulo externo
         g.setColor(Color.WHITE);
         g.drawOval(x, y, size - 1, size - 1);
 
-        // circulo relleno si está seleccionado
         if (model.isSelected()) {
             g.fillOval(x + size/4, y + size/4, size/2, size/2);
         }

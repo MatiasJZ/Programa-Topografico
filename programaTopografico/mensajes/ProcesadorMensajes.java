@@ -95,20 +95,18 @@ public class ProcesadorMensajes {
 
             CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, z);
 
-            // Busco si ya existe para actualizar
             for (Punto p : listaDePuntos) {
                 if (p.getNombre().equalsIgnoreCase(nombre)) {
                     p.setCoord(coords);
-                    panelTactico.actualizarPunto(p); // Debes tener este método en SituacionTactica
+                    panelTactico.actualizarPunto(p); 
                     consola.agregarMensaje("[ACTUALIZADO] Punto: " + nombre);
                     return;
                 }
             }
 
-            // Si llegamos aquí, es un punto nuevo
             Punto nuevoPunto = new Punto(coords, nombre);
             listaDePuntos.add(nuevoPunto);
-            panelTactico.agregarPunto(nuevoPunto); // Debes tener este método en SituacionTactica
+            panelTactico.agregarPunto(nuevoPunto); 
 
             consola.agregarMensaje("[NUEVO PUNTO] Recibido: " + nombre);
             
@@ -198,12 +196,11 @@ public class ProcesadorMensajes {
     }
     
     private void mapearDatosBlanco(Blanco b, String msg, CoordenadasRectangulares coords) {
-        // 1. Datos Geográficos y Temporales
+
     	b.setCoordenadas(coords);
         String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
         if (fecha != null) b.setFecha(fecha);
         
-        // 2. Atributos de Identificación Militar (Campos que faltaban)
         String entidad = ProtocoloMensajes.obtenerCampo(msg, "ENTIDAD");
         String afiliacion = ProtocoloMensajes.obtenerCampo(msg, "AFILIACION");
         String echelon = ProtocoloMensajes.obtenerCampo(msg, "ECHELON");
@@ -212,13 +209,11 @@ public class ProcesadorMensajes {
         if (afiliacion != null) b.setUltAfiliacion(afiliacion);
         if (echelon != null) b.setUltEchelon(echelon);
 
-        // 3. Simbología y Naturaleza
         String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
         String simID = ProtocoloMensajes.obtenerCampo(msg, "SIMID");
         if (nat != null) b.setNaturaleza(nat);
         if (simID != null) b.setSimID(simID);
 
-        // 4. Estado Dinámico y Orientación
         String orient = ProtocoloMensajes.obtenerCampo(msg, "ORI");
         String situacion = ProtocoloMensajes.obtenerCampo(msg, "SIT");
         
@@ -227,11 +222,9 @@ public class ProcesadorMensajes {
             try {
                 b.setSituacionMovimiento(SituacionMovimiento.valueOf(situacion));
             } catch (Exception e) {
-                // Si el estado no es válido, mantengo el anterior o fijo por defecto
             }
         }
 
-        // 5. Inteligencia Adicional
         String info = ProtocoloMensajes.obtenerCampo(msg, "INFO");
         if (info != null) b.setInformacionAdicional(info);
     }

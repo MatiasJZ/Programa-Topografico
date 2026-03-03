@@ -33,20 +33,19 @@ public class CoordenadasPolares extends Coordenadas {
         this.referencia = referencia;
     }
     
-    public double getDireccion() { return direccion; }       // en mils
+    public double getDireccion() { return direccion; }       
     
-    public double getDistancia() { return distancia; }       // en metros
+    public double getDistancia() { return distancia; }   
     
-    public double getCota() { return cota; }// en mils
+    public double getCota() { return cota; }
 
-    // Convertir coordenadas polares a rectangulares (en metros)
     public CoordenadasRectangulares toRectangulares() {
         if (referencia == null) {
             throw new IllegalStateException("No hay referencia definida para la conversión polar.");
         }
         // Convertir milésimos a radianes (6400 mils = 2π rad)
         double dirRad = direccion * (Math.PI / 3200.0);
-        // Descomposición
+
         double deltaX = distancia * Math.sin(dirRad);
         double deltaY = distancia * Math.cos(dirRad);
         // Sumar desplazamientos

@@ -1,11 +1,14 @@
 package util;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import dominio.Blanco;
 import dominio.CoordenadasRectangulares;
+import dominio.PIF;
 import dominio.Posicionable;
 import dominio.Punto;
+import dominio.ReporteFinMision;
 
 /**
  * DialogFactory define una interfaz para la creación de diversos diálogos utilizados en la aplicación topográfica.
@@ -34,6 +37,8 @@ public interface DialogFactory {
     void InfoPuntoDialog(Posicionable p);
     void ConfiguracionDialog();
     void MedirDialog(Posicionable origen);
+    void DetallePIFDialog(PIF pif);
+    void ReporteFinMisionDialog(Consumer<ReporteFinMision> callback);
     
     // Diálogos de Cálculos Topográficos
     void RadiacionDialog(List<Punto> puntos, List<Blanco> blancos, CalculoCallback callback);

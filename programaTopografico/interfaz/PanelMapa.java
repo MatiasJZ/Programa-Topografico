@@ -1,10 +1,14 @@
 package interfaz;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.style.AnchorPoint;
+import org.geotools.api.style.Displacement;
 import org.geotools.api.style.ExternalGraphic;
 import org.geotools.api.style.FeatureTypeStyle;
 import org.geotools.api.style.Graphic;
 import org.geotools.api.style.LineSymbolizer;
+import org.geotools.api.style.PointPlacement;
 import org.geotools.api.style.PointSymbolizer;
 import org.geotools.api.style.Rule;
 import org.geotools.api.style.Stroke;
@@ -210,25 +214,20 @@ public class PanelMapa extends JPanel {
         mapPaneSoloObs.setOpaque(true);
         mapPaneSoloObs.setBackground(Color.BLACK);
 
-        // CursorTool "inofensivo": no hace nada en clicks
         CursorTool noClickTool = new CursorTool() {};
         mapPaneSoloObs.setCursorTool(noClickTool);
 
-        // Contenedor en capas con overlay de controles (zoom y pan) propio de esta vista
         JLayeredPane capa = new JLayeredPane();
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(Color.BLACK);
         wrapper.add(capa, BorderLayout.CENTER);
 
-        // map al fondo
         capa.add(mapPaneSoloObs, JLayeredPane.DEFAULT_LAYER);
 
-        // overlay con botones
         JPanel overlay = new JPanel(null);
         overlay.setOpaque(false);
         capa.add(overlay, JLayeredPane.PALETTE_LAYER);
 
-        // resize bounds
         wrapper.addComponentListener(new ComponentAdapter() {
             @Override public void componentResized(ComponentEvent e) {
                 mapPaneSoloObs.setBounds(0, 0, wrapper.getWidth(), wrapper.getHeight());
@@ -236,13 +235,11 @@ public class PanelMapa extends JPanel {
             }
         });
 
-        // Botones (idénticos estilo a los de este PanelMapa)
         int size = 42, margin = 10;
         JButton btnZoomIn = new JButton("+");
         JButton btnZoomOut = new JButton("-");
         JButton btnPan = new JButton();
 
-        // icono arrastrar si lo tenés en recursos (mismo que usás arriba)
         try {
             ImageIcon icono = new ImageIcon(getClass().getResource("/arrastrar.png"));
             Image imgEscalada = icono.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
@@ -390,17 +387,14 @@ public class PanelMapa extends JPanel {
         StyleBuilder sb = new StyleBuilder();
         StyleFactory sf = CommonFactoryFinder.getStyleFactory();
 
-        // Crear el símbolo del punto (Círculo blanco con borde negro)
         PointSymbolizer ps = sb.createPointSymbolizer(
                 sb.createGraphic(null, sb.createMark("circle", Color.WHITE, Color.BLACK, 1.0f), null, 1.0, 18.0, 0.0)
         );
 
-        // Crear la etiqueta de texto usando el atributo "nombre" definido en tipoPuntos
         TextSymbolizer ts = sb.createTextSymbolizer(Color.BLACK,sb.createFont("Arial Black", true, false, 20),"nombre");
 
         ts.setLabelPlacement(sb.createLinePlacement(TOP_ALIGNMENT));
         
-        // Empaquetar todo en el estilo
         Rule rule = sf.createRule();
         rule.symbolizers().add(ps);
         rule.symbolizers().add(ts);
@@ -423,7 +417,7 @@ public class PanelMapa extends JPanel {
         LineSymbolizer ls = sb.createLineSymbolizer(stroke);
         TextSymbolizer ts = sb.createTextSymbolizer(Color.WHITE,sb.createFont("Arial", false, false, 20),"distancia");
 
-        ts.setLabelPlacement(sb.createLinePlacement(0.5)); // CENTRADO EN LA LÍNEA
+        ts.setLabelPlacement(sb.createLinePlacement(0.5)); 
 
         Rule rule = sf.createRule();
         rule.symbolizers().add(ls);
@@ -501,13 +495,13 @@ public class PanelMapa extends JPanel {
                 org.geotools.api.style.Halo halo = sb.createHalo(Color.WHITE, 0.5, 2.0);
                 org.geotools.api.style.Fill fillTexto = sb.createFill(Color.BLACK);
 
-                org.geotools.api.style.AnchorPoint anchor = sb.createAnchorPoint(0.5, 0.5);
+                AnchorPoint anchor = sb.createAnchorPoint(0.5, 0.5);
                 
-                org.geotools.api.style.Displacement disp = sb.createDisplacement(0, -30);
+                Displacement disp = sb.createDisplacement(0, -30);
 
-                org.geotools.api.filter.expression.Expression rotExpr = sb.literalExpression(rot);
+                Expression rotExpr = sb.literalExpression(rot);
 
-                org.geotools.api.style.PointPlacement placement = sb.createPointPlacement(anchor, disp, rotExpr);
+                PointPlacement placement = sb.createPointPlacement(anchor, disp, rotExpr);
 
                 TextSymbolizer ts = sb.createTextSymbolizer(
                     fillTexto, 

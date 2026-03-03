@@ -53,15 +53,10 @@ public class Punto implements Poligonal,Posicionable{
     public boolean soportaCierrePoligonal() {
         return true; 
     }
-
-    /*@Override
-    public void ejecutarCierrePoligonal(SituacionTacticaTopografica contexto) {
-        contexto.dialogoCierreControlado(this);
-    }*/
 	
 	@Override
 	public String toString() {
-	    return this.nombre; // O el método que uses para obtener el nombre
+	    return this.nombre; 
 	}
 	
 	public void setCoord(CoordenadasRectangulares coord) {

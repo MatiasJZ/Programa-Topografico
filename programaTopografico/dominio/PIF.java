@@ -93,15 +93,13 @@ public class PIF {
         sb.append("Sección: ").append(seccion == null ? "-" : seccion).append("\n");
         sb.append("FGO continuo: ").append(fgoCont ? "Sí" : "No").append("\n");
         sb.append("TES: ").append(tes ? "Sí" : "No").append("\n");
-
-        // Si existe ReporteFinMision (si añadiste ese atributo en PIF)
+        
         try {
             // evita dependencias si ReporteFinMision no existe
             Method m = this.getClass().getMethod("getReporteFin");
             Object rep = m.invoke(this);
             if (rep != null) {
                 sb.append("\n--- Reporte Fin de Misión ---\n");
-                // intentamos llamar a los getters comunes del ReporteFinMision
                 try {
                     Method gEfecto = rep.getClass().getMethod("getEfectoObservado");
                     Method gDisp = rep.getClass().getMethod("getDispersion");
@@ -120,12 +118,10 @@ public class PIF {
                     sb.append("Recomendación: ").append(String.valueOf(gRec.invoke(rep))).append("\n");
                     sb.append("Observaciones: ").append(String.valueOf(gObs.invoke(rep))).append("\n");
                 } catch (NoSuchMethodException nsme) {
-                    // si la clase ReporteFinMision tiene distinta API, simplemente mostrar toString()
                     sb.append(rep.toString()).append("\n");
                 }
             }
         } catch (Exception ignored) {
-            // si no existe getReporteFin o por reflexión falló, lo ignoramos.
         }
 
         return sb.toString();
@@ -296,7 +292,7 @@ public class PIF {
         return "PIF {" +
                 "\n    id='" + id + '\'' +
                 ", \n    fechaHora=" + fechaHora +
-                ", \n    blanco=" + blanco + // Asume que la clase Blanco tiene su propio toString()
+                ", \n    blanco=" + blanco + 
                 ", \n    modoMision='" + modoMision + '\'' +
                 ", \n    registro sobre='" + registroSobre + '\'' +
                 ", \n    barrera frente='" + barreraFrente + '\'' +

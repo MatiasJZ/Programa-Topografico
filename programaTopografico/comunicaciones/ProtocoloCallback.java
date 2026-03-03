@@ -10,7 +10,6 @@ public interface ProtocoloCallback {
 
 	    void recibir(String mensaje);
 
-	    // NUEVO: archivo recibido
 	    default void recibirArchivo(File archivo) {}
 
 	    void log(String texto);

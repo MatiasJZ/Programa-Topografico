@@ -67,7 +67,6 @@ public class CheckIconCustom implements Icon {
         g2.setStroke(new BasicStroke(2));
         g2.drawRect(x, y, size, size);
 
-        // check si está seleccionado
         if (c instanceof AbstractButton b && b.isSelected()) {
             g2.setColor(check);
             g2.setStroke(new BasicStroke(3));

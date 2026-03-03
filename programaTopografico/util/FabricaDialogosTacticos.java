@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.*;
 
@@ -111,7 +112,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	public void AgregarBlancoDialog(CoordenadasRectangulares coord, BlancoCallback callback) {
 		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
         JDialog dialog = new JDialog(parentFrame, "Nuevo Blanco", true);
-        // Tamaño aumentado para acomodar componentes más grandes
         dialog.setSize(850, 750); 
         dialog.setLocationRelativeTo(padre);
 
@@ -119,7 +119,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         panel.setBackground(new Color(50, 50, 50));
         dialog.setContentPane(panel);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 10, 8, 10); // Insets aumentados para mejor espaciado
+        gbc.insets = new Insets(8, 10, 8, 10); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // DEFINICIÓN DE FUENTES ESCALADAS
@@ -133,7 +133,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
         JTextField txtOrient = new JTextField();
         FabricaComponentes.addPlaceholder(txtOrient, "mils");
-        txtOrient.setPreferredSize(new Dimension(120, 40)); // Dimensiones aumentadas
+        txtOrient.setPreferredSize(new Dimension(120, 40)); 
         txtOrient.setBackground(new Color(70, 70, 70));
         txtOrient.setForeground(Color.WHITE);
         txtOrient.setFont(fuenteMedia);
@@ -142,7 +142,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         FabricaComponentes.addPlaceholder(txtNombre, sit.getPrefijo() +" "+ sit.getContador());
         txtNombre.setBackground(new Color(70, 70, 70));
         txtNombre.setForeground(Color.WHITE);
-        txtNombre.setPreferredSize(new Dimension(300, 40)); // Dimensiones aumentadas
+        txtNombre.setPreferredSize(new Dimension(300, 40)); 
         txtNombre.setFont(fuenteMedia);
 
         JPanel panelNombre = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
@@ -231,7 +231,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JComboBox<SituacionMovimiento> cbEstado = new JComboBox<>(SituacionMovimiento.values());
 
         for (JComboBox<?> cb : new JComboBox[]{cbEntidad, cbAfiliacion, cbEchelon, cbEstado}) {
-            cb.setPreferredSize(new Dimension(350, 45)); // Tamaño aumentado
+            cb.setPreferredSize(new Dimension(350, 45)); 
             cb.setBackground(new Color(70, 70, 70));
             cb.setForeground(Color.WHITE);
             cb.setFont(fuenteMedia);
@@ -242,7 +242,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         ListCellRenderer<String> guionRenderer = (list, value, index, isSelected, cellHasFocus) -> {
             JLabel label = new JLabel(value.replace("-", " "));
             label.setOpaque(true);
-            label.setFont(fuenteMedia); // Fuente en lista
+            label.setFont(fuenteMedia);
             label.setBackground(isSelected ? new Color(100, 100, 100) : new Color(70, 70, 70));
             label.setForeground(Color.WHITE);
             return label;
@@ -332,7 +332,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         botones.setBackground(new Color(50, 50, 50));
         for(JButton b : new JButton[]{btnAceptar, btnCancelar}) {
             b.setFont(fuenteGrande);
-            b.setPreferredSize(new Dimension(0, 60)); // Botones mucho más altos
+            b.setPreferredSize(new Dimension(0, 60)); 
             b.setFocusPainted(false);
         }
         botones.add(btnAceptar);
@@ -342,7 +342,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         gbc.insets = new Insets(20, 10, 10, 10);
         panel.add(botones, gbc);
 
-        // ACCIÓN BOTÓN ACEPTAR (Lógica intacta)
+        // ACCIÓN BOTÓN ACEPTAR
         btnAceptar.addActionListener(e -> {
             String nombre = txtNombre.getText().trim();
             if (nombre.isEmpty()) {
@@ -474,7 +474,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	    gbc.gridx=0; gbc.gridy=2; panel.add(lblY, gbc);
 	    gbc.gridx=1; panel.add(txtY, gbc);
 
-	    // Nuevo campo Cota en la fila 3
 	    gbc.gridx=0; gbc.gridy=3; panel.add(lblZ, gbc);
 	    gbc.gridx=1; panel.add(txtCota, gbc);
 
@@ -503,7 +502,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	            JOptionPane.showMessageDialog(dialog, "Ingrese un nombre para el punto.", "Error", JOptionPane.ERROR_MESSAGE);
 	            return;
 	        }
-
 	        try {
 	            @SuppressWarnings("unused")
 				double cotaIngresada = Double.parseDouble(txtCota.getText().trim());
@@ -534,7 +532,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	public void EditarBlancoDialog(Blanco blanco, BlancoCallback callback) {
 		JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
         JDialog dialog = new JDialog(parentFrame, "Editar Blanco", true);
-        // Tamaño aumentado para acomodar el escalado de componentes
         dialog.setSize(850, 850); 
         dialog.setLocationRelativeTo(padre);
 
@@ -558,13 +555,13 @@ public class FabricaDialogosTacticos implements DialogFactory{
         lblOrient.setFont(fuenteGrande);
 
         JTextField txtOrient = new JTextField(String.valueOf(blanco.getOrientacion()));
-        txtOrient.setPreferredSize(new Dimension(120, 45)); // Aumentado
+        txtOrient.setPreferredSize(new Dimension(120, 45));
         txtOrient.setBackground(new Color(70, 70, 70));
         txtOrient.setForeground(Color.WHITE);
         txtOrient.setFont(fuenteMedia);
 
         JTextField txtNombre = new JTextField(blanco.getNombre());
-        txtNombre.setPreferredSize(new Dimension(300, 45)); // Aumentado
+        txtNombre.setPreferredSize(new Dimension(300, 45));
         txtNombre.setBackground(new Color(70, 70, 70));
         txtNombre.setForeground(Color.WHITE);
         txtNombre.setFont(fuenteMedia);
@@ -575,7 +572,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         panelNombre.add(txtOrient);
         panelNombre.add(txtNombre);
 
-        // COORDENADAS (solo lectura X, Y - editable COTA)
+        // COORDENADAS
         JTextField txtX = new JTextField(String.valueOf(blanco.getCoordenadas().getX()));
         JTextField txtY = new JTextField(String.valueOf(blanco.getCoordenadas().getY()));
         JTextField txtCota = new JTextField(String.valueOf(blanco.getCoordenadas().getCota())); 
@@ -1091,7 +1088,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JDialog dialogo = new JDialog(parentFrame, "Detalle del Blanco: " + blanco.getNombre(), true);
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        // 1. ESCALADO DE FUENTES (+40%)
         Font fTitulo = new Font("Arial", Font.BOLD, 25);   
         Font fTexto = new Font("Consolas", Font.PLAIN, 21); 
 
@@ -1163,22 +1159,18 @@ public class FabricaDialogosTacticos implements DialogFactory{
         scrollInfo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200)); 
         scrollInfo.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // Barra deslizadora interna ancha
         scrollInfo.getVerticalScrollBar().setPreferredSize(new Dimension(30, 0));
 
         panelInfoAdicional.add(scrollInfo);
         contenido.add(panelInfoAdicional);
 
-        // 3. SCROLL PRINCIPAL Y BARRA DESLIZADORA GENERAL (TÁCTICA)
         JScrollPane scrollPrincipal = new JScrollPane(contenido);
-        // Barra de desplazamiento general muy ancha para facilitar el uso
         scrollPrincipal.getVerticalScrollBar().setPreferredSize(new Dimension(40, 0)); 
         scrollPrincipal.setBorder(null);
-        scrollPrincipal.getVerticalScrollBar().setUnitIncrement(20); // Scroll más fluido
+        scrollPrincipal.getVerticalScrollBar().setUnitIncrement(20);
 
         dialogo.getContentPane().add(scrollPrincipal);
         
-        // Aumentamos el tamaño para evitar que los datos largos se corten a la derecha
         dialogo.setSize(1000, 800); 
         dialogo.setLocationRelativeTo(parentFrame);
         dialogo.setVisible(true);
@@ -1190,14 +1182,13 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JDialog dialogo = new JDialog(parentFrame, "Detalle del Punto: " + p.getNombre(), true);
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        // 1. ESCALADO DE FUENTES (+40%)
         Font fTitulo = new Font("Arial", Font.BOLD, 25);   
         Font fTexto = new Font("Consolas", Font.PLAIN, 21); 
 
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setBackground(Color.BLACK);
-        // Margen más amplio para acompañar el tamaño de letra
+        
         contenido.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         // PANEL DE INFORMACIÓN BÁSICA
@@ -1212,21 +1203,17 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 )
         );
 
-        // Nombre y separadores escalados
         panelPunto.add(FabricaComponentes.crearLinea2("Nombre: ", p.getNombre(), fTexto));
         panelPunto.add(Box.createVerticalStrut(15));
         
-        // Coordenadas con formato de alta precisión
         panelPunto.add(FabricaComponentes.crearLinea2("Coordenadas: ", "", fTexto));
         panelPunto.add(FabricaComponentes.crearLinea2("  - DERECHAS (X): ", String.format("%.6f", p.getCoordenadas().getX()), fTexto));
         panelPunto.add(FabricaComponentes.crearLinea2("  - ARRIBAS (Y): ", String.format("%.6f", p.getCoordenadas().getY()), fTexto));
         
-        // Cota (Z)
         panelPunto.add(FabricaComponentes.crearLinea2("  - COTA (Z): ", String.format("%.2f m", p.getCoordenadas().getCota()), fTexto)); 
 
         contenido.add(panelPunto);
 
-        // 2. USO DE SCROLL TÁCTICO (Previsión por si la resolución es baja o el nombre es largo)
         JScrollPane scrollPrincipal = new JScrollPane(contenido);
         scrollPrincipal.getVerticalScrollBar().setPreferredSize(new Dimension(40, 0)); 
         scrollPrincipal.setBorder(null);
@@ -1234,8 +1221,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
         dialogo.getContentPane().add(scrollPrincipal);
         
-        // 3. TAMAÑO AJUSTADO PARA FUENTES GRANDES
-        // Ancho suficiente para que las coordenadas no se corten
         dialogo.setSize(850, 450); 
         dialogo.setLocationRelativeTo(parentFrame);
         dialogo.setVisible(true);
@@ -1249,7 +1234,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         dialog.setLocationRelativeTo(padre);
         dialog.setResizable(false);
 
-        // Panel principal con fondo oscuro 
+        // Panel principal 
         JPanel panelPrincipal = new JPanel(new BorderLayout(15, 20));
         panelPrincipal.setBackground(new Color(30, 30, 30));
         panelPrincipal.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(80, 80, 80), 3),BorderFactory.createEmptyBorder(30, 30, 30, 30) ));
@@ -1358,7 +1343,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
         panelDialog.add(comboDestinos, gbc);
 
-        // BOTONES GIGANTES PARA TABLET
         JButton btnAceptar = new JButton("Aceptar");
         JButton btnCancelar = new JButton("Cancelar");
 
@@ -1435,6 +1419,217 @@ public class FabricaDialogosTacticos implements DialogFactory{
         btnCancelar.addActionListener(e -> dialog.dispose());
         dialog.setVisible(true);
 	}
+	
+	@Override
+    public void DetallePIFDialog(PIF p) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+        JDialog dialogo = new JDialog(parentFrame, "Detalle del PIF: " + p.getId(), false);
+        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        
+        Blanco b = p.getBlanco();
+
+        JPanel contenido = new JPanel();
+        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
+        contenido.setBackground(Color.BLACK);
+        contenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        Font fTitulo = new Font("Arial", Font.BOLD, 18);
+        Font fTexto = new Font("Consolas", Font.PLAIN, 15);
+
+        JPanel panelBlanco = new JPanel();
+        panelBlanco.setLayout(new BoxLayout(panelBlanco, BoxLayout.Y_AXIS));
+        panelBlanco.setBackground(Color.BLACK);
+        panelBlanco.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "DATOS DEL BLANCO",
+                        0, 0, fTitulo, Color.WHITE
+                )
+        );
+
+        panelBlanco.add(FabricaComponentes.crearLinea("Nombre: ", b.getNombre(), fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("Naturaleza: ", b.getNaturaleza(), fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("Coordenadas: ", b.getCoordenadas().toString(), fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("Fecha/Hora PIF: ", p.getFechaHora().toString(), fTexto)); 
+        panelBlanco.add(FabricaComponentes.crearLinea("Situación: ", String.valueOf(b.getSituacionMovimiento()), fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("Orientación: ", b.getOrientacion() + "°", fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("Info adicional: ", b.getInformacionAdicional(), fTexto));
+        panelBlanco.add(FabricaComponentes.crearLinea("PIF ID: ", p.getId(), fTexto));
+
+        contenido.add(panelBlanco);
+        contenido.add(Box.createVerticalStrut(15));
+
+        JPanel panelMetodo = new JPanel();
+        panelMetodo.setLayout(new BoxLayout(panelMetodo, BoxLayout.Y_AXIS));
+        panelMetodo.setBackground(Color.BLACK);
+        panelMetodo.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "MÉTODO DE ATAQUE / TIRO Y CONTROL",
+                        0, 0, fTitulo, Color.WHITE
+                )
+        );
+        
+        panelMetodo.add(FabricaComponentes.crearLinea("--- Misión y Ajustes ---", "", fTitulo));
+        panelMetodo.add(FabricaComponentes.crearLinea("Misión (Modo): ", p.getModoMision(), fTexto)); 
+        panelMetodo.add(FabricaComponentes.crearLinea("Reg. Sobre: ", p.getRegistroSobre(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Barrera Frente: ", p.getBarreraFrente(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Barrera Incl: ", p.getBarreraInclinacion(), fTexto));
+        panelMetodo.add(Box.createVerticalStrut(8));
+                
+        panelMetodo.add(FabricaComponentes.crearLinea("--- Método de Ataque ---", "", fTitulo));
+        panelMetodo.add(FabricaComponentes.crearLinea("Efecto Deseado: ", p.getEfectoDeseado(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Granada: ", p.getGranada(), fTexto)); 
+        panelMetodo.add(FabricaComponentes.crearLinea("Espoleta: ", p.getEspoleta(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Volumen: ", p.getVolumen(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Haz: ", p.getHaz(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Cercano: ", p.isCercano() ? "Sí" : "No", fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Gran Ángulo: ", p.isGranAngulo() ? "Sí" : "No", fTexto));
+        panelMetodo.add(Box.createVerticalStrut(8));
+
+        panelMetodo.add(FabricaComponentes.crearLinea("--- Tiro y Control ---", "", fTitulo));
+        panelMetodo.add(FabricaComponentes.crearLinea("Piezas: ", p.getPiezas(), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Rondas (Vol.): ", p.getVolumen(), fTexto)); 
+        panelMetodo.add(FabricaComponentes.crearLinea("Sección: ", p.getSeccion(), fTexto));
+
+        int piezas = 0; 
+        try { piezas = Integer.parseInt(p.getPiezas().trim()); } catch (NumberFormatException ignored) {}
+        
+        panelMetodo.add(FabricaComponentes.crearLinea("Modo Disparo: ", (piezas > 1 ? "RÁFAGA" : "DISPAROS"), fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("Modo Fuego: ", p.getModoFuego(), fTexto)); 
+        panelMetodo.add(FabricaComponentes.crearLinea("FGO continuo: ", p.isFgoCont() ? "Sí" : "No", fTexto));
+        panelMetodo.add(FabricaComponentes.crearLinea("TES: ", p.isTes() ? "Sí" : "No", fTexto));
+
+        contenido.add(panelMetodo);
+
+        JScrollPane scrollPane = new JScrollPane(contenido);
+        JScrollBar barraVertical = scrollPane.getVerticalScrollBar();
+        barraVertical.setPreferredSize(new Dimension(30, barraVertical.getPreferredSize().height));
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        dialogo.getContentPane().add(scrollPane);
+        dialogo.setSize(600, 800); 
+        dialogo.setLocationRelativeTo(parentFrame);
+        dialogo.setVisible(true);
+    }
+
+    @Override
+    public void ReporteFinMisionDialog(Consumer<ReporteFinMision> callback) {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(padre);
+        JDialog dlg = new JDialog(parentFrame, "Reporte de Fin de Misión", Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setSize(750, 800); 
+        dlg.setLocationRelativeTo(padre);
+
+        Font fTitulo = new Font("Segoe UI", Font.BOLD, 28);
+        Font fLabel = new Font("Segoe UI", Font.BOLD, 20);
+        Font fInput = new Font("Segoe UI", Font.PLAIN, 22);
+        Color colorTextoLabel = new Color(160, 255, 160);
+        int alturaComponentes = 60; 
+        
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(new Color(20, 20, 20));
+        p.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(70, 130, 70), 3), 
+                BorderFactory.createEmptyBorder(30, 30, 30, 30) 
+        ));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(15, 10, 15, 10); 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        
+        JComboBox<String> cbEfecto = FabricaComponentes.crearCombo(new String[]{"Neutralizado", "Suprimido", "Destruido"});
+        cbEfecto.setFont(fInput);
+        cbEfecto.setPreferredSize(new Dimension(0, alturaComponentes));
+
+        JComboBox<String> cbDispersion = FabricaComponentes.crearCombo(new String[]{
+                "Ajustado", "Dispersión baja", "Dispersión alta",
+                "Corto", "Largo", "Izquierda", "Derecha"
+        });
+        cbDispersion.setFont(fInput);
+        cbDispersion.setPreferredSize(new Dimension(0, alturaComponentes));
+
+        JComboBox<String> cbDanos = FabricaComponentes.crearCombo(new String[]{"Destrucción parcial", "Destrucción total"});
+        cbDanos.setFont(fInput);
+        cbDanos.setPreferredSize(new Dimension(0, alturaComponentes));
+
+        JTextField txtMovimiento = new JTextField();
+        FabricaComponentes.configurarCampo(txtMovimiento);
+        txtMovimiento.setFont(fInput);
+        txtMovimiento.setPreferredSize(new Dimension(0, alturaComponentes));
+
+        JTextArea txtObs = new JTextArea(5, 20);
+        FabricaComponentes.configurarArea(txtObs);
+        txtObs.setFont(fInput);
+        JScrollPane scrollObs = new JScrollPane(txtObs);
+        scrollObs.setBorder(txtObs.getBorder()); 
+        scrollObs.setPreferredSize(new Dimension(0, 150)); 
+        int y = 0;
+
+        JLabel tituloSec = new JLabel("INFORME FINAL");
+        tituloSec.setForeground(new Color(160, 255, 160));
+        tituloSec.setFont(fTitulo);
+        tituloSec.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        gbc.gridx = 0; gbc.gridy = y++; gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 10, 30, 10); 
+        p.add(tituloSec, gbc);
+
+        FabricaComponentes.agregarFilaGigante(p, "Efecto Observado:", cbEfecto, gbc, y++, fLabel, colorTextoLabel);
+        FabricaComponentes.agregarFilaGigante(p, "Dispersión:", cbDispersion, gbc, y++, fLabel, colorTextoLabel);
+        FabricaComponentes.agregarFilaGigante(p, "Daños Observados:", cbDanos, gbc, y++, fLabel, colorTextoLabel);
+        FabricaComponentes.agregarFilaGigante(p, "Movimiento del blanco:", txtMovimiento, gbc, y++, fLabel, colorTextoLabel);
+
+        JLabel lblObs = new JLabel("Observaciones:");
+        lblObs.setFont(fLabel);
+        lblObs.setForeground(colorTextoLabel);
+        
+        gbc.gridx = 0; gbc.gridy = y++; gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 10, 5, 10); 
+        p.add(lblObs, gbc);
+
+        gbc.gridy = y++;
+        gbc.insets = new Insets(5, 10, 20, 10);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0; 
+        p.add(scrollObs, gbc);
+
+        JButton ok = new JButton("CONFIRMAR");
+        JButton cancel = new JButton("CANCELAR");
+
+        Font fBoton = new Font("Segoe UI", Font.BOLD, 18);
+        Dimension dimBoton = new Dimension(220, 65); 
+        
+        FabricaComponentes.configurarBoton(ok, fBoton, dimBoton, new Color(40, 160, 40), new Color(90, 220, 90), new Color(55, 190, 55));
+        FabricaComponentes.configurarBoton(cancel, fBoton, dimBoton, new Color(140, 40, 40), new Color(220, 90, 90), new Color(190, 50, 50));
+
+        JPanel pb = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 20)); 
+        pb.setBackground(new Color(20, 20, 20));
+        pb.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
+        pb.add(ok);
+        pb.add(cancel);
+
+        ok.addActionListener(e -> { 
+            ReporteFinMision reporte = new ReporteFinMision(
+                    cbEfecto.getSelectedItem().toString(),
+                    cbDispersion.getSelectedItem().toString(),
+                    cbDanos.getSelectedItem().toString(),
+                    txtMovimiento.getText(),
+                    txtObs.getText()
+            );
+            dlg.dispose(); 
+            if (callback != null) callback.accept(reporte);
+        });
+        
+        cancel.addActionListener(e -> {
+            dlg.dispose();
+            if (callback != null) callback.accept(null);
+        });
+
+        dlg.add(p, BorderLayout.CENTER);
+        dlg.add(pb, BorderLayout.SOUTH);
+        dlg.setVisible(true);
+    }
 
 	@Override
 	public void CierrePoligonalDialog(Punto puntoInicio, CalculoCallback callback) {
@@ -1970,7 +2165,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
         JButton btnCalcular = new JButton("DETERMINAR POSICIÓN");
-        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120)); // Azul táctico
+        FabricaComponentes.configurarBotonEstilo(btnCalcular, new Color(40, 70, 120));
         JButton btnCancelar = new JButton("CANCELAR");
         FabricaComponentes.configurarBotonEstilo(btnCancelar, new Color(80, 40, 40));
 
@@ -1992,7 +2187,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 double alfa = Double.parseDouble(txtAlfa.getText());
                 double beta = Double.parseDouble(txtBeta.getText());
                 
-                // Llamaremos a la calculadora (Próximo paso)
                 CoordenadasRectangulares res = CalculadorTopografico.interseccionInversa3P(p1, p2, p3, alfa, beta);
                 
                 Punto miPosicion = new Punto(res, txtNombre.getText().trim());
@@ -2112,12 +2306,10 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 
                 double distLB = pA.getCoordenadas().distanciaA(pB.getCoordenadas());
                 
-                // Validación matemática crucial (Desigualdad Triangular) para que no crashee la calculadora
                 if (distA + distB <= distLB || Math.abs(distA - distB) >= distLB) {
                     throw new Exception("Geometría imposible: Las distancias proporcionadas no se intersectan (no forman un triángulo con la Línea Base).");
                 }
 
-                // Llamada teórica a tu clase de cálculos (necesitarás este método allí)
                 CoordenadasRectangulares res = CalculadorTopografico.trilateracion(pA, pB, distA, distB);
                 String id = txtNombre.getText().trim();
 
@@ -2199,7 +2391,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         formPanel.add(new JSeparator(), gbc);
         gbc.gridwidth = 1;
 
-        // 2. Grupo Mediciones (Azimuts observados)
+        // 2. Grupo Mediciones 
         gbc.gridx = 0; gbc.gridy = 3;
         formPanel.add(FabricaComponentes.crearEtiqueta("AZIMUT A LA EST. A (mils)", fLabel), gbc);
         JTextField txtAzA = FabricaComponentes.crearCampoTexto(fInput);
@@ -2210,7 +2402,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JTextField txtAzB = FabricaComponentes.crearCampoTexto(fInput);
         gbc.gridx = 1; formPanel.add(txtAzB, gbc);
 
-        // 3. Resultado (Posición Propia)
+        // 3. Resultado 
         gbc.gridx = 0; gbc.gridy = 5;
         formPanel.add(FabricaComponentes.crearEtiqueta("ID POSICIÓN PROPIA", fLabel), gbc);
         JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
@@ -2251,7 +2443,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
                     throw new Exception("Los azimuts deben estar entre 0 y 6399 milésimos.");
                 }
 
-                // Llamada a la calculadora matemática
                 CoordenadasRectangulares res = CalculadorTopografico.interseccionInversa2P(pA, pB, azA, azB);
                 
                 if (res == null) {
@@ -2315,7 +2506,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         Font fCombo = new Font("Arial", Font.PLAIN, 18);
         Font fInput = new Font("Monospaced", Font.BOLD, 22);
 
-        // 1. Grupo Estaciones (Observadores Conocidos)
+        // 1. Grupo Estaciones 
         gbc.gridx = 0; gbc.gridy = 0;
         formPanel.add(FabricaComponentes.crearEtiqueta("ESTACIÓN A (Izquierda)", fLabel), gbc);
         gbc.gridx = 1;
@@ -2333,7 +2524,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         formPanel.add(new JSeparator(), gbc);
         gbc.gridwidth = 1;
 
-        // 2. Grupo Mediciones (Azimuts hacia el objetivo)
+        // 2. Grupo Mediciones 
         gbc.gridx = 0; gbc.gridy = 3;
         formPanel.add(FabricaComponentes.crearEtiqueta("AZIMUT DESDE A (mils)", fLabel), gbc);
         JTextField txtAzA = FabricaComponentes.crearCampoTexto(fInput);
@@ -2344,12 +2535,12 @@ public class FabricaDialogosTacticos implements DialogFactory{
         JTextField txtAzB = FabricaComponentes.crearCampoTexto(fInput);
         gbc.gridx = 1; formPanel.add(txtAzB, gbc);
 
-        // 3. Resultado (Blanco u Objetivo)
+        // 3. Resultado 
         gbc.gridx = 0; gbc.gridy = 5;
         formPanel.add(FabricaComponentes.crearEtiqueta("ID OBJETIVO", fLabel), gbc);
         JTextField txtNombre = FabricaComponentes.crearCampoTexto(fInput);
         txtNombre.setText("INT-DIR-" + (sit.getListaDePuntos().size() + 1));
-        txtNombre.setForeground(new Color(255, 100, 100)); // Un rojo/naranja táctico para indicar posible blanco
+        txtNombre.setForeground(new Color(255, 100, 100));
         gbc.gridx = 1; formPanel.add(txtNombre, gbc);
 
         // PANEL DE BOTONES
@@ -2386,7 +2577,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
                     throw new Exception("Los azimuts deben estar entre 0 y 6399 milésimos.");
                 }
 
-                // Llamada teórica a tu clase de matemáticas
                 CoordenadasRectangulares res = CalculadorTopografico.interseccionDirecta(pA, pB, azA, azB);
                 
                 if (res == null) {
@@ -2650,7 +2840,7 @@ public class FabricaDialogosTacticos implements DialogFactory{
         txtNombre.setForeground(new Color(150, 255, 150)); // Verde táctico claro
         gbc.gridx = 1; formPanel.add(txtNombre, gbc);
 
-        // --- PANEL DE BOTONES ---
+        // PANEL DE BOTONES 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
@@ -2684,22 +2874,18 @@ public class FabricaDialogosTacticos implements DialogFactory{
                     throw new Exception("El ángulo debe estar entre 0 y 6399 milésimos.");
                 }
 
-                // 1. Calculamos el Azimut hacia la Referencia
                 double azimutBase = CalculadorTopografico.calcularAzimutEnMils(
                     origen.getCoordenadas().getX(), origen.getCoordenadas().getY(),
                     ref.getCoordenadas().getX(), ref.getCoordenadas().getY()
                 );
 
-                // 2. Sumamos el ángulo medido para obtener el Azimut Real al Blanco
                 double azimutAlBlanco = (azimutBase + anguloMedido) % 6400.0;
 
-                // 3. Usamos el método de radiación que ya tienes en CalculadorTopografico
                 CoordenadasRectangulares res = CalculadorTopografico.radiacion(origen, azimutAlBlanco, distancia);
 
                 String id = txtNombre.getText().trim();
                 Punto ptoNuevo = new Punto(res, id);
 
-                // Preparamos el informe detallado
                 StringBuilder sb = new StringBuilder();
                 sb.append("MÉTODO: ÁNGULO BASE (RADIACIÓN CON REFERENCIA)\n\n");
                 sb.append("DATOS DE ORIENTACIÓN:\n");
@@ -2787,11 +2973,11 @@ public class FabricaDialogosTacticos implements DialogFactory{
         gbc.gridx = 0; gbc.gridy = 5;
         formPanel.add(FabricaComponentes.crearEtiqueta("AÑO ACTUAL AL CÁLCULO", fLabel), gbc);
         JTextField txtAnioActual = FabricaComponentes.crearCampoTexto(fInput);
-        txtAnioActual.setText("2026"); // Lo seteamos al año actual
-        txtAnioActual.setForeground(new Color(150, 200, 255)); // Azul táctico para diferenciar
+        txtAnioActual.setText("2026"); 
+        txtAnioActual.setForeground(new Color(150, 200, 255)); 
         gbc.gridx = 1; formPanel.add(txtAnioActual, gbc);
 
-        // --- PANEL DE BOTONES ---
+        // PANEL DE BOTONES
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
@@ -2816,18 +3002,16 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 int anioActual = Integer.parseInt(txtAnioActual.getText().trim());
                 double decOriginal = Double.parseDouble(txtDecOriginal.getText().trim());
                 double varAnual = Double.parseDouble(txtVarAnual.getText().trim());
-                boolean aumenta = comboComportamiento.getSelectedIndex() == 0; // True si aumenta, False si disminuye
+                boolean aumenta = comboComportamiento.getSelectedIndex() == 0; 
 
                 if (anioActual < anioCarta) {
                     throw new Exception("El año actual no puede ser menor al año de edición de la carta.");
                 }
 
-                // Matemática pura y simple
                 int difAnios = anioActual - anioCarta;
                 double variacionTotal = difAnios * varAnual;
                 double declinacionActualizada = decOriginal + (aumenta ? variacionTotal : -variacionTotal);
 
-                // Armamos el informe topográfico
                 StringBuilder sb = new StringBuilder();
                 sb.append("MÉTODO: ACTUALIZACIÓN DE DECLINACIÓN MAGNÉTICA\n\n");
                 sb.append("DATOS DE LA CARTA TOPOGRÁFICA:\n");
@@ -2840,7 +3024,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 sb.append("RESULTADO FINAL:\n");
                 sb.append(String.format(" - DECLINACIÓN MAGNÉTICA ACTUALIZADA: %.2f mils", declinacionActualizada));
 
-                // Pasamos 'null' como Punto porque esto no grafica nada en el mapa
                 callback.onCalculationComplete(null, sb.toString());
                 
                 dialog.dispose();
@@ -2955,7 +3138,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	            Posicionable original = (Posicionable) comboOriginal.getSelectedItem();
 	            if (original == null) throw new Exception("Seleccione un elemento para modificar.");
 
-	            // 1. Obtener correcciones
 	            double dX = Double.parseDouble(txtDeltaX.getText().trim());
 	            double dY = Double.parseDouble(txtDeltaY.getText().trim());
 	            double dZ = Double.parseDouble(txtDeltaZ.getText().trim());
@@ -3137,9 +3319,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
 	            double cotaOrigen = origen.getCoordenadas().getCota();
 	            double cotaAntiguaObjetivo = objetivo.getCoordenadas().getCota();
 	            
-	            // Matemática (Trigonometría)
-	            // Tan(angulo) = Cateto Opuesto (Desnivel) / Cateto Adyacente (Distancia)
-	            // Desnivel = Distancia * Tan(angulo)
 	            double angRad = Math.toRadians(angVertMils * 360.0 / 6400.0);
 	            double deltaZ = distHorizontal * Math.tan(angRad);
 	            
@@ -3156,30 +3335,26 @@ public class FabricaDialogosTacticos implements DialogFactory{
 
 	            if (objetivo.getPrefijoTipo().equals("[P]")) {
 	                Punto p = (Punto) objetivo;
-	                // 1. Eliminar rastro antiguo
+	                
 	                sit.getListaDePuntos().remove(p);
 	                sit.getListaPoligonales().remove(p);
 	                sit.getModeloListaPoligonales().removeElement(p);
 	                sit.getPanelMapa().eliminarPoligonal(p);
 
-	                // 2. Modificar
 	                p.setCoord(coordActualizada);
 
-	                // 3. Reinsertar (El mapa lo dibujará de nuevo)
 	                sit.agregarPunto(p);
 	                puntoParaCallback = p;
 
 	            } else if (objetivo.getPrefijoTipo().equals("[B]")) {
 	                Blanco b = (Blanco) objetivo;
-	                // 1. Eliminar rastro antiguo
+	                
 	                sit.getListaBlancos().remove(b);
 	                sit.getModeloListaBlancos().removeElement(b);
 	                sit.getPanelMapa().eliminarBlanco(b);
 
-	                // 2. Modificar
 	                b.setCoordenadas(coordActualizada);
 
-	                // 3. Reinsertar
 	                sit.agregarBlanco(b);
 	            }
 

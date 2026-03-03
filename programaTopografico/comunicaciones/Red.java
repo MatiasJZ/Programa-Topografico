@@ -45,7 +45,6 @@ public class Red extends JDialog {
 
     private final GestorEnlaceOperativo comunicacion;
 
-    // DEFINICIÓN DE ESTILOS TOUCH
     private final Font fLabel = new Font("Arial", Font.PLAIN, 18);
     private final Font fInput = new Font("Consolas", Font.BOLD, 20);
     private final Font fBtn = new Font("Arial", Font.BOLD, 16);
@@ -92,7 +91,6 @@ public class Red extends JDialog {
         gbc.gridx = 1; gbc.gridy = 1;
         panelForm.add(txtPuerto, gbc);
 
-        // Valor inicial de puerto
         int puertoActual = (comunicacion != null ? comunicacion.getPuerto() : 0);
         txtPuerto.setText(String.valueOf(puertoActual > 0 ? puertoActual : 5056));
 
@@ -171,7 +169,7 @@ public class Red extends JDialog {
 
         JButton btnCancelar = crearBotonRojo("CANCELAR");
         btnCancelar.setFont(new Font("Arial", Font.BOLD, 18));
-        btnCancelar.setPreferredSize(new Dimension(0, 60)); // Botones inferiores más altos
+        btnCancelar.setPreferredSize(new Dimension(0, 60));
         btnCancelar.addActionListener(e -> dispose());   
 
         JButton btnAplicar = crearBotonAzul("APLICAR CAMBIOS");

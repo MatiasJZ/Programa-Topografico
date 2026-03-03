@@ -76,7 +76,6 @@ public class DispatcherNotificacionesTacticas {
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // BOTÓN DE CIERRE MINIMALISTA
         JButton btnOk = new JButton("[ CONFIRMAR LECTURA ]");
         btnOk.setFont(new Font("Monospaced", Font.BOLD, 16));
         btnOk.setBackground(Color.BLACK);

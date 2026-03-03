@@ -7,6 +7,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -21,6 +22,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -406,5 +408,42 @@ public class FabricaComponentes {
         txt.setCaretColor(Color.WHITE);
         txt.setFont(new Font("SansSerif", Font.PLAIN, 18));
         txt.setMargin(new Insets(5, 5, 5, 5));
+    }
+    
+    public static void configurarBoton(JButton btn, Font font, Dimension dim, Color bg, Color borderCol, Color hoverCol) {
+        btn.setFont(font);
+        btn.setPreferredSize(dim);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderCol, 2),
+                BorderFactory.createEmptyBorder(10, 30, 10, 30)
+        ));
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) { btn.setBackground(hoverCol); }
+            public void mouseExited(MouseEvent evt) { btn.setBackground(bg); }
+        });
+    }
+
+    public static void agregarFilaGigante(JPanel p, String titulo, JComponent comp, GridBagConstraints gbc, int gridy, Font fLabel, Color color) { 
+        gbc.gridy = gridy;
+        
+        JLabel lbl = new JLabel(titulo);
+        lbl.setFont(fLabel);
+        lbl.setForeground(color);
+        
+        gbc.gridx = 0; 
+        gbc.gridwidth = 1; 
+        gbc.weightx = 0.3; 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(15, 10, 15, 20); 
+        p.add(lbl, gbc);
+
+        gbc.gridx = 1; 
+        gbc.weightx = 0.7; 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(15, 0, 15, 10);
+        p.add(comp, gbc);
     }
 }

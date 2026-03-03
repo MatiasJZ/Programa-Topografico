@@ -40,16 +40,13 @@ import javax.swing.SwingUtilities;
  */
 public class GestorEnlaceOperativo {
 
-    // Configuración
-    private InetAddress interfazlocal = null;  // Interfaz local (Harris)
+    private InetAddress interfazlocal = null; 
     private int puerto = 10011;
     private final List<String> destinos = new ArrayList<>();
     
-    // Servidor
     private ServerSocket servidor;
     private boolean servidorActivo = false;
 
-    // Callback a la lógica de la app
     private ProtocoloCallback callback;
 
     public void setCallback(ProtocoloCallback cb) {
@@ -83,7 +80,6 @@ public class GestorEnlaceOperativo {
         }
     }
 
-    // SERVIDOR TCP
     public void iniciarServidor() {
         detenerServidor();
         
@@ -197,7 +193,7 @@ public class GestorEnlaceOperativo {
                 opciones[0]
         );
 
-        if (r == 0) { // Abrir ahora
+        if (r == 0) {
             abrirArchivo(f);
         } else if (r == 1) {
             callback.log("[INFO] Archivo descargado: " + f.getName());
@@ -218,8 +214,7 @@ public class GestorEnlaceOperativo {
             callback.log("[ERROR] No se pudo abrir archivo: " + e.getMessage());
         }
     }
-
-    
+  
     public void enviarArchivo(String ipDestino, File f) {
 
         if (interfazlocal == null || f == null || !f.exists()) {

@@ -203,14 +203,12 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		Dimension dimPequeña = new Dimension(135, 45);
 		Dimension dimAncha = new Dimension(280, 45);
 
-		// GRUPO A: Botones Grises (Superiores)
 		for (JButton b : new JButton[]{btnAgregar, btnEliminar, btnRefrescar}) {
 		    b.setFont(fuenteEmoji);
 		    b.setPreferredSize(dimPequeña);
 		    b.setFocusPainted(false);
 		}
 
-		// GRUPO B: Botones Azules (Harris, Herramientas, PIF Rápido)
 		Color azulOscuro = new Color(60, 60, 120);
 		Color azulClaro = new Color(129,129,204);
 		for (JButton b : new JButton[]{btnConfigIP, btnHerramientas, btnGenPdf}) {
@@ -219,7 +217,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		    b.setFont(fuenteEmoji);
 		    b.setFocusPainted(false);
 		    
-		    // Asignar ancho según el botón
 		    if (b == btnGenPdf) {
 		        b.setPreferredSize(dimAncha);
 		    } else {
@@ -346,7 +343,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		    panelMapa.repaint();
 		});
 
-        // actualizar
 		btnRefrescar.addActionListener(e -> {
         	panelMapa.refrescar();
         });
@@ -370,7 +366,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 		gbc.gridx = 1;
 		panelBotones.add(btnConfigIP, gbc);
 
-		// Fila 2: Los botones anchos
+		// Fila 2
 		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
 		btnGenPdf.setPreferredSize(dimAnchaTactico);
 		panelBotones.add(btnGenPdf, gbc); 
@@ -563,7 +559,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 			            break;
 			        case "ACT-MAG": 
 			            dialogFactory.ActualizacionMagneticaDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
-			                // Solo grafica si hay un punto (en este módulo no lo hay)
 			                if (resultado != null) {
 			                    agregarPunto(resultado);
 			                }
@@ -589,7 +584,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
 			        case "REG-PPAL": 
 			            dialogFactory.RegistroPPALDialog(listaDePuntos, listaDeBlancos, (resultado, informe) -> {
-			                // 1. Guardamos el encabezado formateado en el historial
 			                RegistroCalculos.guardar("ENCABEZADO DE EXPORTACIÓN", informe);
 			                JOptionPane.showMessageDialog(this, "Registro PPAL guardado con éxito.");
 			                
@@ -660,7 +654,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
             @Override public void mouseReleased(MouseEvent e) { if (e.isPopupTrigger()) mostrarPopupPoligonal(e); }
 
             private void mostrarPopupPoligonal(MouseEvent e) {
-                // Si no es un evento de popup (clic derecho), salimos
                 if (!e.isPopupTrigger()) return;
 
                 int idx = listaUIPoligonales.locationToIndex(e.getPoint());
@@ -766,7 +759,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         itemEnviarPunto.setForeground(Color.WHITE);
         itemEnviarPunto.setFont(new Font("Arial", Font.BOLD, 15));
         JMenuItem itemCerrarP = new JMenuItem("Cerrar Poligonal");
-        itemCerrarP.setBackground(new Color(45, 45, 85)); // Azul oscuro táctico
+        itemCerrarP.setBackground(new Color(45, 45, 85)); 
         itemCerrarP.setForeground(Color.WHITE);
         itemCerrarP.setFont(new Font("Arial", Font.BOLD, 15));
 
@@ -906,7 +899,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
                 double y = ev.getWorldPos().getY();
                 CoordenadasRectangulares coord = new CoordenadasRectangulares(x, y, 0);
 
-                // MÁSCARA VISUAL: Desde el 3er dígito, sin decimales
                 String xVisual = String.format("%.0f", x);
                 String yVisual = String.format("%.0f", y);
                 
@@ -937,7 +929,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         dialog.setSize(600, 300);
         dialog.setLocationRelativeTo(this);
         
-        // Panel con colores normales (System Default)
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
@@ -953,7 +944,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panel.add(lblInfo, gbc);
 
-        // Botones con tamaño para Tablet
         JButton btnBlanco = new JButton("Marcar Blanco");
         JButton btnPunto = new JButton("Marcar Punto");
         
@@ -1017,7 +1007,6 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
             //	Reasignación de componentes visuales flotantes
             nuevoMapa.getMapPane().add(tooltipLabel);
             
-            //	Actualización del JSplitPane usando el atributo de clase (sin instance of)
             if (this.splitPanePrincipal != null) {
                 this.panelMapa = nuevoMapa;
                 this.splitPanePrincipal.setRightComponent(this.panelMapa);
@@ -1035,7 +1024,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
     public void cambiarDesignacionEnTiempoReal() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "MODIFICAR SECUENCIA OPERATIVA", true);
-        // Tamaño aumentado para uso táctil
+
         dialog.setSize(600, 450); 
         dialog.setLocationRelativeTo(this);
 
@@ -1048,7 +1037,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // FUENTES ESCALADAS
+
         Font fuenteEtiqueta = new Font("Arial", Font.BOLD, 22);
         Font fuenteCampo = new Font("Monospaced", Font.BOLD, 24);
         Font fuenteBoton = new Font("Arial", Font.BOLD, 20);
@@ -1062,10 +1051,10 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         JTextField txtPrefijo = new JTextField(designacionBlancoPrefijo);
         txtPrefijo.setBackground(new Color(60, 60, 60));
-        txtPrefijo.setForeground(new Color(0, 255, 0)); // Verde neón para visibilidad
+        txtPrefijo.setForeground(new Color(0, 255, 0)); 
         txtPrefijo.setFont(fuenteCampo);
         txtPrefijo.setHorizontalAlignment(JTextField.CENTER);
-        txtPrefijo.setPreferredSize(new Dimension(250, 60)); // Altura táctica
+        txtPrefijo.setPreferredSize(new Dimension(250, 60));
         gbc.gridx = 1;
         panel.add(txtPrefijo, gbc);
 
@@ -1091,7 +1080,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         for (JButton b : new JButton[]{btnGuardar, btnCancelar}) {
             b.setFont(fuenteBoton);
-            b.setPreferredSize(new Dimension(0, 80)); // Botón alto para dedos
+            b.setPreferredSize(new Dimension(0, 80)); 
             b.setFocusPainted(false);
         }
         
@@ -1109,7 +1098,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         gbc.insets = new Insets(30, 0, 0, 0);
         panel.add(panelBotones, gbc);
 
-        // LOGICA DE ACCIÓN (Respetando funcionamiento original)
+        // LOGICA DE ACCIÓN
         btnGuardar.addActionListener(e -> {
             String prefijo = txtPrefijo.getText().trim().toUpperCase();
             String contadorStr = txtContador.getText().trim();
@@ -1152,7 +1141,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "SISTEMA - CONFIGURACIÓN DE CARTOGRAFÍA", true);
-        dialog.setSize(800, 450); // Tamaño aumentado
+        dialog.setSize(800, 450); 
         dialog.setLocationRelativeTo(this);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         dialog.setIconImage(imgEscalada);
@@ -1163,7 +1152,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
         dialog.setContentPane(panel);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 20, 15, 20); // Márgenes internos amplios
+        gbc.insets = new Insets(15, 20, 15, 20); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
@@ -1203,8 +1192,8 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
 
         JTextField txtDesignacion = new JTextField(designacionBlancoPrefijo + " " + designacionBlancoContador);
         txtDesignacion.setBackground(Color.BLACK);
-        txtDesignacion.setForeground(new Color(0, 255, 0)); // Color fósforo clásico
-        txtDesignacion.setFont(new Font("Monospaced", Font.BOLD, 22)); // Letra muy grande
+        txtDesignacion.setForeground(new Color(0, 255, 0)); 
+        txtDesignacion.setFont(new Font("Monospaced", Font.BOLD, 22)); 
         txtDesignacion.setHorizontalAlignment(SwingConstants.CENTER);
         txtDesignacion.setPreferredSize(new Dimension(300, 50));
         txtDesignacion.setBorder(BorderFactory.createLineBorder(verdeMilitar));
@@ -1219,7 +1208,7 @@ public class SituacionTacticaTopografica extends JPanel implements DesignacionPr
             b.setFocusPainted(false);
             b.setFont(new Font("Arial", Font.BOLD, 15));
             b.setForeground(Color.WHITE);
-            b.setPreferredSize(new Dimension(280, 55)); // Botones grandes
+            b.setPreferredSize(new Dimension(280, 55)); 
             b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
         
