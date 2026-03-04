@@ -3,6 +3,7 @@ import java.util.LinkedList;
 
 import javax.swing.SwingUtilities;
 
+import app.PedidoDeFuego;
 import app.SituacionTacticaTopografica;
 import comunicaciones.ConsolaMensajes;
 import comunicaciones.DispatcherNotificacionesTacticas;
@@ -49,11 +50,13 @@ public class ProcesadorMensajes {
     private SituacionTacticaTopografica panelTactico;
     private LinkedList<Blanco> listaDeBlancos;
     private LinkedList<Punto> listaDePuntos;
+    private PedidoDeFuego panelPif;
 
-    public ProcesadorMensajes(SituacionTacticaTopografica panelTactico,LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos) {
+    public ProcesadorMensajes(PedidoDeFuego panelPif, SituacionTacticaTopografica panelTactico,LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos) {
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
         this.listaDePuntos = listaDePuntos;
+        this.panelPif = panelPif;
     }
 
     public void procesar(String mensaje) {
@@ -77,10 +80,49 @@ public class ProcesadorMensajes {
                 break;
             case "ESTADO":
                 procesarEstado(mensaje);
-                break;              
+                break;  
+            case "MTO":
+            	procesarMTO(mensaje);
             default:
                 consola.agregarMensaje("[INFO] Mensaje desconocido: " + mensaje);
         }
+    }
+    
+    private void procesarEstado(String msg) {
+
+        String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
+        if (contenido == null) return;
+
+        consola.agregarMensaje("[HARRIS] " + contenido);
+
+        if (contenido.toUpperCase().contains("FUEGO") || contenido.toUpperCase().contains("DISPARO")) {
+            if (panelPif != null && panelPif.getMetodoYTiroPanel() != null) {
+
+            	panelPif.getMetodoYTiroPanel().getCorreccionesPanel().iniciarCuentaRegresivaVolido();
+            }
+        }
+        SwingUtilities.invokeLater(() ->
+            DispatcherNotificacionesTacticas.mostrar(
+                "ESTADO OPERATIVO",
+                contenido
+            )
+        );
+    }
+    
+    private void procesarMTO(String msg) {
+    	String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
+    	String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
+    	String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
+
+    	panelPif.recibirMTO(EPA,ANGOB,TVOLIDO);
+    		
+        consola.agregarMensaje("[MTO] RECIBIDO");
+               
+        SwingUtilities.invokeLater(() ->
+        DispatcherNotificacionesTacticas.mostrar(
+            "MTO",
+            "RECIBIDO Y DISPONIBLE")
+    );
     }
     
     private void procesarPunto(String msg) {
@@ -121,21 +163,6 @@ public class ProcesadorMensajes {
     
     public void setConsola(ConsolaMensajes consola) {
         this.consola = consola;
-    }
-    
-    private void procesarEstado(String msg) {
-
-        String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
-        if (contenido == null) return;
-
-        consola.agregarMensaje("[RADIO] " + contenido);
-
-        SwingUtilities.invokeLater(() ->
-            DispatcherNotificacionesTacticas.mostrar(
-                "ESTADO OPERATIVO",
-                contenido
-            )
-        );
     }
     
     public void procesarCrudo(String msg) {

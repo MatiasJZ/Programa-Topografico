@@ -1429,8 +1429,6 @@ public class FabricaDialogosTacticos implements DialogFactory{
                 double y1 = origen.getCoordenadas().getY();
                 double x2 = destino.getCoordenadas().getX();
                 double y2 = destino.getCoordenadas().getY();
-                
-                System.out.println(x1 + " " + y1);
 
                 double distancia = origen.getCoordenadas().distanciaA(destino.getCoordenadas());
                 double azimutMils = CalculadorTopografico.calcularAzimutEnMils(x1, y1, x2, y2);

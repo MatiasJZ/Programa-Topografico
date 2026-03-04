@@ -143,7 +143,7 @@ public class ProgramaTopografico extends JPanel {
         // COMUNICACIÓN IP
         comunicacionIP = new GestorEnlaceOperativo();
 
-        procesadorMensajes = new ProcesadorMensajes(situacionTactica,situacionTactica.getListaDeBlancos(),situacionTactica.getListaDePuntos());
+        procesadorMensajes = new ProcesadorMensajes(pedidoDeFuego,situacionTactica,situacionTactica.getListaDeBlancos(),situacionTactica.getListaDePuntos());
         
         procesadorMensajes.setConsola(mensajeriaPanel.getConsolaMensajes());
 

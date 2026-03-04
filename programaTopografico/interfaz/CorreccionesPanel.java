@@ -1,7 +1,7 @@
 package interfaz;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -16,8 +16,8 @@ import util.CheckIconCustom;
 
 public class CorreccionesPanel extends JPanel {
 
-	private static final long serialVersionUID = -271089343555480088L;
-	private JComboBox<String> cbDireccion;
+    private static final long serialVersionUID = -271089343555480088L;
+    private JComboBox<String> cbDireccion;
     private JComboBox<String> cbAlcance;
     private JComboBox<String> cbAltura;
     
@@ -31,11 +31,14 @@ public class CorreccionesPanel extends JPanel {
     private JTextField txtAltValor;
     private JTextField txtEPA, txtAngOb, txtTVolido;
     private JLabel l4;
+    private JLabel lblAlertaImpacto;
+    private Timer timerVolido;
+    private int segundosRestantesVolido;
 
     private JCheckBox chkModoAutomatico;
     private JButton btnNuevoPIF;
     private JButton btnFinMision;
-    private JButton btnEnviar;	
+    private JButton btnEnviar;  
     private JButton btnVolver;
     private JButton btnFuego;
     private JButton btnHistorial;
@@ -51,241 +54,279 @@ public class CorreccionesPanel extends JPanel {
     private int ESCALA_METROS_POR_CUADRICULA = 200;
 
     public CorreccionesPanel(Blanco blanco, MetodoAtaqueYTiroPanel m) {
-    	
-    	metAtaqueYTiroPanel = m;
-    	
-    	historial = new HashMap<String,String>();
-    	
-    	TitledBorder borde1 = BorderFactory.createTitledBorder("CORRECCIONES");
-    	borde1.setTitleColor(Color.WHITE);
-    	borde1.setTitleFont(new Font("Arial", Font.BOLD, 18));
-
-    	this.setBorder(borde1);
-    	
-        setLayout(null);
-        setBackground(new Color(0,0,0));
         
+        metAtaqueYTiroPanel = m;
+        historial = new HashMap<>();
+        
+        TitledBorder borde1 = BorderFactory.createTitledBorder("CORRECCIONES");
+        borde1.setTitleColor(Color.WHITE);
+        borde1.setTitleFont(new Font("Arial", Font.BOLD, 18));
+        this.setBorder(borde1);
+        setBackground(Color.BLACK);
+        
+        // ---- 1. INICIALIZACIÓN DE COMPONENTES ----
+        
+        Font fontParam = new Font("Arial", Font.BOLD, 14);
+        Font fontCombos = new Font("Arial", Font.BOLD, 16);
+        Font fontButtons = new Font("Arial", Font.BOLD, 18);
+        Color colorFondoTextos = new Color(40, 80, 120);
+        Color colorFondoBotones = new Color(60, 60, 60);
+
         btnZoomIn = new JButton("+");
         btnZoomOut = new JButton("-");
-
-        btnZoomIn.setBounds(20, 560, 50, 30);
-        btnZoomOut.setBounds(90, 560, 50, 30);
-
         for (JButton b : new JButton[]{btnZoomIn, btnZoomOut}) {
-            b.setFont(new Font("Arial", Font.BOLD, 18));
+            b.setFont(fontButtons);
             b.setFocusPainted(false);
-            b.setBackground(new Color(60,60,60));
+            b.setBackground(colorFondoBotones);
             b.setForeground(Color.WHITE);
-            add(b);
         }
         
-        JPanel panelParametros = new JPanel();
-        TitledBorder borde2 = BorderFactory.createTitledBorder("M.T.O.");
-    	borde2.setTitleColor(Color.WHITE);
-    	borde2.setTitleFont(new Font("Arial", Font.BOLD, 18));
-        panelParametros.setLayout(null);
-        panelParametros.setBackground(Color.BLACK);
-        panelParametros.setBorder(borde2);
-        panelParametros.setBounds(730, 320, 350, 200); 
-        add(panelParametros);
-
-        Font fontParam = new Font("Arial", Font.BOLD, 14);
-        int labelX = 20;
-        int fieldX = 180;
-        int widthLabel = 150;
-        int widthField = 100;
-
-        // 1) EPA
-        JLabel lblEPA = new JLabel("EPA");
-        lblEPA.setForeground(Color.WHITE);
-        lblEPA.setFont(fontParam);
-        lblEPA.setBounds(labelX, 30, widthLabel, 30);
-        panelParametros.add(lblEPA);
+        lblAlertaImpacto = new JLabel("IMPACTO: --");
+        lblAlertaImpacto.setForeground(Color.DARK_GRAY);
+        lblAlertaImpacto.setFont(new Font("Consolas", Font.BOLD, 26));
+        lblAlertaImpacto.setHorizontalAlignment(SwingConstants.CENTER);
+        lblAlertaImpacto.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80)));
+        lblAlertaImpacto.setPreferredSize(new Dimension(350, 50));
 
         txtEPA = new JTextField("0");
-        txtEPA.setBackground(new Color(40, 80, 120));
-        txtEPA.setForeground(Color.WHITE);
-        txtEPA.setHorizontalAlignment(SwingConstants.CENTER);
-        txtEPA.setBounds(fieldX, 30, widthField, 30);
-        panelParametros.add(txtEPA);
-
-        // ANG. OB.
-        JLabel lblAngOb = new JLabel("ANG. OB.");
-        lblAngOb.setForeground(Color.WHITE);
-        lblAngOb.setFont(fontParam);
-        lblAngOb.setBounds(labelX, 90, widthLabel, 30);
-        panelParametros.add(lblAngOb);
-
         txtAngOb = new JTextField("0");
-        txtAngOb.setBackground(new Color(40, 80, 120));
-        txtAngOb.setForeground(Color.WHITE);
-        txtAngOb.setHorizontalAlignment(SwingConstants.CENTER);
-        txtAngOb.setBounds(fieldX, 90, widthField, 30);
-        panelParametros.add(txtAngOb);
-
-        // T. VOLIDO
-        JLabel lblTVolido = new JLabel("T. VOLIDO");
-        lblTVolido.setForeground(Color.WHITE);
-        lblTVolido.setFont(fontParam);
-        lblTVolido.setBounds(labelX, 150, widthLabel, 30);
-        panelParametros.add(lblTVolido);
-
         txtTVolido = new JTextField("0");
-        txtTVolido.setBackground(new Color(40, 80, 120));
-        txtTVolido.setForeground(Color.WHITE);
-        txtTVolido.setHorizontalAlignment(SwingConstants.CENTER);
-        txtTVolido.setBounds(fieldX, 150, widthField, 30);
-        panelParametros.add(txtTVolido);
-
-        Font font = new Font("Arial", Font.BOLD, 16);
+        
+        for (JTextField t : new JTextField[]{txtEPA, txtAngOb, txtTVolido}) {
+            t.setBackground(colorFondoTextos);
+            t.setForeground(Color.WHITE);
+            t.setHorizontalAlignment(SwingConstants.CENTER);
+            t.setFont(fontParam);
+        }
 
         JLabel l1 = new JLabel("EN DIRECCIÓN");
         JLabel l2 = new JLabel("EN ALCANCE");
         JLabel l3 = new JLabel("EN ALTURA");
         l4 = new JLabel("EFICACIA");
-        JLabel l5 = new JLabel("ULTIMA CORRECCIÓN:");
         JLabel l6 = new JLabel("MISION:");
 
-        for (JLabel l : new JLabel[]{l1,l2,l3}) {
+        for (JLabel l : new JLabel[]{l1, l2, l3}) {
             l.setForeground(Color.WHITE);
-            l.setFont(font);
-            add(l);
+            l.setFont(fontCombos);
         }
         
         l4.setForeground(Color.GREEN);
         l4.setFont(new Font("Arial", Font.BOLD, 22));
-        add(l4);
-        
         l6.setForeground(Color.WHITE);
         l6.setFont(new Font("Arial", Font.BOLD, 22));
-        add(l6);
-       
-        l5.setForeground(Color.RED);
-        l5.setFont(new Font("Arial", Font.BOLD, 22));
-        add(l5);
         
         chkModoAutomatico = new JCheckBox("MODO AUTOMÁTICO");
-        chkModoAutomatico.setFont(new Font("Arial", Font.BOLD, 16));
+        chkModoAutomatico.setFont(fontCombos);
         chkModoAutomatico.setForeground(Color.WHITE);
         chkModoAutomatico.setBackground(Color.BLACK);
-        chkModoAutomatico.setBounds(450, 620, 250, 40);
         chkModoAutomatico.setIcon(new CheckIconCustom(22));
-        add(chkModoAutomatico);
 
         cbDireccion = new JComboBox<>(new String[]{"IZQUIERDA","DERECHA"});
         cbAlcance = new JComboBox<>(new String[]{"ALARGAR","ACORTAR"});
         cbAltura = new JComboBox<>(new String[]{"SUBIR","BAJAR"});
 
-        JComboBox<?>[] combos = {cbDireccion,cbAlcance,cbAltura};
-        for (JComboBox<?> cb : combos) {
-            cb.setBackground(new Color(20,40,80));
+        for (JComboBox<?> cb : new JComboBox<?>[]{cbDireccion, cbAlcance, cbAltura}) {
+            cb.setBackground(new Color(20, 40, 80));
             cb.setForeground(Color.WHITE);
-            cb.setFont(font);
+            cb.setFont(fontCombos);
             cb.setFocusable(false);
-            add(cb);
         }
 
         txtDirValor = new JTextField("0");
         txtAlcValor = new JTextField("0");
         txtAltValor = new JTextField("0");
 
-        for (JTextField t : new JTextField[]{txtDirValor,txtAlcValor,txtAltValor}) {
-            t.setBackground(new Color(40,80,120));
+        for (JTextField t : new JTextField[]{txtDirValor, txtAlcValor, txtAltValor}) {
+            t.setBackground(colorFondoTextos);
             t.setForeground(Color.WHITE);
             t.setHorizontalAlignment(SwingConstants.CENTER);
-            t.setFont(font);
-            add(t);
+            t.setFont(fontCombos);
+            t.setPreferredSize(new Dimension(60, 32)); // Ancho fijo para mantener estética
         }
 
-        JLabel u1 = new JLabel("Mts");
-        JLabel u2 = new JLabel("Mts");
-        JLabel u3 = new JLabel("Mts");
-        for (JLabel u : new JLabel[]{u1,u2,u3}) {
-            u.setForeground(new Color(200,200,200));
-            u.setFont(font);
-            add(u);
+        JLabel u1 = new JLabel("Mts"); JLabel u2 = new JLabel("Mts"); JLabel u3 = new JLabel("Mts");
+        for (JLabel u : new JLabel[]{u1, u2, u3}) {
+            u.setForeground(new Color(200, 200, 200));
+            u.setFont(fontCombos);
         }
 
         btnNuevoPIF = new JButton("NUEVO PIF");
         btnFinMision = new JButton("FIN DE MISION");
         btnEnviar = new JButton("ENVIAR");
         btnHistorial = new JButton("HISTORIAL");
+        btnVolver = new JButton("VOLVER");
+        btnFuego = new JButton("FUEGO"); 
 
-        JButton[] bs = {btnNuevoPIF,btnFinMision,btnEnviar};
-
-        btnNuevoPIF.setBackground(new Color(200,255,200));
+        btnNuevoPIF.setBackground(new Color(200, 255, 200));
         btnFinMision.setBackground(Color.GRAY);
         btnEnviar.setBackground(Color.RED);
+        btnVolver.setBackground(colorFondoBotones);
+        btnVolver.setForeground(Color.WHITE);
+        btnHistorial.setBackground(colorFondoBotones);
+        btnHistorial.setForeground(Color.WHITE);
+        btnFuego.setBackground(new Color(200, 0, 0)); 
+        btnFuego.setForeground(Color.WHITE);
+        btnFuego.setVisible(false); 
+
+        for (JButton b : new JButton[]{btnNuevoPIF, btnFinMision, btnEnviar, btnHistorial, btnVolver, btnFuego}) {
+            b.setFont(fontButtons);
+            b.setFocusPainted(false);
+            if(b == btnNuevoPIF || b == btnFinMision || b == btnEnviar) {
+                 b.setForeground(Color.BLACK);
+            }
+        }
+        
+        lblUltima = new JLabel(); 
+        lblUltima.setForeground(Color.WHITE);
+
+        String nombreBlanco = (blanco != null && blanco.getNombre() != null) ? blanco.getNombre() : "Blanco";
+        panelCuadricula = new PanelCuadricula(ESCALA_METROS_POR_CUADRICULA, nombreBlanco);
+        panelCuadricula.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        panelCuadricula.setMetrosPorPunto(30);
+
+        // ---- 2. ENSAMBLAJE DE LAYOUTS (Reemplazando null layout) ----
+        
+        setLayout(new GridBagLayout());
+        
+        // LADO IZQUIERDO (Grilla + Botones Inferiores)
+        JPanel pnlIzquierdo = new JPanel(new BorderLayout(0, 15));
+        pnlIzquierdo.setOpaque(false);
+        
+        // Agregar botones de Zoom dentro de la cuadrícula usando GridBagLayout para anclarlos al sur-oeste
+        panelCuadricula.setLayout(new GridBagLayout());
+        GridBagConstraints gbcZoom = new GridBagConstraints();
+        gbcZoom.anchor = GridBagConstraints.SOUTHWEST;
+        gbcZoom.weightx = 1.0; gbcZoom.weighty = 1.0;
+        gbcZoom.insets = new Insets(0, 10, 10, 0); // Margen
+        JPanel pnlZoom = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlZoom.setOpaque(false);
+        pnlZoom.add(btnZoomIn); pnlZoom.add(btnZoomOut);
+        panelCuadricula.add(pnlZoom, gbcZoom);
+        
+        pnlIzquierdo.add(panelCuadricula, BorderLayout.CENTER);
+
+        // Botones debajo de la grilla
+        JPanel pnlIzquierdoAbajo = new JPanel(new GridBagLayout());
+        pnlIzquierdoAbajo.setOpaque(false);
+        GridBagConstraints gbcBtm = new GridBagConstraints();
+        gbcBtm.insets = new Insets(0, 0, 0, 15);
+        gbcBtm.fill = GridBagConstraints.VERTICAL;
+        
+        btnVolver.setPreferredSize(new Dimension(150, 40));
+        btnHistorial.setPreferredSize(new Dimension(150, 40));
+        
+        gbcBtm.gridx = 0; pnlIzquierdoAbajo.add(btnVolver, gbcBtm);
+        gbcBtm.gridx = 1; pnlIzquierdoAbajo.add(btnHistorial, gbcBtm);
+        gbcBtm.gridx = 2; gbcBtm.weightx = 1.0; gbcBtm.anchor = GridBagConstraints.EAST;
+        gbcBtm.insets = new Insets(0, 0, 0, 0);
+        pnlIzquierdoAbajo.add(chkModoAutomatico, gbcBtm);
+        
+        pnlIzquierdo.add(pnlIzquierdoAbajo, BorderLayout.SOUTH);
+
+        // LADO DERECHO (Controles)
+        JPanel pnlDerecho = new JPanel(new GridBagLayout());
+        pnlDerecho.setOpaque(false);
+        GridBagConstraints gbcR = new GridBagConstraints();
+        gbcR.fill = GridBagConstraints.HORIZONTAL;
+        gbcR.insets = new Insets(5, 20, 15, 10);
+        gbcR.weightx = 1.0; gbcR.gridx = 0; gbcR.gridy = 0;
+        
+        // Controles de Corrección (Dirección, Alcance, Altura)
+        JPanel pnlCombos = new JPanel(new GridBagLayout());
+        pnlCombos.setOpaque(false);
+        GridBagConstraints gbcC = new GridBagConstraints();
+        gbcC.fill = GridBagConstraints.HORIZONTAL; gbcC.insets = new Insets(5, 5, 5, 5);
+        
+        // Fila 1
+        gbcC.gridy = 0; gbcC.gridx = 0; pnlCombos.add(l1, gbcC);
+        gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbDireccion, gbcC); gbcC.weightx = 0;
+        gbcC.gridx = 2; pnlCombos.add(txtDirValor, gbcC);
+        gbcC.gridx = 3; pnlCombos.add(u1, gbcC);
+        // Fila 2
+        gbcC.gridy = 1; gbcC.gridx = 0; pnlCombos.add(l2, gbcC);
+        gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbAlcance, gbcC); gbcC.weightx = 0;
+        gbcC.gridx = 2; pnlCombos.add(txtAlcValor, gbcC);
+        gbcC.gridx = 3; pnlCombos.add(u2, gbcC);
+        // Fila 3
+        gbcC.gridy = 2; gbcC.gridx = 0; pnlCombos.add(l3, gbcC);
+        gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbAltura, gbcC); gbcC.weightx = 0;
+        gbcC.gridx = 2; pnlCombos.add(txtAltValor, gbcC);
+        gbcC.gridx = 3; pnlCombos.add(u3, gbcC);
+
+        pnlDerecho.add(pnlCombos, gbcR);
+        
+        // Misión
+        gbcR.gridy++;
+        JPanel pnlMision = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        pnlMision.setOpaque(false);
+        pnlMision.add(l6); pnlMision.add(l4);
+        pnlDerecho.add(pnlMision, gbcR);
+        
+        // Impacto
+        gbcR.gridy++;
+        pnlDerecho.add(lblAlertaImpacto, gbcR);
+        
+        // Panel M.T.O.
+        gbcR.gridy++;
+        JPanel panelParametros = new JPanel(new GridBagLayout());
+        panelParametros.setBackground(Color.BLACK);
+        TitledBorder borde2 = BorderFactory.createTitledBorder("M.T.O.");
+        borde2.setTitleColor(Color.WHITE);
+        borde2.setTitleFont(new Font("Arial", Font.BOLD, 18));
+        panelParametros.setBorder(borde2);
+        
+        GridBagConstraints gbcP = new GridBagConstraints();
+        gbcP.fill = GridBagConstraints.HORIZONTAL;
+        gbcP.insets = new Insets(10, 15, 10, 15);
+        
+        JLabel lblEPA = new JLabel("EPA"); lblEPA.setForeground(Color.WHITE); lblEPA.setFont(fontParam);
+        JLabel lblAngOb = new JLabel("ANG. OB."); lblAngOb.setForeground(Color.WHITE); lblAngOb.setFont(fontParam);
+        JLabel lblTVolido = new JLabel("T. VOLIDO"); lblTVolido.setForeground(Color.WHITE); lblTVolido.setFont(fontParam);
+        
+        gbcP.gridy = 0; gbcP.gridx = 0; gbcP.weightx = 0.6; panelParametros.add(lblEPA, gbcP);
+        gbcP.gridx = 1; gbcP.weightx = 0.4; panelParametros.add(txtEPA, gbcP);
+        gbcP.gridy = 1; gbcP.gridx = 0; panelParametros.add(lblAngOb, gbcP);
+        gbcP.gridx = 1; panelParametros.add(txtAngOb, gbcP);
+        gbcP.gridy = 2; gbcP.gridx = 0; panelParametros.add(lblTVolido, gbcP);
+        gbcP.gridx = 1; panelParametros.add(txtTVolido, gbcP);
+        
+        pnlDerecho.add(panelParametros, gbcR);
+        
+        // Botones de Acción Derecho Inferior
+        gbcR.gridy++;
+        gbcR.weighty = 1.0; 
+        gbcR.anchor = GridBagConstraints.SOUTH;
+        JPanel pnlAcciones = new JPanel(new GridLayout(2, 2, 15, 15));
+        pnlAcciones.setOpaque(false);
+        btnNuevoPIF.setPreferredSize(new Dimension(160, 45));
+        pnlAcciones.add(btnNuevoPIF);
+        pnlAcciones.add(btnEnviar);
+        pnlAcciones.add(btnFinMision);
+        pnlAcciones.add(btnFuego);
+        pnlDerecho.add(pnlAcciones, gbcR);
+
+        // Combinar Todo
+        GridBagConstraints gbcMain = new GridBagConstraints();
+        gbcMain.fill = GridBagConstraints.BOTH;
+        gbcMain.insets = new Insets(10, 10, 10, 10);
+        
+        gbcMain.gridx = 0; gbcMain.gridy = 0;
+        gbcMain.weightx = 0.65; gbcMain.weighty = 1.0;
+        add(pnlIzquierdo, gbcMain);
+        
+        gbcMain.gridx = 1;
+        gbcMain.weightx = 0.35;
+        add(pnlDerecho, gbcMain);
+
+        // ---- 3. LISTENERS (Sin modificaciones de lógica) ----
         
         timerFuego = new Timer(500, e -> {
             fuegoEstado = !fuegoEstado;
-
             if (fuegoEstado) {
-                btnFuego.setBackground(new Color(255, 60, 60)); 
+                btnFuego.setBackground(new Color(255, 60, 60));
             } else 
                 btnFuego.setBackground(new Color(180, 0, 0));
         });
-        
-        for (JButton b : bs) {
-            b.setForeground(Color.BLACK);
-            b.setFont(new Font("Arial", Font.BOLD, 18));
-            b.setFocusPainted(false);
-            add(b);
-        }
-        
-        lblUltima = l5;
-        
-        int x1 = 710;
-        int x2 = 830;
-        int x3 = 990;
-        int x4 = 1060;
-
-        l1.setBounds(710, 30, 200, 28);
-        cbDireccion.setBounds(830, 30, 150, 32);
-        txtDirValor.setBounds(990, 30, 60, 32);
-        u1.setBounds(1060, 30, 60, 32);
-
-        l2.setBounds(x1, 70, 200, 28);
-        cbAlcance.setBounds(x2, 70, 150, 32);
-        txtAlcValor.setBounds(x3, 70, 60, 32);
-        u2.setBounds(x4, 70, 60, 32);
-
-        l3.setBounds(x1, 110, 200, 28);
-        cbAltura.setBounds(x2, 110, 150, 32);
-        txtAltValor.setBounds(x3, 110, 60, 32);
-        u3.setBounds(x4, 110, 60, 32);
-
-        l6.setBounds(x1, 160, 200, 28);
-        l4.setBounds(810, 160, 200, 28);
-        l5.setBounds(x1, 200, 500, 80);
-
-        btnNuevoPIF.setBounds(710, 550, 180, 45);
-        btnFinMision.setBounds(710, 605, 180, 45);
-        btnEnviar.setBounds(900, 550, 180, 45);
-
-        btnVolver = new JButton("VOLVER");
-        btnVolver.setBounds(20, 620, 180, 40);
-        btnVolver.setBackground(new Color(60,60,60));
-        btnVolver.setForeground(Color.WHITE);
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 18));
-        btnVolver.setFocusPainted(false);
-        add(btnVolver);
-        
-        btnHistorial.setBounds(220, 620, 180, 40);
-        btnHistorial.setBackground(new Color(60,60,60));
-        btnHistorial.setForeground(Color.WHITE);
-        btnHistorial.setFont(new Font("Arial", Font.BOLD, 18));
-        btnHistorial.setFocusPainted(false);
-        add(btnHistorial);
-        
-        btnFuego = new JButton("FUEGO"); 
-        btnFuego.setBounds(900, 605, 180, 45);
-        btnFuego.setBackground(new Color(200, 0, 0)); 
-        btnFuego.setForeground(Color.WHITE);
-        btnFuego.setFont(new Font("Arial", Font.BOLD, 18));
-        btnFuego.setFocusPainted(false);
-        btnFuego.setVisible(false); 
-        add(btnFuego);
         
         btnFuego.addActionListener(a -> {
             firePropertyChange("ENVIAR_FUEGO", false, true);
@@ -353,39 +394,25 @@ public class CorreccionesPanel extends JPanel {
         });
         
         btnZoomIn.addActionListener(e ->
-        	panelCuadricula.zoomIn()
-		);
-		
-		btnZoomOut.addActionListener(e ->
-		    panelCuadricula.zoomOut()
-		);
+            panelCuadricula.zoomIn()
+        );
+        
+        btnZoomOut.addActionListener(e ->
+            panelCuadricula.zoomOut()
+        );
         
         setPreferredSize(new Dimension(1100, 900)); 
-        
-        String nombreBlanco = (blanco != null && blanco.getNombre() != null) ? blanco.getNombre() : "Blanco";
-        panelCuadricula = new PanelCuadricula(ESCALA_METROS_POR_CUADRICULA, nombreBlanco);
-        
-        panelCuadricula.setBounds(10, 30, 680, 570); 
-        
-        panelCuadricula.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        
-        add(panelCuadricula);
-
-
-        panelCuadricula.setMetrosPorPunto(30);
-        
-        this.setComponentZOrder(panelCuadricula, getComponentCount() - 1);
-        this.setComponentZOrder(btnZoomIn, 0);
-        this.setComponentZOrder(btnZoomOut, 0);
     }
     
+    // ----------- MÉTODOS Y CLASE INTERNA INTACTOS ------------
+
     public void setZoomHabilitado(boolean habilitado) {
         btnZoomIn.setEnabled(habilitado);
         btnZoomOut.setEnabled(habilitado);
     }
     
     public void registrarLabelDeModoDeMision(String s) {
-    	l4.setText(s);
+        l4.setText(s);
     }
     
     public void registrarCorreccionAutomatica(int xMetros, int yMetros) {
@@ -393,11 +420,64 @@ public class CorreccionesPanel extends JPanel {
     }
     
     public void reiniciarCuadricula() {
-    	panelCuadricula.reiniciarCuadricula();
+        panelCuadricula.reiniciarCuadricula();
+    }
+    
+    public void iniciarCuentaRegresivaVolido() {
+        try {
+            double tv = Double.parseDouble(txtTVolido.getText().trim().replace(",", "."));
+            segundosRestantesVolido = (int) Math.round(tv);
+
+            if (segundosRestantesVolido <= 0) return;
+
+            if (timerVolido != null && timerVolido.isRunning()) {
+                timerVolido.stop();
+            }
+
+            lblAlertaImpacto.setText("IMPACTO EN: " + segundosRestantesVolido + "s");
+            lblAlertaImpacto.setForeground(Color.ORANGE);
+            lblAlertaImpacto.setBackground(Color.BLACK);
+            lblAlertaImpacto.setOpaque(true);
+
+            timerVolido = new Timer(1000, e -> {
+                segundosRestantesVolido--;
+
+                if (segundosRestantesVolido == 5) {
+                    
+                    lblAlertaImpacto.setText("¡PIQUE! (5s)");
+                    lblAlertaImpacto.setForeground(Color.WHITE);
+                    lblAlertaImpacto.setBackground(new Color(220, 0, 0)); 
+
+                } else if (segundosRestantesVolido > 0) {
+                    if (segundosRestantesVolido > 5) {
+                        lblAlertaImpacto.setText("PIQUE EN: " + segundosRestantesVolido + "s");
+                    } else {
+                        lblAlertaImpacto.setText("¡PIQUE! (" + segundosRestantesVolido + "s)");
+                    }
+                } else {
+                    lblAlertaImpacto.setText("¡PIQUE!");
+                    lblAlertaImpacto.setForeground(Color.BLACK);
+                    lblAlertaImpacto.setBackground(new Color(0, 255, 100)); 
+                    timerVolido.stop();
+                    
+                    Timer resetTimer = new Timer(3000, ev -> {
+                        lblAlertaImpacto.setText("IMPACTO: --");
+                        lblAlertaImpacto.setForeground(Color.DARK_GRAY);
+                        lblAlertaImpacto.setBackground(Color.BLACK);
+                    });
+                    resetTimer.setRepeats(false);
+                    resetTimer.start();
+                }
+            });
+            timerVolido.start();
+
+        } catch (NumberFormatException ex) {
+            lblAlertaImpacto.setText("T.V. INVÁLIDO");
+        }
     }
     
     public void actualizarBlanco(Blanco b) {
-    	if (b != null && b.getNombre() != null) {
+        if (b != null && b.getNombre() != null) {
             panelCuadricula.setNombreBlanco(b.getNombre());
         }
     }
@@ -405,7 +485,7 @@ public class CorreccionesPanel extends JPanel {
     public Map<String, String> getHistorialCorrecciones() {
         return new LinkedHashMap<>(historial);
     }
-    public Timer getTimerFuego() { return timerFuego;	 }
+    public Timer getTimerFuego() { return timerFuego;    }
     public JTextField getEPA() { return txtEPA; }
     public JTextField getAngOb() { return txtAngOb; }
     public JTextField getTVolido() { return txtTVolido; }
@@ -423,17 +503,17 @@ public class CorreccionesPanel extends JPanel {
     public JTextField getTxtAltValor() { return txtAltValor; }
     public JLabel getLblUltima() { return lblUltima; }
     
-    class PanelCuadricula extends JPanel {
+    public class PanelCuadricula extends JPanel {
 
         private static final long serialVersionUID = 1L;
-        private int metrosPorPunto = 200;           
+        private int metrosPorPunto = 200;      
         private static final int PUNTOS_SEMIEJE = 4; 
         @SuppressWarnings("unused")
-		private static final int TAM_PUNTO = 10;
+        private static final int TAM_PUNTO = 10;
 
         private String nombreBlanco;
         @SuppressWarnings("unused")
-		private Point disparoPixel;
+        private Point disparoPixel;
         private int disparoXMetros;
         private int disparoYMetros;
 
@@ -503,32 +583,19 @@ public class CorreccionesPanel extends JPanel {
         }
 
         public Map<String, String> exportarHistorialTexto() {
-
             Map<String, String> out = new LinkedHashMap<>();
-
             historialInterno.forEach((id, par) -> {
-
-                String disparo = "(" + par.disparoMetros.x + "m, " +
-                                        par.disparoMetros.y + "m)";
-
+                String disparo = "(" + par.disparoMetros.x + "m, " + par.disparoMetros.y + "m)";
                 String correccion = (par.correccionMetros != null)
-                        ? "(" + par.correccionMetros.x + "m, " +
-                           par.correccionMetros.y + "m)"
+                        ? "(" + par.correccionMetros.x + "m, " + par.correccionMetros.y + "m)"
                         : "(SIN CORRECCIÓN)";
-
-                out.put(
-                    String.valueOf(id),
-                    disparo + " → CORRECCIÓN " + id + " " + correccion
-                );
+                out.put(String.valueOf(id), disparo + " → CORRECCIÓN " + id + " " + correccion);
             });
-
             return out;
         }
         
         private void registrarDisparo(int xPixel, int yPixel) {
-
             contadorDisparos++;
-
             disparoXMetros = pixelAMetrosX(xPixel);
             disparoYMetros = pixelAMetrosY(yPixel);
 
@@ -550,39 +617,67 @@ public class CorreccionesPanel extends JPanel {
         }
         
         public void setNombreBlanco(String nombre) {
-        	nombreBlanco = nombre;
+            nombreBlanco = nombre;
         }
 
         private void ejecutarCorreccionAutomatica() {
+            int deltaXObs = -disparoXMetros; 
+            int deltaYObs = -disparoYMetros;
 
-            int deltaX = -disparoXMetros;
-            int deltaY = -disparoYMetros;
+            double epa = obtenerValorNumerico(txtEPA.getText());
+            double angObMils = obtenerValorNumerico(txtAngOb.getText());
+            
+            int correccionFinalDir = 0;
+            int correccionFinalAlc = 0;
 
+            if (angObMils > 0) {
+                double angObRad = angObMils * (Math.PI / 3200.0);
+                double deltaXBateria = (deltaXObs * Math.cos(angObRad)) - (deltaYObs * Math.sin(angObRad));
+                double deltaYBateria = (deltaXObs * Math.sin(angObRad)) + (deltaYObs * Math.cos(angObRad));
+
+                correccionFinalDir = (int) Math.round(deltaXBateria);
+                correccionFinalAlc = (int) Math.round(deltaYBateria);
+            } else {
+                correccionFinalDir = deltaXObs;
+                correccionFinalAlc = deltaYObs;
+            }
+            if (epa > 0) {
+                if (Math.abs(correccionFinalAlc) < epa) {
+                    correccionFinalAlc = 0; 
+                }
+            }
             contadorCorrecciones++;
-
             correcciones.add(new PuntoRotulado(
-                    new Point(disparoXMetros + deltaX, disparoYMetros + deltaY),
+                    new Point(disparoXMetros + correccionFinalDir, disparoYMetros + correccionFinalAlc),
                     "CORRECCIÓN " + contadorCorrecciones,
                     Color.RED
             ));
 
             ParDC par = historialInterno.get(contadorDisparos);
             if (par != null) {
-                par.correccionMetros = new Point(deltaX, deltaY);
+                par.correccionMetros = new Point(correccionFinalDir, correccionFinalAlc);
             }
 
-            cbDireccion.setSelectedItem(deltaX >= 0 ? "DERECHA" : "IZQUIERDA");
-            cbAlcance.setSelectedItem(deltaY >= 0 ? "ALARGAR" : "ACORTAR");
-            txtDirValor.setText(String.valueOf(Math.abs(deltaX)));
-            txtAlcValor.setText(String.valueOf(Math.abs(deltaY)));
+            cbDireccion.setSelectedItem(correccionFinalDir >= 0 ? "DERECHA" : "IZQUIERDA");
+            cbAlcance.setSelectedItem(correccionFinalAlc >= 0 ? "ALARGAR" : "ACORTAR");
+            
+            txtDirValor.setText(String.valueOf(Math.abs(correccionFinalDir)));
+            txtAlcValor.setText(String.valueOf(Math.abs(correccionFinalAlc)));
 
             SwingUtilities.invokeLater(() -> btnEnviar.doClick());
         }
 
+        private double obtenerValorNumerico(String texto) {
+            try {
+                if (texto == null || texto.trim().isEmpty()) return 0.0;
+                return Double.parseDouble(texto.trim().replace(",", "."));
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+
         public void registrarCorreccionManual(int deltaX, int deltaY) {
-
             contadorCorrecciones++;
-
             correcciones.add(new PuntoRotulado(
                     new Point(disparoXMetros + deltaX, disparoYMetros + deltaY),
                     "CORRECCIÓN " + contadorCorrecciones,
@@ -597,7 +692,7 @@ public class CorreccionesPanel extends JPanel {
         }
 
         @SuppressWarnings("unused")
-		private int rangoMaxMetros() {
+        private int rangoMaxMetros() {
             return metrosPorPunto * PUNTOS_SEMIEJE;
         }
 
