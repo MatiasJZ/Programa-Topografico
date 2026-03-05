@@ -23,8 +23,6 @@ public class CorreccionesPanel extends JPanel {
     
     private JButton btnZoomIn;
     private JButton btnZoomOut;
-    
-    private MetodoAtaqueYTiroPanel metAtaqueYTiroPanel;
 
     private JTextField txtDirValor;
     private JTextField txtAlcValor;
@@ -33,7 +31,7 @@ public class CorreccionesPanel extends JPanel {
     private JLabel l4;
     private JLabel lblAlertaImpacto;
     private Timer timerVolido;
-    private int segundosRestantesVolido;
+    private int tiempoRetrocesoVolido;
 
     private JCheckBox chkModoAutomatico;
     private JButton btnNuevoPIF;
@@ -43,6 +41,7 @@ public class CorreccionesPanel extends JPanel {
     private JButton btnFuego;
     private JButton btnHistorial;
     
+    private MetodoAtaqueYTiroPanel metAtaqueYTiroPanel;
     private Map<String,String> historial;
     
     private Timer timerFuego;
@@ -426,33 +425,33 @@ public class CorreccionesPanel extends JPanel {
     public void iniciarCuentaRegresivaVolido() {
         try {
             double tv = Double.parseDouble(txtTVolido.getText().trim().replace(",", "."));
-            segundosRestantesVolido = (int) Math.round(tv);
+            tiempoRetrocesoVolido = (int) Math.round(tv);
 
-            if (segundosRestantesVolido <= 0) return;
+            if (tiempoRetrocesoVolido <= 0) return;
 
             if (timerVolido != null && timerVolido.isRunning()) {
                 timerVolido.stop();
             }
 
-            lblAlertaImpacto.setText("IMPACTO EN: " + segundosRestantesVolido + "s");
+            lblAlertaImpacto.setText("IMPACTO EN: " + tiempoRetrocesoVolido + "s");
             lblAlertaImpacto.setForeground(Color.ORANGE);
             lblAlertaImpacto.setBackground(Color.BLACK);
             lblAlertaImpacto.setOpaque(true);
 
             timerVolido = new Timer(1000, e -> {
-                segundosRestantesVolido--;
+            	tiempoRetrocesoVolido--;
 
-                if (segundosRestantesVolido == 5) {
+                if (tiempoRetrocesoVolido == 5) {
                     
                     lblAlertaImpacto.setText("¡PIQUE! (5s)");
                     lblAlertaImpacto.setForeground(Color.WHITE);
                     lblAlertaImpacto.setBackground(new Color(220, 0, 0)); 
 
-                } else if (segundosRestantesVolido > 0) {
-                    if (segundosRestantesVolido > 5) {
-                        lblAlertaImpacto.setText("PIQUE EN: " + segundosRestantesVolido + "s");
+                } else if (tiempoRetrocesoVolido > 0) {
+                    if (tiempoRetrocesoVolido > 5) {
+                        lblAlertaImpacto.setText("PIQUE EN: " + tiempoRetrocesoVolido + "s");
                     } else {
-                        lblAlertaImpacto.setText("¡PIQUE! (" + segundosRestantesVolido + "s)");
+                        lblAlertaImpacto.setText("¡PIQUE! (" + tiempoRetrocesoVolido + "s)");
                     }
                 } else {
                     lblAlertaImpacto.setText("¡PIQUE!");

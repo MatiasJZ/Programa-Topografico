@@ -209,7 +209,6 @@ public class PanelMapa extends JPanel {
     }
 
     public JPanel crearVistaSoloObservacion() {
-        // Crea un segundo JMapPane que comparte el mismo MapContent (misma vista/capas)
         JMapPane mapPaneSoloObs = new JMapPane(mapContent);
         mapPaneSoloObs.setOpaque(true);
         mapPaneSoloObs.setBackground(Color.BLACK);
