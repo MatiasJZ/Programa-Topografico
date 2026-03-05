@@ -139,7 +139,8 @@ public class Red extends JDialog {
         panelDestinos.setBackground(new Color(30, 30, 30));
         panelDestinos.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        txtNuevoDestino = new JTextField("192.168.0.");
+        String baseIp = util.Configuracion.get("ip_sugerida_UI", "192.168.0.");
+        txtNuevoDestino = new JTextField(baseIp);
         txtNuevoDestino.setFont(fInput);
         txtNuevoDestino.setPreferredSize(new Dimension(180, ALTO_COMPONENTE));
         txtNuevoDestino.setHorizontalAlignment(JTextField.CENTER);

@@ -2,6 +2,9 @@ package comunicaciones;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+
+import util.Configuracion;
+
 import java.awt.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -70,7 +73,8 @@ public class PanelEnlaceComunicaciones extends JPanel {
         comboInterfaces = new JComboBox<>();
         interfacesIPs = cargarInterfaces();
 
-        txtPuerto = new JTextField("5056");
+        int pDefecto = Configuracion.getInt("puerto_enlace", 10011);
+        txtPuerto = new JTextField(String.valueOf(pDefecto));
 
         JLabel lblInt = new JLabel("Interfaz local:");
         lblInt.setForeground(Color.WHITE);
@@ -98,7 +102,8 @@ public class PanelEnlaceComunicaciones extends JPanel {
         JPanel panelIP = new JPanel(new BorderLayout(5, 5));
         panelIP.setBackground(Color.BLACK);
 
-        txtNuevaIP = new JTextField("192.168.105.20");
+        String primeraIpBase = util.Configuracion.get("ip_sugerida_UI", "192.168.0.20");
+        txtNuevaIP = new JTextField(primeraIpBase);
 
         btnAgregarIP = new JButton("Agregar destino");
         btnAgregarIP.setBackground(new Color(40, 120, 40));

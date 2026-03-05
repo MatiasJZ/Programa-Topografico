@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import javax.swing.*;
 import mensajes.ProcesadorMensajes;
+import util.Configuracion;
 import util.GestorSonido;
 
 /**
@@ -52,7 +53,7 @@ public class ProgramaTopografico extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private String idOAA;
-    private static final String[] IDS_VALIDOS = {"juarez"};
+    private String[] IDS_VALIDOS;
 
     private CardLayout cardLayout;
     private JPanel cards;
@@ -86,6 +87,9 @@ public class ProgramaTopografico extends JPanel {
 
     public ProgramaTopografico(LinkedList<Blanco> listaDeBlancos) {
 
+    	String ids = Configuracion.get("operadores_autorizados", "admin,juarez");
+        IDS_VALIDOS = ids.split(",");
+    	
         pedirID();
 
         setLayout(new BorderLayout());
@@ -175,10 +179,15 @@ public class ProgramaTopografico extends JPanel {
         try {
             LinkedList<String> ipsGuardadas = new LinkedList<>();
             
-            ipsGuardadas.add("192.168.1.2");
-            ipsGuardadas.add("192.168.2.2");
-
+            String ipsConfig = util.Configuracion.get("ips_destinos", "192.168.1.2");
+            String[] ipsArray = ipsConfig.split(",");
+            for (String ip : ipsArray) {
+                ipsGuardadas.add(ip.trim());
+            }
             comunicacionIP.setDestinos(ipsGuardadas);
+
+            int puertoCargado = util.Configuracion.getInt("puerto_enlace", 10011);
+            
             InetAddress ipLocal = null;
             Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
             while (nets.hasMoreElements() && ipLocal == null) {
@@ -196,9 +205,8 @@ public class ProgramaTopografico extends JPanel {
 
             if (ipLocal != null) {
                 comunicacionIP.setInterfazLocal(ipLocal);
-                comunicacionIP.setPuerto(10011); 
+                comunicacionIP.setPuerto(puertoCargado); 
                 comunicacionIP.iniciarServidor();
-              
             } else {
                 System.err.println(">> AUTO-START FALLIDO: No se detectó red.");
             }
