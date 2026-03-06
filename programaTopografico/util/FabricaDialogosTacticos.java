@@ -12,7 +12,6 @@ import javax.swing.*;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import app.CalculadorTopografico;
 import app.SituacionTacticaTopografica;
 import dominio.*;
 import gestores.GestorCodigosSIDC;

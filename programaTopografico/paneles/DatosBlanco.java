@@ -1,4 +1,4 @@
-package panelesSecundarios;
+package paneles;
 import dominio.Blanco;
 import java.awt.*;
 import javax.swing.*;

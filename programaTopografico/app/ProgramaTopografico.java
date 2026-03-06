@@ -5,7 +5,6 @@ import dominio.Blanco;
 import gestores.GestorEnlaceOperativo;
 import gestores.GestorSonido;
 import interfaces.ProtocoloCallback;
-import panelesSecundarios.Mensajeria;
 
 import java.awt.*;
 import java.net.InetAddress;
@@ -149,7 +148,7 @@ public class ProgramaTopografico extends JPanel {
         // COMUNICACIÓN IP
         comunicacionIP = new GestorEnlaceOperativo();
 
-        procesadorMensajes = new ProcesadorMensajes(pedidoDeFuego,situacionTactica,situacionTactica.getListaDeBlancos(),situacionTactica.getListaDePuntos());
+        procesadorMensajes = new ProcesadorMensajes(pedidoDeFuego,situacionTactica,situacionTactica.getListaDeBlancos(),situacionTactica.getListaDePuntos(), comunicacionIP);
         
         procesadorMensajes.setConsola(mensajeriaPanel.getConsolaMensajes());
 

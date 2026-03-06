@@ -27,7 +27,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import app.PedidoDeFuego;
 import interfaces.PDFGenerator;
-import panelesSecundarios.CorreccionesPanel;
+import paneles.CorreccionesPanel;
 
 public class GeneradorPDF implements PDFGenerator{
 

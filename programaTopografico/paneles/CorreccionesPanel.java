@@ -1,4 +1,4 @@
-package panelesSecundarios;
+package paneles;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import dominio.Blanco;
+import gestores.GestorSonido;
 import util.CheckIconCustom;
 
 public class CorreccionesPanel extends JPanel {
@@ -51,19 +52,20 @@ public class CorreccionesPanel extends JPanel {
     
     private PanelCuadricula panelCuadricula;
     private int ESCALA_METROS_POR_CUADRICULA = 200;
+    
+    private GestorSonido sonidos;
 
     public CorreccionesPanel(Blanco blanco, MetodoAtaqueYTiroPanel m) {
         
         metAtaqueYTiroPanel = m;
         historial = new HashMap<>();
+        sonidos = new GestorSonido();
         
         TitledBorder borde1 = BorderFactory.createTitledBorder("CORRECCIONES");
         borde1.setTitleColor(Color.WHITE);
         borde1.setTitleFont(new Font("Arial", Font.BOLD, 18));
         this.setBorder(borde1);
         setBackground(Color.BLACK);
-        
-        // ---- 1. INICIALIZACIÓN DE COMPONENTES ----
         
         Font fontParam = new Font("Arial", Font.BOLD, 14);
         Font fontCombos = new Font("Arial", Font.BOLD, 16);
@@ -140,7 +142,7 @@ public class CorreccionesPanel extends JPanel {
             t.setForeground(Color.WHITE);
             t.setHorizontalAlignment(SwingConstants.CENTER);
             t.setFont(fontCombos);
-            t.setPreferredSize(new Dimension(60, 32)); // Ancho fijo para mantener estética
+            t.setPreferredSize(new Dimension(60, 32));
         }
 
         JLabel u1 = new JLabel("Mts"); JLabel u2 = new JLabel("Mts"); JLabel u3 = new JLabel("Mts");
@@ -183,20 +185,16 @@ public class CorreccionesPanel extends JPanel {
         panelCuadricula.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         panelCuadricula.setMetrosPorPunto(30);
 
-        // ---- 2. ENSAMBLAJE DE LAYOUTS (Reemplazando null layout) ----
-        
         setLayout(new GridBagLayout());
         
-        // LADO IZQUIERDO (Grilla + Botones Inferiores)
         JPanel pnlIzquierdo = new JPanel(new BorderLayout(0, 15));
         pnlIzquierdo.setOpaque(false);
         
-        // Agregar botones de Zoom dentro de la cuadrícula usando GridBagLayout para anclarlos al sur-oeste
         panelCuadricula.setLayout(new GridBagLayout());
         GridBagConstraints gbcZoom = new GridBagConstraints();
         gbcZoom.anchor = GridBagConstraints.SOUTHWEST;
         gbcZoom.weightx = 1.0; gbcZoom.weighty = 1.0;
-        gbcZoom.insets = new Insets(0, 10, 10, 0); // Margen
+        gbcZoom.insets = new Insets(0, 10, 10, 0); 
         JPanel pnlZoom = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlZoom.setOpaque(false);
         pnlZoom.add(btnZoomIn); pnlZoom.add(btnZoomOut);
@@ -204,7 +202,6 @@ public class CorreccionesPanel extends JPanel {
         
         pnlIzquierdo.add(panelCuadricula, BorderLayout.CENTER);
 
-        // Botones debajo de la grilla
         JPanel pnlIzquierdoAbajo = new JPanel(new GridBagLayout());
         pnlIzquierdoAbajo.setOpaque(false);
         GridBagConstraints gbcBtm = new GridBagConstraints();
@@ -222,7 +219,6 @@ public class CorreccionesPanel extends JPanel {
         
         pnlIzquierdo.add(pnlIzquierdoAbajo, BorderLayout.SOUTH);
 
-        // LADO DERECHO (Controles)
         JPanel pnlDerecho = new JPanel(new GridBagLayout());
         pnlDerecho.setOpaque(false);
         GridBagConstraints gbcR = new GridBagConstraints();
@@ -230,23 +226,19 @@ public class CorreccionesPanel extends JPanel {
         gbcR.insets = new Insets(5, 20, 15, 10);
         gbcR.weightx = 1.0; gbcR.gridx = 0; gbcR.gridy = 0;
         
-        // Controles de Corrección (Dirección, Alcance, Altura)
         JPanel pnlCombos = new JPanel(new GridBagLayout());
         pnlCombos.setOpaque(false);
         GridBagConstraints gbcC = new GridBagConstraints();
         gbcC.fill = GridBagConstraints.HORIZONTAL; gbcC.insets = new Insets(5, 5, 5, 5);
         
-        // Fila 1
         gbcC.gridy = 0; gbcC.gridx = 0; pnlCombos.add(l1, gbcC);
         gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbDireccion, gbcC); gbcC.weightx = 0;
         gbcC.gridx = 2; pnlCombos.add(txtDirValor, gbcC);
         gbcC.gridx = 3; pnlCombos.add(u1, gbcC);
-        // Fila 2
         gbcC.gridy = 1; gbcC.gridx = 0; pnlCombos.add(l2, gbcC);
         gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbAlcance, gbcC); gbcC.weightx = 0;
         gbcC.gridx = 2; pnlCombos.add(txtAlcValor, gbcC);
         gbcC.gridx = 3; pnlCombos.add(u2, gbcC);
-        // Fila 3
         gbcC.gridy = 2; gbcC.gridx = 0; pnlCombos.add(l3, gbcC);
         gbcC.gridx = 1; gbcC.weightx = 1.0; pnlCombos.add(cbAltura, gbcC); gbcC.weightx = 0;
         gbcC.gridx = 2; pnlCombos.add(txtAltValor, gbcC);
@@ -254,18 +246,15 @@ public class CorreccionesPanel extends JPanel {
 
         pnlDerecho.add(pnlCombos, gbcR);
         
-        // Misión
         gbcR.gridy++;
         JPanel pnlMision = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlMision.setOpaque(false);
         pnlMision.add(l6); pnlMision.add(l4);
         pnlDerecho.add(pnlMision, gbcR);
         
-        // Impacto
         gbcR.gridy++;
         pnlDerecho.add(lblAlertaImpacto, gbcR);
         
-        // Panel M.T.O.
         gbcR.gridy++;
         JPanel panelParametros = new JPanel(new GridBagLayout());
         panelParametros.setBackground(Color.BLACK);
@@ -291,7 +280,6 @@ public class CorreccionesPanel extends JPanel {
         
         pnlDerecho.add(panelParametros, gbcR);
         
-        // Botones de Acción Derecho Inferior
         gbcR.gridy++;
         gbcR.weighty = 1.0; 
         gbcR.anchor = GridBagConstraints.SOUTH;
@@ -304,7 +292,6 @@ public class CorreccionesPanel extends JPanel {
         pnlAcciones.add(btnFuego);
         pnlDerecho.add(pnlAcciones, gbcR);
 
-        // Combinar Todo
         GridBagConstraints gbcMain = new GridBagConstraints();
         gbcMain.fill = GridBagConstraints.BOTH;
         gbcMain.insets = new Insets(10, 10, 10, 10);
@@ -316,8 +303,6 @@ public class CorreccionesPanel extends JPanel {
         gbcMain.gridx = 1;
         gbcMain.weightx = 0.35;
         add(pnlDerecho, gbcMain);
-
-        // ---- 3. LISTENERS (Sin modificaciones de lógica) ----
         
         timerFuego = new Timer(500, e -> {
             fuegoEstado = !fuegoEstado;
@@ -392,18 +377,11 @@ public class CorreccionesPanel extends JPanel {
             }
         });
         
-        btnZoomIn.addActionListener(e ->
-            panelCuadricula.zoomIn()
-        );
-        
-        btnZoomOut.addActionListener(e ->
-            panelCuadricula.zoomOut()
-        );
+        btnZoomIn.addActionListener(e -> panelCuadricula.zoomIn());
+        btnZoomOut.addActionListener(e -> panelCuadricula.zoomOut());
         
         setPreferredSize(new Dimension(1100, 900)); 
     }
-    
-    // ----------- MÉTODOS Y CLASE INTERNA INTACTOS ------------
 
     public void setZoomHabilitado(boolean habilitado) {
         btnZoomIn.setEnabled(habilitado);
@@ -431,6 +409,7 @@ public class CorreccionesPanel extends JPanel {
 
             if (timerVolido != null && timerVolido.isRunning()) {
                 timerVolido.stop();
+                if (sonidos != null) sonidos.detenerSonido5segRestantes();
             }
 
             lblAlertaImpacto.setText("IMPACTO EN: " + tiempoRetrocesoVolido + "s");
@@ -439,13 +418,15 @@ public class CorreccionesPanel extends JPanel {
             lblAlertaImpacto.setOpaque(true);
 
             timerVolido = new Timer(1000, e -> {
-            	tiempoRetrocesoVolido--;
+                tiempoRetrocesoVolido--;
 
                 if (tiempoRetrocesoVolido == 5) {
                     
                     lblAlertaImpacto.setText("¡PIQUE! (5s)");
                     lblAlertaImpacto.setForeground(Color.WHITE);
                     lblAlertaImpacto.setBackground(new Color(220, 0, 0)); 
+                    
+                    if (sonidos != null) sonidos.cincoSegundosRestantes(); 
 
                 } else if (tiempoRetrocesoVolido > 0) {
                     if (tiempoRetrocesoVolido > 5) {
@@ -454,6 +435,12 @@ public class CorreccionesPanel extends JPanel {
                         lblAlertaImpacto.setText("¡PIQUE! (" + tiempoRetrocesoVolido + "s)");
                     }
                 } else {
+                    
+                    if (sonidos != null) {
+                        sonidos.detenerSonido5segRestantes();
+                        sonidos.alertaFinalPique();    
+                    }
+
                     lblAlertaImpacto.setText("¡PIQUE!");
                     lblAlertaImpacto.setForeground(Color.BLACK);
                     lblAlertaImpacto.setBackground(new Color(0, 255, 100)); 

@@ -1,6 +1,9 @@
 package comunicaciones;
 
 import javax.swing.*;
+
+import gestores.GestorEnlaceOperativo;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +25,10 @@ public class DispatcherNotificacionesTacticas {
      * @param mensaje the main message content displayed in the text area
      */
     public static void mostrar(String titulo, String mensaje) {
+        mostrar(titulo, mensaje, null, null);
+    }
+
+    public static void mostrar(String titulo, String mensaje, String ipRemota, GestorEnlaceOperativo comunicacionIP) {
         
         JDialog dialog = new JDialog((Frame) null, "Notificación Táctica", true);
         dialog.setUndecorated(true); 
@@ -93,7 +100,17 @@ public class DispatcherNotificacionesTacticas {
             }
         });
 
-        btnOk.addActionListener(e -> dialog.dispose());
+        btnOk.addActionListener(e -> {
+            dialog.dispose();
+            if (comunicacionIP != null && ipRemota != null && !ipRemota.isEmpty()) {
+                String miIp = "DESCONOCIDA";
+                if (comunicacionIP.getInterfazLocal() != null) {
+                    miIp = comunicacionIP.getInterfazLocal().getHostAddress();
+                }
+                String acuse = "ACK|MSG=Operador en IP " + miIp + " confirma la lectura de: " + titulo;
+                comunicacionIP.enviar(ipRemota, acuse);
+            }
+        });
         
         gbc.gridy = 4; 
         gbc.insets = new Insets(20, 20, 20, 20);
@@ -102,7 +119,7 @@ public class DispatcherNotificacionesTacticas {
         Timer timerTitileo = new Timer(400, new ActionListener() {
             boolean toggle = true;
             @Override
-            public void actionPerformed(ActionEvent e) {           
+            public void actionPerformed(ActionEvent e) {            
                 if (!dialog.isVisible()) {
                     ((Timer)e.getSource()).stop();
                     return;

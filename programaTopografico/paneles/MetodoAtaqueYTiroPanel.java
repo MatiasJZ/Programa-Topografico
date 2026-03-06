@@ -1,4 +1,4 @@
-package panelesSecundarios;
+package paneles;
 
 import java.awt.*;
 import java.awt.event.*;

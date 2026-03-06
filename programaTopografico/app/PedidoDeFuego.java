@@ -11,11 +11,10 @@ import dominio.GeneradorPDF;
 import dominio.PIF;
 import gestores.GestorEnlaceOperativo;
 import interfaces.DialogFactory;
-import panelesSecundarios.CorreccionesPanel;
-import panelesSecundarios.DatosBlanco;
-import panelesSecundarios.Mensajeria;
-import panelesSecundarios.MetodoAtaqueYTiroPanel;
-import panelesSecundarios.PanelMapa;
+import paneles.CorreccionesPanel;
+import paneles.DatosBlanco;
+import paneles.MetodoAtaqueYTiroPanel;
+import paneles.PanelMapa;
 import util.FabricaComponentes;
 	
 public class PedidoDeFuego extends JPanel {
@@ -262,38 +261,38 @@ public class PedidoDeFuego extends JPanel {
 
     private void inicializarAccionesMT() {
 
-    	btnDatos.addActionListener(e -> {
-    	    indiceActual = 0;
-    	    cardLayout.show(pifCardPanel, "datos");
-    	    actualizarBotones();
-    	});
+        btnDatos.addActionListener(e -> {
+            indiceActual = 0;
+            cardLayout.show(pifCardPanel, "datos");
+            actualizarBotones();
+        });
 
-    	btnMetodo.addActionListener(e -> {
-    	    indiceActual = 1;
-    	    cardLayout.show(pifCardPanel, "metodoTiro");
-    	    actualizarBotones();
-    	});
+        btnMetodo.addActionListener(e -> {
+            indiceActual = 1;
+            cardLayout.show(pifCardPanel, "metodoTiro");
+            actualizarBotones();
+        });
 
         metodoYTiroPanel.addPropertyChangeListener("ENVIAR_PIF",
                 evt1 -> registrarNuevoPIF());
         
         metodoYTiroPanel.addPropertyChangeListener("ENVIAR_FUEGO", 
-        		evt2 -> {
-			        if (comunicacionIP != null) {
-			            String msg = "FUEGO";
-			            comunicacionIP.enviarATodos(msg);
-			            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
-			        }
-		       });
+                evt2 -> {
+                    if (comunicacionIP != null) {
+                        String msg = "FUEGO";
+                        comunicacionIP.enviarATodos(msg);
+                        PanelMensajeria.getConsolaMensajes().mostrarTx("TODOS", msg);
+                    }
+               });
         
         metodoYTiroPanel.getCorreccionesPanel().addPropertyChangeListener("ENVIAR_FUEGO", 
-        		evt3 -> {
-			        if (comunicacionIP != null) {
-			            String msg = "FUEGO";
-			            comunicacionIP.enviarATodos(msg);
-			            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
-			        }
-		       });
+                evt3 -> {
+                    if (comunicacionIP != null) {
+                        String msg = "FUEGO";
+                        comunicacionIP.enviarATodos(msg);
+                        PanelMensajeria.getConsolaMensajes().mostrarTx("TODOS", msg);
+                    }
+               });
     }
 
     private void inicializarAccionesCorrecciones() {
@@ -306,7 +305,7 @@ public class PedidoDeFuego extends JPanel {
         });
 
         corr.getBtnNuevoPIF().addActionListener(e -> {
-        	PanelMensajeria.getConsolaMensajes().agregarMensaje("[INFO] Nuevo PIF solicitado");
+            PanelMensajeria.getConsolaMensajes().mostrarSistema("Nuevo PIF solicitado");
             volverASituacionTactica();
             metodoYTiroPanel.mostrarPanelPrincipal();
             metodoYTiroPanel.getPanelMisionDeFuego().setVisible(true);
@@ -317,7 +316,7 @@ public class PedidoDeFuego extends JPanel {
             if (dialogFactory != null) {
                 dialogFactory.ReporteFinMisionDialog(reporte -> {
                     if (reporte == null) {
-                        PanelMensajeria.getConsolaMensajes().agregarMensaje("[CANCELADO] Fin de misión sin reporte.");
+                        PanelMensajeria.getConsolaMensajes().mostrarSistema("Fin de misión cancelado sin reporte.");
                         return;
                     }
 
@@ -340,7 +339,7 @@ public class PedidoDeFuego extends JPanel {
                     metodoYTiroPanel.getCorreccionesPanel().reiniciarCuadricula();
                     metodoYTiroPanel.getCorreccionesPanel().getLblUltima().setText("");
                     
-                    PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
+                    PanelMensajeria.getConsolaMensajes().mostrarTx("TODOS", msg);
 
                     JOptionPane.showMessageDialog(
                             this,
@@ -381,7 +380,7 @@ public class PedidoDeFuego extends JPanel {
             comunicacionIP.enviarATodos(msg);
         }
 
-        PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
+        PanelMensajeria.getConsolaMensajes().mostrarTx("TODOS",msg);
         
         corr.getLblUltima().setText("ULTIMA CORRECCIÓN: " + dir + " " + vDir + " / " + alc + " " + vAlc + " / " + alt + " " + vAlt);
     }
@@ -438,7 +437,7 @@ public class PedidoDeFuego extends JPanel {
             		+ "|ORDEN=" + nuevo.getOrden();
 
             comunicacionIP.enviarATodos(msg);
-            PanelMensajeria.getConsolaMensajes().mostrarTx(msg);
+            PanelMensajeria.getConsolaMensajes().mostrarTx("TODOS",msg);
         }
 
         JOptionPane.showMessageDialog(this, "PIF registrado correctamente.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);

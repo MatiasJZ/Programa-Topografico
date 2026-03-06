@@ -121,19 +121,21 @@ public class GestorEnlaceOperativo {
     }
 
     private void manejarArchivo(Socket cli) {
-
-        try (DataInputStream dis =
-                     new DataInputStream(cli.getInputStream())) {
+        try (DataInputStream dis = new DataInputStream(cli.getInputStream())) {
 
             String tipo = dis.readUTF(); 
+            
+            // OBTENER LA IP DE LA MÁQUINA QUE ENVIÓ EL MENSAJE
+            String ipRemota = ((InetSocketAddress) cli.getRemoteSocketAddress()).getAddress().getHostAddress();
 
             if ("TEXT".equals(tipo)) {
-
                 String msg = dis.readUTF();
-                callback.recibir(msg);
+                
+                // INYECTAR LA IP AL PRINCIPIO DEL MENSAJE
+                String mensajeConIP = ipRemota + "||" + msg;
+                callback.recibir(mensajeConIP);
 
             } else if ("FILE".equals(tipo)) {
-
                 String nombre = dis.readUTF();
                 long size = dis.readLong();
 
@@ -148,7 +150,6 @@ public class GestorEnlaceOperativo {
                 File out = new File(dir, nombre);
 
                 try (FileOutputStream fos = new FileOutputStream(out)) {
-
                     byte[] buf = new byte[4096];
                     long recibidos = 0;
 
@@ -161,7 +162,7 @@ public class GestorEnlaceOperativo {
                     }
                 }
 
-                callback.log("[RX-FILE] " + out.getName() + " (" + size + " bytes)");
+                callback.log("[RX-FILE] " + out.getName() + " (" + size + " bytes) desde " + ipRemota);
 
                 SwingUtilities.invokeLater(() ->
                     preguntarApertura(out)

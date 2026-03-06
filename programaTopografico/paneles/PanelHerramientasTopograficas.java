@@ -1,8 +1,11 @@
-package app;
+package paneles;
 
 import java.awt.*;
 import java.util.LinkedList;
 import javax.swing.*;
+
+import app.ProgramaTopografico;
+import app.SituacionTacticaTopografica;
 import dominio.Blanco;
 import dominio.Punto;
 import dominio.RegistroCalculos;

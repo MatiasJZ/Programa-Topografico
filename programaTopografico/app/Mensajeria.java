@@ -1,4 +1,4 @@
-package panelesSecundarios;
+package app;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -198,24 +198,34 @@ public class Mensajeria extends JPanel {
         }
         com.enviarATodos("CHAT|" + msg);
         
-        consolaMensajes.mostrarTx("CHAT: " + msg); 
+        // Uso del nuevo método de la consola de mensajes
+        consolaMensajes.mostrarTx("TODOS", "CHAT: " + msg); 
         
         agregarLogLocal("["+idOAA+"] " + msg); 
         
-        // 4. Limpiar
+        // Limpiar
         txtMensaje.setText("");
         txtMensaje.requestFocusInWindow();
     }
     
     public void recibirChat(String msg) {
         if (!msg.contains("|")) { 
-            if (consolaMensajes != null) consolaMensajes.mostrarRx(msg);
-            agregarLogLocal("[RX] " + msg);
+            String origen = "DESCONOCIDO";
+            String contenido = msg;
+            
+            if(msg.contains("||")) {
+                String[] p = msg.split("\\|\\|", 2);
+                origen = p[0];
+                contenido = p[1];
+            }
+            
+            if (consolaMensajes != null) consolaMensajes.mostrarRx(origen, contenido);
+            agregarLogLocal("[RX - " + origen + "] " + contenido);
         }
     }
 
     public void recibirMensajeGlobal(String origen, String msg) {
-        consolaMensajes.mostrarRx(origen + ": " + msg);
+        consolaMensajes.mostrarRx(origen, msg);
         agregarLogLocal("[SISTEMA - " + origen + "] " + msg);
     }
 
@@ -246,7 +256,7 @@ public class Mensajeria extends JPanel {
                     for(String ip : com.getDestinos()) {
                         com.enviarArchivo(ip, f);
                     }
-                    if (consolaMensajes != null) consolaMensajes.mostrarTx("Archivo enviado: " + f.getName());
+                    if (consolaMensajes != null) consolaMensajes.mostrarTx("TODOS", "Archivo enviado: " + f.getName());
                     agregarLogLocal("[TX-FILE] " + f.getName());
                 } else {
                     agregarLogLocal("[ERROR] No hay destinos conectados.");

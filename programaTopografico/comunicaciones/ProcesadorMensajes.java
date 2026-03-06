@@ -1,6 +1,6 @@
 package comunicaciones;
-import java.util.LinkedList;
 
+import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 import app.PedidoDeFuego;
@@ -8,6 +8,7 @@ import app.SituacionTacticaTopografica;
 import dominio.Blanco;
 import dominio.Punto;
 import dominio.SituacionMovimiento;
+import gestores.GestorEnlaceOperativo;
 import dominio.CoordenadasRectangulares;
 
 /**
@@ -18,28 +19,25 @@ import dominio.CoordenadasRectangulares;
  * <p>
  * Funcionalidades principales:
  * <ul>
- *   <li>Procesar mensajes de tipo "BLANCO", "PUNTO", "AVISO" y "ESTADO".</li>
- *   <li>Actualizar o agregar nuevos puntos y blancos a las listas correspondientes.</li>
- *   <li>Notificar a la interfaz gráfica sobre cambios relevantes mediante DispatcherNotificacionesTacticas.</li>
- *   <li>Registrar mensajes informativos, advertencias y errores en la consola asociada.</li>
+ * <li>Procesar mensajes de tipo "BLANCO", "PUNTO", "AVISO" y "ESTADO".</li>
+ * <li>Actualizar o agregar nuevos puntos y blancos a las listas correspondientes.</li>
+ * <li>Notificar a la interfaz gráfica sobre cambios relevantes mediante DispatcherNotificacionesTacticas.</li>
+ * <li>Registrar mensajes informativos, advertencias y errores en la consola asociada.</li>
  * </ul>
- * 
- * Dependencias:
+ * * Dependencias:
  * <ul>
- *   <li>ConsolaMensajes: para mostrar mensajes en la interfaz de usuario.</li>
- *   <li>SituacionTacticaTopografica: panel táctico donde se visualizan puntos y blancos.</li>
- *   <li>ProtocoloMensajes: utilitario para extraer campos y tipos de los mensajes recibidos.</li>
- *   <li>DispatcherNotificacionesTacticas: para mostrar notificaciones emergentes.</li>
+ * <li>ConsolaMensajes: para mostrar mensajes en la interfaz de usuario.</li>
+ * <li>SituacionTacticaTopografica: panel táctico donde se visualizan puntos y blancos.</li>
+ * <li>ProtocoloMensajes: utilitario para extraer campos y tipos de los mensajes recibidos.</li>
+ * <li>DispatcherNotificacionesTacticas: para mostrar notificaciones emergentes.</li>
  * </ul>
- * 
- * Uso típico:
+ * * Uso típico:
  * <pre>
- *     ProcesadorMensajes procesador = new ProcesadorMensajes(panel, listaBlancos, listaPuntos);
- *     procesador.setConsola(consolaMensajes);
- *     procesador.procesar(mensajeRecibido);
+ * ProcesadorMensajes procesador = new ProcesadorMensajes(panel, listaBlancos, listaPuntos);
+ * procesador.setConsola(consolaMensajes);
+ * procesador.procesar(mensajeRecibido);
  * </pre>
- * 
- * @author [Matias Leonel Juarez]
+ * * @author [Matias Leonel Juarez]
  * @version 1.0
  */
 public class ProcesadorMensajes {
@@ -49,81 +47,101 @@ public class ProcesadorMensajes {
     private LinkedList<Blanco> listaDeBlancos;
     private LinkedList<Punto> listaDePuntos;
     private PedidoDeFuego panelPif;
+    private GestorEnlaceOperativo comunicacionIP;
 
-    public ProcesadorMensajes(PedidoDeFuego panelPif, SituacionTacticaTopografica panelTactico,LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos) {
+    public ProcesadorMensajes(PedidoDeFuego panelPif, SituacionTacticaTopografica panelTactico, LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos, GestorEnlaceOperativo comunicacionIP) {
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
         this.listaDePuntos = listaDePuntos;
         this.panelPif = panelPif;
+        this.comunicacionIP = comunicacionIP;
     }
 
-    public void procesar(String mensaje) {
+    public void procesar(String mensajeConRastreo) {
 
-        if (mensaje == null || mensaje.trim().isEmpty()) return;
+        if (mensajeConRastreo == null || mensajeConRastreo.trim().isEmpty()) return;
         
         if (consola == null) {
-            System.out.println("[WARN] Procesador sin consola vinculada: " + mensaje);
+            System.out.println("[WARN] Procesador sin consola vinculada.");
         }
 
-        String tipo = ProtocoloMensajes.obtenerTipo(mensaje);
+        String ipRemota = "";
+        String mensajeReal = mensajeConRastreo;
+
+        if (mensajeConRastreo.contains("||")) {
+            String[] partes = mensajeConRastreo.split("\\|\\|", 2);
+            ipRemota = partes[0];
+            mensajeReal = partes[1];
+        }
+
+        String tipo = ProtocoloMensajes.obtenerTipo(mensajeReal);
 
         switch (tipo) {
             case "BLANCO":
-                procesarBlanco(mensaje);
+                procesarBlanco(mensajeReal, ipRemota);
                 break;
-            case "PUNTO": // Nuevo caso
-                procesarPunto(mensaje);
+            case "PUNTO":
+                procesarPunto(mensajeReal, ipRemota);
+                break;
             case "AVISO":
-                procesarAviso(mensaje);
+                procesarAviso(mensajeReal, ipRemota);
                 break;
             case "ESTADO":
-                procesarEstado(mensaje);
+                procesarEstado(mensajeReal, ipRemota);
                 break;  
             case "MTO":
-            	procesarMTO(mensaje);
+                procesarMTO(mensajeReal, ipRemota);
+                break;
+            case "ACK":
+                procesarAck(mensajeReal, ipRemota);
+                break;
             default:
-                consola.agregarMensaje("[INFO] Mensaje desconocido: " + mensaje);
+                consola.mostrarRx(ipRemota, "CHAT/DESCONOCIDO: " + mensajeReal);
         }
     }
     
-    private void procesarEstado(String msg) {
-
+    private void procesarAck(String msg, String ipRemota) {
         String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
         if (contenido == null) return;
 
-        consola.agregarMensaje("[HARRIS] " + contenido);
+        consola.mostrarRx(ipRemota, "CONFIRMACIÓN RECIBIDA: " + contenido);
 
-        if (contenido.toUpperCase().contains("FUEGO") || contenido.toUpperCase().contains("DISPARO")) {
-            if (panelPif != null && panelPif.getMetodoYTiroPanel() != null) {
-
-            	panelPif.getMetodoYTiroPanel().getCorreccionesPanel().iniciarCuentaRegresivaVolido();
-            }
-        }
         SwingUtilities.invokeLater(() ->
-            DispatcherNotificacionesTacticas.mostrar(
-                "ESTADO OPERATIVO",
-                contenido
-            )
+            DispatcherNotificacionesTacticas.mostrar("ACUSE DE RECIBO", contenido, null, null)
         );
     }
     
-    private void procesarMTO(String msg) {
-    	String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
-    	String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
-    	String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
+    private void procesarEstado(String msg, String ipRemota) {
+        String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
+        if (contenido == null) return;
 
-    	panelPif.recibirMTO(EPA,ANGOB,TVOLIDO);
-    		
-        consola.agregarMensaje("[MTO] RECIBIDO");
-               
+        consola.mostrarRx(ipRemota, "HARRIS ESTADO: " + contenido);
+
+        if (contenido.toUpperCase().contains("FUEGO") || contenido.toUpperCase().contains("DISPARO")) {
+            if (panelPif != null && panelPif.getMetodoYTiroPanel() != null) {
+                panelPif.getMetodoYTiroPanel().getCorreccionesPanel().iniciarCuentaRegresivaVolido();
+            }
+        }
         SwingUtilities.invokeLater(() ->
-        DispatcherNotificacionesTacticas.mostrar(
-            "MTO",
-            "RECIBIDO Y DISPONIBLE")
-    );
+            DispatcherNotificacionesTacticas.mostrar("ESTADO OPERATIVO", contenido, ipRemota, comunicacionIP)
+        );
     }
     
-    private void procesarPunto(String msg) {
+    private void procesarMTO(String msg, String ipRemota) {
+        String EPA = ProtocoloMensajes.obtenerCampo(msg, "EPA");
+        String ANGOB = ProtocoloMensajes.obtenerCampo(msg, "ANGOB");
+        String TVOLIDO = ProtocoloMensajes.obtenerCampo(msg, "TVOLIDO");
+
+        panelPif.recibirMTO(EPA,ANGOB,TVOLIDO);
+            
+        consola.mostrarRx(ipRemota, "MTO RECIBIDO");
+                
+        SwingUtilities.invokeLater(() ->
+            DispatcherNotificacionesTacticas.mostrar("MTO", "RECIBIDO Y DISPONIBLE", ipRemota, comunicacionIP)
+        );
+    }
+    
+    private void procesarPunto(String msg, String ipRemota) {
         try {
             String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
             double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
@@ -139,7 +157,7 @@ public class ProcesadorMensajes {
                 if (p.getNombre().equalsIgnoreCase(nombre)) {
                     p.setCoord(coords);
                     panelTactico.actualizarPunto(p); 
-                    consola.agregarMensaje("[ACTUALIZADO] Punto: " + nombre);
+                    consola.mostrarSistema("Punto actualizado localmente: " + nombre);
                     return;
                 }
             }
@@ -148,10 +166,15 @@ public class ProcesadorMensajes {
             listaDePuntos.add(nuevoPunto);
             panelTactico.agregarPunto(nuevoPunto); 
 
-            consola.agregarMensaje("[NUEVO PUNTO] Recibido: " + nombre);
+            consola.mostrarRx(ipRemota, "NUEVO PUNTO: " + nombre);
             
+            String tituloPunto = "PUNTO RECIBIDO: " + nombre;
             SwingUtilities.invokeLater(() ->
-                DispatcherNotificacionesTacticas.mostrar("PUNTO RECIBIDO", "Nombre: " + nombre + "\nX: " + x + " Y: " + y)
+                DispatcherNotificacionesTacticas.mostrar(
+                        tituloPunto, 
+                        "Nombre: " + nombre + "\nX: " + x + " Y: " + y, 
+                        ipRemota, 
+                        comunicacionIP)
             );
 
         } catch (Exception e) {
@@ -164,10 +187,10 @@ public class ProcesadorMensajes {
     }
     
     public void procesarCrudo(String msg) {
-        consola.agregarMensaje("[RX RAW] " + msg);
+        consola.mostrarRx("DESCONOCIDO", "RAW: " + msg);
     }
     
-    private void procesarBlanco(String msg) {
+    private void procesarBlanco(String msg, String ipRemota) {
         try {
             String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
             
@@ -197,7 +220,7 @@ public class ProcesadorMensajes {
                     } catch (InterruptedException ignored) {}
                 }).start();
                 
-                consola.agregarMensaje("[SISTEMA] Reemplazando blanco existente: " + nombre);
+                consola.mostrarSistema("Reemplazando blanco existente: " + nombre);
             }
 
             String nat = ProtocoloMensajes.obtenerCampo(msg, "NAT");
@@ -208,11 +231,9 @@ public class ProcesadorMensajes {
             mapearDatosBlanco(nuevoBlanco, msg, coords);
             panelTactico.agregarBlanco(nuevoBlanco);
 
-            if (blancoAnterior == null) {
-                consola.agregarMensaje("[SISTEMA] Nuevo blanco detectado: " + nombre);
-            }
+            consola.mostrarRx(ipRemota, "BLANCO TÁCTICO: " + nombre);
 
-            mostrarPopupBlanco(blancoAnterior == null ? "NUEVO BLANCO" : "BLANCO ACTUALIZADO", nuevoBlanco, coords);
+            mostrarPopupBlanco(blancoAnterior == null ? "NUEVO BLANCO" : "BLANCO ACTUALIZADO", nuevoBlanco, coords, ipRemota);
             
         } catch (Exception e) {
             consola.agregarMensaje("[ERROR] Datos de blanco corruptos: " + e.getMessage());
@@ -221,8 +242,7 @@ public class ProcesadorMensajes {
     }
     
     private void mapearDatosBlanco(Blanco b, String msg, CoordenadasRectangulares coords) {
-
-    	b.setCoordenadas(coords);
+        b.setCoordenadas(coords);
         String fecha = ProtocoloMensajes.obtenerCampo(msg, "FECHA");
         if (fecha != null) b.setFecha(fecha);
         
@@ -246,30 +266,27 @@ public class ProcesadorMensajes {
         if (situacion != null) {
             try {
                 b.setSituacionMovimiento(SituacionMovimiento.valueOf(situacion));
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
 
         String info = ProtocoloMensajes.obtenerCampo(msg, "INFO");
         if (info != null) b.setInformacionAdicional(info);
     }
     
-    private void procesarAviso(String msg) {
-
+    private void procesarAviso(String msg, String ipRemota) {
         String contenido = ProtocoloMensajes.obtenerCampo(msg, "MSG");
         if (contenido == null) return;
 
-        consola.agregarMensaje("[AVISO] " + contenido);
-
+        consola.mostrarRx(ipRemota, "AVISO: " + contenido);
         String titulo = esCritico(contenido) ? "ALERTA CRÍTICA" : "AVISO";
 
         SwingUtilities.invokeLater(() ->
-    		DispatcherNotificacionesTacticas.mostrar(titulo, contenido)
+            DispatcherNotificacionesTacticas.mostrar(titulo, contenido, ipRemota, comunicacionIP)
         );
     }
     
-    private void mostrarPopupBlanco(String titulo, Blanco b, CoordenadasRectangulares c) {
-
+    private void mostrarPopupBlanco(String tituloBase, Blanco b, CoordenadasRectangulares c, String ipRemota) {
+        String tituloCompleto = tituloBase + ": " + b.getNombre();
         String texto =
                 "Nombre: " + b.getNombre() + "\n" +
                 "Naturaleza: " + b.getNaturaleza() + "\n" +
@@ -279,7 +296,7 @@ public class ProcesadorMensajes {
                         : "");
 
         SwingUtilities.invokeLater(() ->
-            DispatcherNotificacionesTacticas.mostrar(titulo, texto)
+            DispatcherNotificacionesTacticas.mostrar(tituloCompleto, texto, ipRemota, comunicacionIP)
         );
     }
 

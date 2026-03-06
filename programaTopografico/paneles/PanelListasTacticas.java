@@ -1,7 +1,9 @@
-package app;
+package paneles;
 
 import java.awt.*;
 import javax.swing.*;
+
+import app.SituacionTacticaTopografica;
 import dominio.Blanco;
 import dominio.RenderizadorListas;
 import interfaces.Poligonal;

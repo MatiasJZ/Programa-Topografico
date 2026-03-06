@@ -1,6 +1,8 @@
 package gestores;
 
 import javax.sound.sampled.*;
+import javax.swing.Timer;
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.Map;
  * 
  * @author [Matias Leonel Juarez]
  */
+
 public class GestorSonido {
 
     private final Map<String, Clip> sonidos = new HashMap<>();
@@ -40,8 +43,10 @@ public class GestorSonido {
     }
 
     private void cargarSonidos() {
-        sonidos.put("clickError", cargar("clickError.wav"));
-        sonidos.put("ingresoError", cargar("ingresoError.wav"));
+        sonidos.put("ClickError", cargar("ClickError.wav"));
+        sonidos.put("IngresoError", cargar("IngresoError.wav"));
+        sonidos.put("5segRestantes", cargar("5segRestantes.wav"));
+        sonidos.put("AlertaFinalPique", cargar("AlertaFinalPique.wav"));
     }
 
     private Clip cargar(String archivo) {
@@ -72,12 +77,38 @@ public class GestorSonido {
         }
     }
     
+    public void detenerSonido5segRestantes() {
+        Clip clip = sonidos.get("5segRestantes");
+        if (clip != null && clip.isRunning()) {
+            clip.stop();
+        }
+    }
+    
     public void clickError() {
-        reproducir("clickError");
+        reproducir("ClickError");
     }
 
     public void ingresoError() {
-        reproducir("ingresoError");
+        reproducir("IngresoError");
     }
 
+    public void alertaFinalPique() {
+        Clip clip = sonidos.get("AlertaFinalPique");
+        if (clip != null) {
+            if (clip.isRunning()) clip.stop();
+            clip.setFramePosition(0); 
+            clip.start();
+            Timer timerCorte = new Timer(1000, e -> {
+                if (clip.isRunning()) {
+                    clip.stop();
+                }
+            });
+            timerCorte.setRepeats(false);
+            timerCorte.start();
+        }
+    }
+    
+    public void cincoSegundosRestantes() {
+        reproducir("5segRestantes");
+    }
 }
