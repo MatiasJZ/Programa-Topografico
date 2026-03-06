@@ -1,18 +1,20 @@
 package app;
 
-import comunicaciones.GestorEnlaceOperativo;
-import comunicaciones.ProtocoloCallback;
+import comunicaciones.ProcesadorMensajes;
 import dominio.Blanco;
-import interfaz.Mensajeria;
+import gestores.GestorEnlaceOperativo;
+import gestores.GestorSonido;
+import interfaces.ProtocoloCallback;
+import panelesSecundarios.Mensajeria;
+
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import javax.swing.*;
-import mensajes.ProcesadorMensajes;
+
 import util.Configuracion;
-import util.GestorSonido;
 
 /**
  * ProgramaTopografico is the main GUI panel for a tactical topographic artillery system.

@@ -15,6 +15,13 @@ import org.locationtech.jts.geom.Coordinate;
 import app.CalculadorTopografico;
 import app.SituacionTacticaTopografica;
 import dominio.*;
+import gestores.GestorCodigosSIDC;
+import gestores.GestorSonido;
+import interfaces.BlancoCallback;
+import interfaces.CalculoCallback;
+import interfaces.DialogFactory;
+import interfaces.Posicionable;
+import interfaces.PuntoCallback;
 
 /**
  * FabricaDialogosTacticos

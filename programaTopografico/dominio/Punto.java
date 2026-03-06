@@ -4,6 +4,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import interfaces.Poligonal;
+import interfaces.Posicionable;
+
 /**
  * La clase {@code Punto} representa un punto topográfico con coordenadas rectangulares y un nombre identificador.
  * Implementa las interfaces {@link Poligonal} y {@link Posicionable}, proporcionando métodos para obtener

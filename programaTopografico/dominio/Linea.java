@@ -4,6 +4,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import interfaces.Poligonal;
+
 /**
  * Represents a line segment defined by a start and end coordinate, distance, and azimuth.
  * Implements the {@link Poligonal} interface.

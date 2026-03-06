@@ -1,11 +1,11 @@
 package app;
 
-import dominio.Posicionable;
 import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.Locale;
 import org.locationtech.jts.geom.Coordinate;
 import dominio.CoordenadasRectangulares;
+import interfaces.Posicionable;
 
 /**
  * CalculadorTopografico

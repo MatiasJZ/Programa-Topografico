@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.swing.*;
 
+import gestores.GestorEnlaceOperativo;
+
 /**
  * A JDialog for configuring network settings in a topographic application.
  * 

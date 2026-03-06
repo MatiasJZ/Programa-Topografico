@@ -34,8 +34,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 
 import dominio.Blanco;
-import dominio.Posicionable;
 import dominio.Punto;
+import interfaces.Posicionable;
 
 /**
  * Clase de utilidad para la creación y configuración de componentes Swing personalizados

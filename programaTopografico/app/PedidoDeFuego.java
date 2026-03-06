@@ -6,16 +6,16 @@ import java.util.LinkedList;
 
 import javax.swing.*;
 
-import comunicaciones.GestorEnlaceOperativo;
 import dominio.Blanco;
 import dominio.GeneradorPDF;
 import dominio.PIF;
-import interfaz.DatosBlanco;
-import interfaz.Mensajeria;
-import interfaz.MetodoAtaqueYTiroPanel;
-import interfaz.CorreccionesPanel;
-import interfaz.PanelMapa;
-import util.DialogFactory;
+import gestores.GestorEnlaceOperativo;
+import interfaces.DialogFactory;
+import panelesSecundarios.CorreccionesPanel;
+import panelesSecundarios.DatosBlanco;
+import panelesSecundarios.Mensajeria;
+import panelesSecundarios.MetodoAtaqueYTiroPanel;
+import panelesSecundarios.PanelMapa;
 import util.FabricaComponentes;
 	
 public class PedidoDeFuego extends JPanel {

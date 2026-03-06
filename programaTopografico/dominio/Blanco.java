@@ -1,5 +1,7 @@
 package dominio;
 
+import interfaces.Posicionable;
+
 /**
  * La clase {@code Blanco} representa un objeto posicionable con información relevante
  * para aplicaciones topográficas o militares. Un Blanco tiene un nombre, coordenadas,
