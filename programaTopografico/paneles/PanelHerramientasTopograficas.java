@@ -4,7 +4,6 @@ import java.awt.*;
 import java.util.LinkedList;
 import javax.swing.*;
 
-import app.ProgramaTopografico;
 import app.SituacionTacticaTopografica;
 import dominio.Blanco;
 import dominio.Punto;
@@ -18,31 +17,26 @@ import interfaces.DialogFactory;
  * MESA-P, ANG-B, ACT-MAG, NIVEL-T, REG-PPAL, REG-C-M y PIF, con sus respectivos
  * listeners que delegan en {@link DialogFactory}.
  *
+ * <p>Todos los botones de cálculo requieren que haya un {@link Blanco} seleccionado
+ * en la lista táctica antes de ejecutar. Si no hay selección, se muestra un aviso
+ * y la operación se cancela.
+ *
  * <p>El panel es visible/ocultable desde el HUD principal.
  *
  * @author [Matias Leonel Juarez]
- * @version 1.0
+ * @version 1.1
  */
 public class PanelHerramientasTopograficas extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Callback que se invoca cuando el operador presiona el botón PIF.
-     * Permite que {@link SituacionTacticaTopografica} maneje la navegación
-     * sin que este panel conozca a {@link ProgramaTopografico}.
-     */
     @FunctionalInterface
     public interface AccionPIF {
         void ejecutar();
     }
 
-    public PanelHerramientasTopograficas(
-            DialogFactory dialogFactory,
-            LinkedList<Punto> listaDePuntos,
-            LinkedList<Blanco> listaDeBlancos,
-            SituacionTacticaTopografica ctx,
-            AccionPIF accionPIF) {
+    public PanelHerramientasTopograficas(DialogFactory dialogFactory,LinkedList<Punto> listaDePuntos,LinkedList<Blanco> listaDeBlancos,
+            SituacionTacticaTopografica ctx,AccionPIF accionPIF) {
 
         setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         setBackground(Color.BLACK);
@@ -52,7 +46,6 @@ public class PanelHerramientasTopograficas extends JPanel {
         Font fuenteBtn = new Font("Arial", Font.BOLD, 10);
         Dimension dimBtn = new Dimension(98, 60);
 
-        // ── Botones de cálculo ──────────────────────────────────────
         String[] nombres = {
             "TRIANG","RAD","TRILAT","INT-INV-3P","INT-INV-2P",
             "INT-D-M","MESA-P","ANG-B","ACT-MAG","NIVEL-T","REG-PPAL","REG-C-M"
@@ -67,12 +60,32 @@ public class PanelHerramientasTopograficas extends JPanel {
         JButton pif = crearBoton("PIF", new Font("Arial", Font.BOLD, 12), dimBtn,
                 new Color(180, 40, 40), Color.WHITE);
         add(pif);
-        pif.addActionListener(e -> accionPIF.ejecutar());
+        pif.addActionListener(e -> {
+	        if (ctx.getlistaUIBlancos().getSelectedValue() == null) {
+	            JOptionPane.showMessageDialog(ctx,
+	                    "Debe seleccionar un blanco de la lista táctica antes de ejecutar esta operación.",
+	                    "SELECCIÓN REQUERIDA",
+	                    JOptionPane.WARNING_MESSAGE);
+	            return;
+	        }
+	        else {
+	        	accionPIF.ejecutar();
+	        }
+    	});
     }
 
     private void despachar(String cmd, DialogFactory df,
             LinkedList<Punto> puntos, LinkedList<Blanco> blancos,
             SituacionTacticaTopografica ctx) {
+
+        Blanco blancoSeleccionado = ctx.getlistaUIBlancos().getSelectedValue();
+        if (blancoSeleccionado == null) {
+            JOptionPane.showMessageDialog(ctx,
+                    "Debe seleccionar un blanco de la lista táctica antes de ejecutar esta operación.",
+                    "SELECCIÓN REQUERIDA",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         switch (cmd) {
             case "TRIANG" ->

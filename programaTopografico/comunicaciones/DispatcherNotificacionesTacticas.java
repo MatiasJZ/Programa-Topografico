@@ -19,11 +19,6 @@ import java.awt.event.MouseEvent;
  */
 public class DispatcherNotificacionesTacticas {
 
-    /**
-     * Displays a modal dialog with a tactical notification.
-     * * @param titulo  the title text displayed at the top of the dialog
-     * @param mensaje the main message content displayed in the text area
-     */
     public static void mostrar(String titulo, String mensaje) {
         mostrar(titulo, mensaje, null, null);
     }
