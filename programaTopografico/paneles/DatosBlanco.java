@@ -1,5 +1,6 @@
 package paneles;
 import dominio.Blanco;
+import gestores.GestorCoordenadas; 
 import java.awt.*;
 import javax.swing.*;
 
@@ -27,6 +28,7 @@ import javax.swing.*;
  * @version 1.0
  * @see     Blanco
  */
+
 public class DatosBlanco extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -153,8 +155,11 @@ public class DatosBlanco extends JPanel {
             txtNaturaleza.setText(b.getNaturaleza());
             txtFecha.setText(b.getFechaDeActualizacion());
             txtOrientacion.setText(String.format("%.1f°", b.getOrientacion()));
-            txtX.setText(String.format("%.2f", b.getCoordenadas().getX()));
-            txtY.setText(String.format("%.2f", b.getCoordenadas().getY()));
+            
+            // APLICACIÓN DEL SESGO VISUAL:
+            txtX.setText(GestorCoordenadas.aVisualX(b.getCoordenadas().getX()));
+            txtY.setText(GestorCoordenadas.aVisualY(b.getCoordenadas().getY()));
+            
             txtSituacion.setText(b.getSituacionMovimiento().toString());
             txtInfoAdicional.setText(
                 (b.getInformacionAdicional() == null || b.getInformacionAdicional().isEmpty())

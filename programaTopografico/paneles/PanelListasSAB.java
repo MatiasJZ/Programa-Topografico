@@ -18,7 +18,7 @@ import interfaces.Poligonal;
  * @author [Matias Leonel Juarez]
  * @version 1.0
  */
-public class PanelListasTacticas extends JPanel {
+public class PanelListasSAB extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +27,7 @@ public class PanelListasTacticas extends JPanel {
     private final JList<Blanco>    listaUIBlancos;
     private final JList<Poligonal> listaUIPoligonales;
 
-    public PanelListasTacticas() {
+    public PanelListasSAB() {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 

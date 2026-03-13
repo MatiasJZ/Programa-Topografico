@@ -3,12 +3,14 @@ package comunicaciones;
 import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
+import app.Mensajeria;
 import app.PedidoDeFuego;
 import app.SituacionTacticaTopografica;
 import dominio.Blanco;
 import dominio.Punto;
 import dominio.SituacionMovimiento;
 import gestores.GestorEnlaceOperativo;
+import paneles.PanelHistorialNotificaciones.TipoNotificacion;
 import dominio.CoordenadasRectangulares;
 
 /**
@@ -48,13 +50,15 @@ public class ProcesadorMensajes {
     private LinkedList<Punto> listaDePuntos;
     private PedidoDeFuego panelPif;
     private GestorEnlaceOperativo comunicacionIP;
+    private Mensajeria panelMensajeria;
 
-    public ProcesadorMensajes(PedidoDeFuego panelPif, SituacionTacticaTopografica panelTactico, LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos, GestorEnlaceOperativo comunicacionIP) {
+    public ProcesadorMensajes(PedidoDeFuego panelPif, SituacionTacticaTopografica panelTactico, LinkedList<Blanco> listaDeBlancos, LinkedList<Punto> listaDePuntos, GestorEnlaceOperativo comunicacionIP,Mensajeria panelMensajeria) {
         this.panelTactico = panelTactico;
         this.listaDeBlancos = listaDeBlancos;
         this.listaDePuntos = listaDePuntos;
         this.panelPif = panelPif;
         this.comunicacionIP = comunicacionIP;
+        this.panelMensajeria = panelMensajeria;
     }
 
     public void procesar(String mensajeConRastreo) {
@@ -106,6 +110,8 @@ public class ProcesadorMensajes {
 
         consola.mostrarRx(ipRemota, "CONFIRMACIÓN RECIBIDA: " + contenido);
 
+        panelMensajeria.registrarNotificacion(TipoNotificacion.ACK, contenido, contenido, ipRemota);
+        
         SwingUtilities.invokeLater(() ->
             DispatcherNotificacionesTacticas.mostrar("ACUSE DE RECIBO", contenido, null, null)
         );
@@ -122,6 +128,9 @@ public class ProcesadorMensajes {
                 panelPif.getMetodoYTiroPanel().getCorreccionesPanel().iniciarCuentaRegresivaVolido();
             }
         }
+        
+        panelMensajeria.registrarNotificacion(TipoNotificacion.ESTADO, contenido, contenido, ipRemota);
+        
         SwingUtilities.invokeLater(() ->
             DispatcherNotificacionesTacticas.mostrar("ESTADO OPERATIVO", contenido, ipRemota, comunicacionIP)
         );
@@ -135,7 +144,10 @@ public class ProcesadorMensajes {
         panelPif.recibirMTO(EPA,ANGOB,TVOLIDO);
             
         consola.mostrarRx(ipRemota, "MTO RECIBIDO");
-                
+        String resumen = (EPA != null && !EPA.isEmpty()) ? EPA : "RECIBIDO";
+        String msgCompleto = "EPA: " + EPA + "\nANGOB: " + ANGOB + "\nTVOLIDO: " + TVOLIDO;
+        panelMensajeria.registrarNotificacion(TipoNotificacion.MTO, resumen, msgCompleto, ipRemota);
+        
         SwingUtilities.invokeLater(() ->
             DispatcherNotificacionesTacticas.mostrar("MTO", "RECIBIDO Y DISPONIBLE", ipRemota, comunicacionIP)
         );
@@ -146,13 +158,12 @@ public class ProcesadorMensajes {
             String nombre = ProtocoloMensajes.obtenerCampo(msg, "NOMBRE");
             double x = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "X"));
             double y = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Y"));
-            double z = 0;
-            
-            String cotaStr = ProtocoloMensajes.obtenerCampo(msg, "Z");
-            if(cotaStr != null) z = Double.parseDouble(cotaStr);
+            double z = Double.parseDouble(ProtocoloMensajes.obtenerCampo(msg, "Z"));
 
             CoordenadasRectangulares coords = new CoordenadasRectangulares(x, y, z);
 
+            String detalle = "Nombre: " + nombre+ "\nX: " + x+ "\nY: " + y+ "\nCota: " + z;
+            
             for (Punto p : listaDePuntos) {
                 if (p.getNombre().equalsIgnoreCase(nombre)) {
                     p.setCoord(coords);
@@ -167,6 +178,9 @@ public class ProcesadorMensajes {
             panelTactico.agregarPunto(nuevoPunto); 
 
             consola.mostrarRx(ipRemota, "NUEVO PUNTO: " + nombre);
+            
+            panelMensajeria.registrarNotificacion(TipoNotificacion.PUNTO, nombre, detalle, ipRemota);
+
             
             String tituloPunto = "PUNTO RECIBIDO: " + nombre;
             SwingUtilities.invokeLater(() ->
@@ -232,6 +246,9 @@ public class ProcesadorMensajes {
             panelTactico.agregarBlanco(nuevoBlanco);
 
             consola.mostrarRx(ipRemota, "BLANCO TÁCTICO: " + nombre);
+            
+            String detalle = "Naturaleza: " + nat + "\nCoordenadas: X=" + x + "  Y=" + y + "  Z=" + z;
+            panelMensajeria.registrarNotificacion(TipoNotificacion.BLANCO, nombre, detalle, ipRemota);
 
             mostrarPopupBlanco(blancoAnterior == null ? "NUEVO BLANCO" : "BLANCO ACTUALIZADO", nuevoBlanco, coords, ipRemota);
             
@@ -280,6 +297,8 @@ public class ProcesadorMensajes {
         consola.mostrarRx(ipRemota, "AVISO: " + contenido);
         String titulo = esCritico(contenido) ? "ALERTA CRÍTICA" : "AVISO";
 
+        panelMensajeria.registrarNotificacion(TipoNotificacion.AVISO, contenido, contenido, ipRemota);
+        
         SwingUtilities.invokeLater(() ->
             DispatcherNotificacionesTacticas.mostrar(titulo, contenido, ipRemota, comunicacionIP)
         );

@@ -8,6 +8,7 @@ import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 import dominio.Blanco;
 import dominio.CoordenadasRectangulares;
+import gestores.GestorCoordenadas;
 import gestores.GestorEnlaceOperativo;
 import gestores.GestorSonido;
 import interfaces.DesignacionProvider;
@@ -119,28 +120,41 @@ public abstract class SituacionTacticaBase extends JPanel implements Designacion
                 tooltipLabel.setVisible(true);
                 actualizarTooltip(ev);
             }
+            
             @Override public void onMouseDragged(MapMouseEvent ev) {
                 actualizarTooltip(ev);
             }
+            
             @Override public void onMouseReleased(MapMouseEvent ev) {
                 tooltipLabel.setVisible(false);
                 panelMapa.getMapPane().repaint();
-                double x = ev.getWorldPos().getX(), y = ev.getWorldPos().getY();
+                
+                double x = ev.getWorldPos().getX();
+                double y = ev.getWorldPos().getY();
+                
+                String xVisual = GestorCoordenadas.aVisualX(x, 2);
+                String yVisual = GestorCoordenadas.aVisualY(y, 2);
+                
                 onClickEnMapa(
                         new CoordenadasRectangulares(x, y, 0),
-                        recortar(String.format("%.0f", x)),
-                        recortar(String.format("%.0f", y))
+                        xVisual,
+                        yVisual
                 );
             }
+            
             private void actualizarTooltip(MapMouseEvent ev) {
-                double x = ev.getWorldPos().getX(), y = ev.getWorldPos().getY();
-                tooltipLabel.setText("DERECHAS: " + recortar(String.format("%.0f", x))
-                        + " | ARRIBAS: " + recortar(String.format("%.0f", y)));
+                double x = ev.getWorldPos().getX();
+                double y = ev.getWorldPos().getY();
+                
+                String xVisual = GestorCoordenadas.aVisualX(x, 2);
+                String yVisual = GestorCoordenadas.aVisualY(y, 2);
+                
+                tooltipLabel.setText("DERECHAS: " + xVisual + " | ARRIBAS: " + yVisual);
                 panelMapa.getMapPane().repaint();
             }
         });
     }
-
+    
     public void cambiarMapaEnTiempoReal() {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         FileDialog fd = new FileDialog(parent, "SELECCIONAR NUEVA CARTOGRAFÍA GeoTIFF", FileDialog.LOAD);

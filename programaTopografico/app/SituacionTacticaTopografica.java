@@ -15,12 +15,13 @@ import dominio.GeneradorPDF;
 import dominio.Linea;
 import dominio.Punto;
 import dominio.RegistroCalculos;
+import gestores.GestorCoordenadas;
 import gestores.GestorEnlaceOperativo;
 import gestores.GestorPopupMenus;
 import interfaces.Poligonal;
 import interfaces.Posicionable;
 import paneles.PanelHerramientasTopograficas;
-import paneles.PanelListasTacticas;
+import paneles.PanelListasSAB;
 import paneles.PanelMapa;
 
 /**
@@ -79,7 +80,7 @@ public class SituacionTacticaTopografica extends SituacionTacticaBase {
         this.generadorDoc = new GeneradorPDF(this);
 
         // 1. Sub-panel de listas
-        PanelListasTacticas panelListas = new PanelListasTacticas();
+        PanelListasSAB panelListas = new PanelListasSAB();
         modeloListaBlancos = panelListas.getModeloBlancos(); 
         modeloListaPoligonales = panelListas.getModeloPoligonales();
         listaUIBlancos = panelListas.getListaUIBlancos();  
@@ -235,13 +236,98 @@ public class SituacionTacticaTopografica extends SituacionTacticaBase {
             dlg.setVisible(true);
         });
 
-        btnAgregar.addActionListener(e ->
-            dialogFactory.AgregarBlancoDialog(new CoordenadasRectangulares(0, 0, 0), nuevo -> {
-                agregarBlanco(nuevo);
-                if (nuevo.getNombre().equals(designacionBlancoPrefijo + " " + designacionBlancoContador))
-                    designacionBlancoContador++;
-            })
-        );
+        btnAgregar.addActionListener(e -> {
+            JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+            JDialog dialog = new JDialog(parent, "Ingreso Manual", true);
+            dialog.setSize(600, 320);
+            dialog.setLocationRelativeTo(this);
+            dialog.setUndecorated(true); 
+
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBackground(new Color(30, 30, 30)); 
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(80, 80, 80), 2),
+                    BorderFactory.createEmptyBorder(20, 25, 20, 25)
+            ));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 20, 10);
+            gbc.fill   = GridBagConstraints.BOTH;
+
+            String htmlInfo = "<html><div style='text-align: center;'>"
+                    + "<span style='color: #00FFCC; font-family: Consolas, monospace; font-size: 22px; font-weight: bold;'>"
+                    + "INGRESO MANUAL DE DATOS</span>"
+                    + "</div></html>";
+
+            JLabel lblInfo = new JLabel(htmlInfo);
+            lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
+            gbc.gridx = 0; gbc.gridy = 0; 
+            gbc.gridwidth = 2; 
+            gbc.weightx = 1.0;
+            panel.add(lblInfo, gbc);
+
+            Font fb = new Font("Segoe UI", Font.BOLD, 18);
+            
+            JButton btnBlanco = new JButton("MARCAR BLANCO");
+            btnBlanco.setFont(fb);
+            btnBlanco.setBackground(new Color(160, 40, 40));
+            btnBlanco.setForeground(Color.WHITE);
+            btnBlanco.setFocusPainted(false);
+            btnBlanco.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+            btnBlanco.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+
+            JButton btnPunto  = new JButton("MARCAR PUNTO");
+            btnPunto.setFont(fb);
+            btnPunto.setBackground(new Color(40, 100, 160)); 
+            btnPunto.setForeground(Color.WHITE);
+            btnPunto.setFocusPainted(false);
+            btnPunto.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            btnPunto.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+
+            JButton btnCancelar = new JButton("CANCELAR");
+            btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            btnCancelar.setBackground(new Color(60, 60, 60));
+            btnCancelar.setForeground(Color.WHITE);
+            btnCancelar.setFocusPainted(false);
+            btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            btnCancelar.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+
+            JPanel panelBotones = new JPanel(new GridLayout(1, 2, 20, 0));
+            panelBotones.setOpaque(false);
+            panelBotones.add(btnBlanco);
+            panelBotones.add(btnPunto);
+
+            gbc.gridy = 1;
+            gbc.gridx = 0; 
+            gbc.gridwidth = 2; 
+            gbc.weighty = 1.0; 
+            panel.add(panelBotones, gbc);
+
+            gbc.gridy = 2;
+            gbc.weighty = 0.0;
+            gbc.insets = new Insets(5, 150, 0, 150); 
+            panel.add(btnCancelar, gbc);
+
+            btnBlanco.addActionListener(ev -> {
+                dialog.dispose();
+                dialogFactory.AgregarBlancoDialog(new CoordenadasRectangulares(0, 0, 0), nuevo -> {
+                    agregarBlanco(nuevo);
+                    if (nuevo.getNombre().equals(designacionBlancoPrefijo + " " + designacionBlancoContador)) {
+                        designacionBlancoContador++;
+                    }
+                });
+            });
+
+            btnPunto.addActionListener(ev -> {
+                dialog.dispose();
+                dialogFactory.AgregarPuntoDialog(new CoordenadasRectangulares(0, 0, 0), this::agregarPunto);
+            });
+
+            btnCancelar.addActionListener(ev -> dialog.dispose());
+
+            dialog.add(panel);
+            dialog.setVisible(true);
+        });
 
         btnEliminar.addActionListener(e -> eliminarSeleccionado());
         btnRefrescar.addActionListener(e -> panelMapa.refrescar());
@@ -394,28 +480,79 @@ public class SituacionTacticaTopografica extends SituacionTacticaBase {
     private void seleccionDeMarcado(CoordenadasRectangulares coord, String xV, String yV) {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parent, "Selección de Marcador", true);
-        dialog.setSize(600, 300);
+        dialog.setSize(600, 320);
         dialog.setLocationRelativeTo(this);
+        dialog.setUndecorated(true); 
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(30, 30, 30)); 
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(80, 80, 80), 2),
+                BorderFactory.createEmptyBorder(20, 25, 20, 25)
+        ));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(10, 10, 20, 10);
         gbc.fill   = GridBagConstraints.BOTH;
 
-        JLabel lblInfo = new JLabel("<html><center><font size='4'>COORDENADAS</font><br>"
-                + "<font color='black' size='6'>DERECHAS: " + xV + " | ARRIBAS: " + yV + "</font></center></html>");
+        // APLICAR SESGO A LA ETIQUETA VISUAL
+        String xVisual = GestorCoordenadas.aVisualX(coord.getX(), 2);
+        String yVisual = GestorCoordenadas.aVisualY(coord.getY(), 2);
+
+        String htmlInfo = "<html><div style='text-align: center;'>"
+                + "<span style='color: #888888; font-family: Segoe UI, Arial; font-size: 13px; font-weight: bold;'>COORDENADAS SELECCIONADAS</span><br><br>"
+                + "<span style='color: #00FFCC; font-family: Consolas, monospace; font-size: 22px; font-weight: bold;'>"
+                + "DER: " + xVisual + "&nbsp;&nbsp;|&nbsp;&nbsp;ARR: " + yVisual + "</span>"
+                + "</div></html>";
+
+        JLabel lblInfo = new JLabel(htmlInfo);
         lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 0; 
+        gbc.gridwidth = 2; 
+        gbc.weightx = 1.0;
         panel.add(lblInfo, gbc);
 
-        Font fb      = new Font("Arial", Font.BOLD, 18);
-        JButton btnBlanco = boton("Marcar Blanco", fb, new Dimension(200, 80), null, null);
-        JButton btnPunto  = boton("Marcar Punto",  fb, new Dimension(200, 80), null, null);
+        Font fb = new Font("Segoe UI", Font.BOLD, 18);
+        
+        JButton btnBlanco = new JButton("MARCAR BLANCO");
+        btnBlanco.setFont(fb);
+        btnBlanco.setBackground(new Color(160, 40, 40)); 
+        btnBlanco.setForeground(Color.WHITE);
+        btnBlanco.setFocusPainted(false);
+        btnBlanco.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+        btnBlanco.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
 
-        gbc.gridwidth = 1; gbc.gridy = 1;
-        gbc.gridx = 0; panel.add(btnBlanco, gbc);
-        gbc.gridx = 1; panel.add(btnPunto,  gbc);
+        JButton btnPunto  = new JButton("MARCAR PUNTO");
+        btnPunto.setFont(fb);
+        btnPunto.setBackground(new Color(40, 100, 160));
+        btnPunto.setForeground(Color.WHITE);
+        btnPunto.setFocusPainted(false);
+        btnPunto.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnPunto.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+
+        JButton btnCancelar = new JButton("CANCELAR");
+        btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnCancelar.setBackground(new Color(60, 60, 60)); 
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnCancelar.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 20, 0));
+        panelBotones.setOpaque(false);
+        panelBotones.add(btnBlanco);
+        panelBotones.add(btnPunto);
+
+        gbc.gridy = 1;
+        gbc.gridx = 0; 
+        gbc.gridwidth = 2; 
+        gbc.weighty = 1.0; 
+        panel.add(panelBotones, gbc);
+
+        gbc.gridy = 2;
+        gbc.weighty = 0.0;
+        gbc.insets = new Insets(5, 150, 0, 150); 
+        panel.add(btnCancelar, gbc);
 
         btnBlanco.addActionListener(e -> {
             dialog.dispose();
@@ -430,6 +567,8 @@ public class SituacionTacticaTopografica extends SituacionTacticaBase {
             dialog.dispose();
             dialogFactory.AgregarPuntoDialog(coord, this::agregarPunto);
         });
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
 
         dialog.add(panel);
         dialog.setVisible(true);

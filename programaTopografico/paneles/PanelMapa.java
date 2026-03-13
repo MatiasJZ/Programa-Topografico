@@ -43,9 +43,9 @@ import org.locationtech.jts.geom.Point;
 
 import dominio.Blanco;
 import dominio.Linea;
+import interfaces.Poligonal;
 import dominio.CoordenadasRectangulares;
 import gestores.GestorCodigosSIDC;
-import interfaces.Poligonal;
 import simbologia.ProveedorSimbologiaMilitarizada;
 
 import javax.imageio.ImageIO;
@@ -55,7 +55,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionListener;
@@ -73,53 +72,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/**
- * PanelMapa is a custom JPanel for displaying and interacting with a tactical map using GeoTools.
- * It supports rendering raster backgrounds (GeoTIFF), vector features (points, lines, and custom "Blanco" objects),
- * and provides interactive controls for zooming and panning.
- *
- * <p>Main Features:</p>
- * <ul>
- *   <li>Loads a raster map from a GeoTIFF file and displays it as the map background.</li>
- *   <li>Supports adding and removing vector features:
- *     <ul>
- *       <li><b>Poligonal</b>: Can be a point or a line, rendered with custom styles and labels.</li>
- *       <li><b>Blanco</b>: Custom point features with military symbology, orientation, and labels.</li>
- *     </ul>
- *   </li>
- *   <li>Provides zoom and pan controls as overlay buttons, with keyboard shortcuts for zooming.</li>
- *   <li>Allows creation of a secondary, read-only map view for observation purposes.</li>
- *   <li>Manages feature layers and collections for efficient addition/removal and map refresh.</li>
- * </ul>
- *
- * <p>Usage:</p>
- * <pre>
- *     PanelMapa panel = new PanelMapa("ruta/al/archivo.tif");
- *     panel.agregarPoligonal(poligonal);
- *     panel.agregarBlanco(blanco);
- *     panel.eliminarPoligonal(poligonal);
- *     panel.eliminarBlanco(blanco);
- * </pre>
- *
- * <p>Dependencies:</p>
- * <ul>
- *   <li>GeoTools library (map rendering, feature and style management)</li>
- *   <li>Custom domain classes: Poligonal, Blanco, Linea, CoordenadasRectangulares, GestorCodigosSIDC, ProveedorSimbologiaMilitarizada</li>
- * </ul>
- *
- * <p>Thread Safety:</p>
- * <ul>
- *   <li>UI updates are dispatched on the Event Dispatch Thread (EDT) as needed.</li>
- * </ul>
- *
- * <p>Note:</p>
- * <ul>
- *   <li>Some methods rely on external resources (e.g., "/arrastrar.png" for pan icon).</li>
- *   <li>Military symbology rendering uses temporary files for image-based symbols.</li>
- * </ul>
- *
- * @author [Matias Leonel Juarez]
- */
 public class PanelMapa extends JPanel {
 
 	private static final long serialVersionUID = -6801957143279809848L;
@@ -237,13 +189,7 @@ public class PanelMapa extends JPanel {
         int size = 42, margin = 10;
         JButton btnZoomIn = new JButton("+");
         JButton btnZoomOut = new JButton("-");
-        JButton btnPan = new JButton();
-
-        try {
-            ImageIcon icono = new ImageIcon(getClass().getResource("/arrastrar.png"));
-            Image imgEscalada = icono.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
-            btnPan.setIcon(new ImageIcon(imgEscalada));
-        } catch (Exception ignore) {}
+        JButton btnPan = new JButton("•");
 
         JButton[] botones = {btnZoomIn, btnZoomOut, btnPan};
         for (int i = 0; i < botones.length; i++) {
@@ -275,34 +221,31 @@ public class PanelMapa extends JPanel {
                 modoPan[0] = false;
             }
         });
-        	ActionListener zoom = e -> {
-            boolean in = e.getSource() == btnZoomIn;
-            double factor = in ? 0.5 : 2.0;
-            ReferencedEnvelope view = mapPaneSoloObs.getDisplayArea();
-            if (view == null) view = mapContent.getViewport().getBounds();
-            ReferencedEnvelope bounds = mapContent.getMaxBounds();
+        ActionListener zoom = e -> {
+            try {
+                boolean in = e.getSource() == btnZoomIn;
+                
+                ReferencedEnvelope view = mapPaneSoloObs.getDisplayArea();
+                ReferencedEnvelope bounds = mapContent.getMaxBounds();
+                
+                if (view == null) view = mapContent.getViewport().getBounds();
+                if (view == null || bounds == null) return;
 
-            double cx = view.getMedian(0);
-            double cy = view.getMedian(1);
-            double w = view.getWidth() * factor;
-            double h = view.getHeight() * factor;
+                double factor = in ? -0.1 : 0.1; 
+                double dX = view.getWidth() * factor;
+                double dY = view.getHeight() * factor;
 
-            ReferencedEnvelope nueva =
-                new ReferencedEnvelope(
-                    cx - w/2, cx + w/2, cy - h/2, cy + h/2, view.getCoordinateReferenceSystem()
-                );
+                ReferencedEnvelope nueva = new ReferencedEnvelope(view);
+                nueva.expandBy(dX, dY);
 
-            if (bounds != null) {
-                if (nueva.getWidth() > bounds.getWidth() || nueva.getHeight() > bounds.getHeight()) {
-                    nueva = bounds;
-                } else {
-                    if (nueva.getMinX() < bounds.getMinX()) nueva.translate(bounds.getMinX() - nueva.getMinX(), 0);
-                    if (nueva.getMaxX() > bounds.getMaxX()) nueva.translate(bounds.getMaxX() - nueva.getMaxX(), 0);
-                    if (nueva.getMinY() < bounds.getMinY()) nueva.translate(0, bounds.getMinY() - nueva.getMinY());
-                    if (nueva.getMaxY() > bounds.getMaxY()) nueva.translate(0, bounds.getMaxY() - nueva.getMaxY());
+                if (!in && (nueva.getWidth() >= bounds.getWidth() || nueva.getHeight() >= bounds.getHeight())) {
+                    nueva = new ReferencedEnvelope(bounds);
                 }
+
+                mapPaneSoloObs.setDisplayArea(nueva);
+            } catch (Exception ex) {
+                System.err.println("Error en zoom (vista observación): " + ex.getMessage());
             }
-            mapPaneSoloObs.setDisplayArea(nueva);
         };
         btnZoomIn.addActionListener(zoom);
         btnZoomOut.addActionListener(zoom);
@@ -324,10 +267,6 @@ public class PanelMapa extends JPanel {
 
     public void agregarPoligonal(Poligonal p) {
 
-    	if (capaPorPoligonal.containsKey(p)) {
-            eliminarPoligonal(p);
-        }
-    	
         Geometry geom = p.getGeometry();
         SimpleFeatureType tipo;
         Object[] attrs;
@@ -471,7 +410,7 @@ public class PanelMapa extends JPanel {
     
     private Style crearEstilo(String sidc, double orient) {
         try {
-            ProveedorSimbologiaMilitarizada prov = new ProveedorSimbologiaMilitarizada(sidc, 55);
+            ProveedorSimbologiaMilitarizada prov = new ProveedorSimbologiaMilitarizada(sidc, 45);
             Field f = ProveedorSimbologiaMilitarizada.class.getDeclaredField("simbolo");
             f.setAccessible(true);
             BufferedImage simbolo = (BufferedImage) f.get(prov);
@@ -528,7 +467,7 @@ public class PanelMapa extends JPanel {
 
         return SLD.createPointStyle("circle", Color.WHITE, Color.RED, 1.0f, 14.0f);
     }
-
+    
     public void eliminarPoligonal(Poligonal p) {
 
         FeatureLayer capa = capaPorPoligonal.remove(p);
@@ -610,30 +549,29 @@ public class PanelMapa extends JPanel {
         }
 
         Consumer<Boolean> ejecutarZoom = (Boolean in) -> {
-            double factor = in ? 0.5 : 2.0;
-            ReferencedEnvelope view = mapPane.getDisplayArea();
-            ReferencedEnvelope bounds = mapContent.getMaxBounds();
-            double cx = view.getMedian(0);
-            double cy = view.getMedian(1);
-            double w = view.getWidth() * factor;
-            double h = view.getHeight() * factor;
+            try {
+                ReferencedEnvelope view = mapPane.getDisplayArea();
+                ReferencedEnvelope bounds = mapContent.getMaxBounds();
+                
+                if (view == null) view = mapContent.getViewport().getBounds();
+                if (view == null || bounds == null) return;
 
-            ReferencedEnvelope nueva = new ReferencedEnvelope(
-                cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2, 
-                view.getCoordinateReferenceSystem()
-            );
+                double factor = in ? -0.1 : 0.1; 
+                double dX = view.getWidth() * factor;
+                double dY = view.getHeight() * factor;
 
-            if (bounds != null) {
-                if (nueva.getWidth() > bounds.getWidth() || nueva.getHeight() > bounds.getHeight()) {
-                    nueva = bounds;
-                } else {
-                    if (nueva.getMinX() < bounds.getMinX()) nueva.translate(bounds.getMinX() - nueva.getMinX(), 0);
-                    if (nueva.getMaxX() > bounds.getMaxX()) nueva.translate(bounds.getMaxX() - nueva.getMaxX(), 0);
-                    if (nueva.getMinY() < bounds.getMinY()) nueva.translate(0, bounds.getMinY() - nueva.getMinY());
-                    if (nueva.getMaxY() > bounds.getMaxY()) nueva.translate(0, bounds.getMaxY() - nueva.getMaxY());
+                ReferencedEnvelope nueva = new ReferencedEnvelope(view);
+                nueva.expandBy(dX, dY);
+
+                if (!in && (nueva.getWidth() >= bounds.getWidth() || nueva.getHeight() >= bounds.getHeight())) {
+                    nueva = new ReferencedEnvelope(bounds);
                 }
+
+                mapPane.setDisplayArea(nueva);
+                
+            } catch (Exception ex) {
+                System.err.println("Error en zoom (mapa principal): " + ex.getMessage());
             }
-            mapPane.setDisplayArea(nueva);
         };
 
         btnZoomIn.addActionListener(e -> ejecutarZoom.accept(true));
